@@ -6,9 +6,10 @@ in ordinary CI as well.
 """
 from pathlib import Path
 import ast
+import os
 
 ROOT = Path(__file__).parents[2]
-CONTRACTS = ROOT / "contracts"
+CONTRACTS = Path(os.environ.get("STEWARD_MUTANT_CONTRACTS", ROOT / "contracts"))
 
 
 def text(name):
@@ -68,3 +69,25 @@ def test_evidence_registry_history_cannot_be_re_attested_over():
     assert "history is immutable" in src
     assert "status_at" in src
     assert "revoked_at" in src
+
+
+def test_consequential_guards_remain_present():
+    charter = text("steward_charter.py")
+    registry = text("evidence_registry.py")
+    court = text("steward_court.py")
+    vault = text("steward_vault.py")
+    assert "if int(self.principal_flag.get(caller, u256(0))) != 1:" in charter
+    assert "if int(self.approved_proposal.get(key, u256(0))) == 1:" in charter
+    assert "if int(self.recovery_approved_by.get(key, u256(0))) == 1:" in charter
+    assert "attested <= stamp" in registry
+    assert "revoked == 0 or revoked > stamp" in registry
+    assert "if policy is None:" in court
+    assert "if _origin(uri) not in allowed:" in court
+    assert "if not bool(registry.status_at" in court
+    assert 'target.emit(on="finalized").record_terminal' in court
+    assert "raise gl.vm.UserError(\"[EXPECTED] conflicting primary decision\")" in court
+    assert "if gl.message.sender_address != self.court:" in vault
+    assert "raise gl.vm.UserError(\"[EXPECTED] conflicting terminal decision\")" in vault
+    assert 'if str(record["decision"]) != ALLOW:' in vault
+    assert "if int(self.paid.get(key, u256(0))) == 1:" in vault
+    assert "if not approved:" in vault

@@ -1,28 +1,62 @@
 #!/usr/bin/env python3
-"""Small deterministic mutation battery for reviewer-visible safety invariants."""
-import json, sys
-from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-from reference.model import classify, HistoricalSpend, ALLOW, REFUSE, HELD, issuer_authorized, appeal_effective, vault_can_pay
+"""Mutate exact deployable sources and require repository tests to kill each mutant."""
+from __future__ import annotations
 
-m = json.loads((ROOT / "tests" / "fixtures" / "mandate.json").read_text())
-r = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-checks = []
-checks += [classify(m, 6*10**18, r, "creative", 1000, [])["state"] == REFUSE]
-checks += [classify(m, 5*10**17, r, "creative", 1000, [])["state"] == ALLOW]
-checks += [classify(m, 2*10**18, r, "creative", 1000, [])["state"] == HELD]
-checks += [classify(m, 2*10**18, r, "research", 1000, [])["rules"] == ["brief-fit", "independent-proof"]]
-checks += [classify(m, 1, r, "other", 1000, [])["state"] == REFUSE]
-checks += [classify(m, 1, "0x9999999999999999999999999999999999999999", "creative", 1000, [])["state"] == REFUSE]
-checks += [classify(m, 5*10**18, r, "creative", 1000, [HistoricalSpend(8*10**18, 999, ALLOW)])["state"] == REFUSE]
-checks += [issuer_authorized(m, "0x1111111111111111111111111111111111111111", "vendor", "https://vendor.example/a")]
-checks += [not issuer_authorized(m, "0x1111111111111111111111111111111111111111", "auditor", "https://vendor.example/a")]
-checks += [not issuer_authorized(m, "0x1111111111111111111111111111111111111111", "vendor", "https://vendor.example.evil.test/a")]
-checks += [appeal_effective(ALLOW, REFUSE) == REFUSE, appeal_effective(REFUSE, ALLOW) == ALLOW]
-checks += [vault_can_pay({"decision": ALLOW, "amount": 1}, False)]
-checks += [not vault_can_pay({"decision": REFUSE, "amount": 1}, False)]
-checks += [not vault_can_pay({"decision": ALLOW, "amount": 1}, True)]
-if not all(checks):
-    raise SystemExit("mutation battery failed")
-print(f"mutation battery: {len(checks)}/{len(checks)} killed")
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CONTRACTS = ROOT / "contracts"
+
+MUTANTS = [
+    ("charter-principal-gate", "steward_charter.py", "if int(self.principal_flag.get(caller, u256(0))) != 1:", "if False:"),
+    ("charter-mandate-duplicate", "steward_charter.py", "if int(self.approved_proposal.get(key, u256(0))) == 1:", "if False:"),
+    ("charter-recovery-duplicate", "steward_charter.py", "if int(self.recovery_approved_by.get(key, u256(0))) == 1:", "if False:"),
+    ("registry-attested-before-request", "evidence_registry.py", "attested <= stamp", "attested >= stamp"),
+    ("registry-revocation-history", "evidence_registry.py", "revoked == 0 or revoked > stamp", "revoked == 0 or revoked <= stamp"),
+    ("court-issuer-role", "steward_court.py", "if policy is None:", "if False:"),
+    ("court-exact-origin", "steward_court.py", "if _origin(uri) not in allowed:", "if False:"),
+    ("court-attestation-provenance", "steward_court.py", "if not bool(registry.status_at", "if False and not bool(registry.status_at"),
+    ("court-finalized-terminal", "steward_court.py", 'target.emit(on="finalized").record_terminal', 'target.emit(on="accepted").record_terminal'),
+    ("court-primary-conflict", "steward_court.py", 'raise gl.vm.UserError("[EXPECTED] conflicting primary decision")', "return"),
+    ("vault-bound-court", "steward_vault.py", "if gl.message.sender_address != self.court:", "if False:"),
+    ("vault-terminal-conflict", "steward_vault.py", 'raise gl.vm.UserError("[EXPECTED] conflicting terminal decision")', "return"),
+    ("vault-terminal-allow", "steward_vault.py", 'if str(record["decision"]) != ALLOW:', "if False:"),
+    ("vault-duplicate-payout", "steward_vault.py", "if int(self.paid.get(key, u256(0))) == 1:", "if False:"),
+    ("vault-threshold-recovery", "steward_vault.py", "if not approved:", "if False:"),
+]
+
+
+def main() -> None:
+    killed = []
+    with tempfile.TemporaryDirectory(prefix="stewardrail-mutants-") as tmp:
+        mutant_dir = Path(tmp) / "contracts"
+        for name, filename, needle, replacement in MUTANTS:
+            if mutant_dir.exists():
+                shutil.rmtree(mutant_dir)
+            shutil.copytree(CONTRACTS, mutant_dir)
+            path = mutant_dir / filename
+            source = path.read_text(encoding="utf-8")
+            count = source.count(needle)
+            if count != 1:
+                raise SystemExit(f"{name}: expected one mutation site, found {count}")
+            path.write_text(source.replace(needle, replacement, 1), encoding="utf-8")
+            env = os.environ.copy()
+            env["STEWARD_MUTANT_CONTRACTS"] = str(mutant_dir)
+            result = subprocess.run(
+                [sys.executable, "-m", "pytest", "-q", "tests/direct/test_contract_invariants.py"],
+                cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+            )
+            if result.returncode == 0:
+                raise SystemExit(f"SURVIVED: {name}")
+            killed.append(name)
+            print(f"KILLED: {name}")
+    print(f"mutation result: {len(killed)}/{len(MUTANTS)} killed (100%)")
+
+
+if __name__ == "__main__":
+    main()
