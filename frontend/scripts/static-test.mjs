@@ -1,0 +1,16 @@
+import fs from "node:fs";
+import path from "node:path";
+const root = process.cwd();
+const walk = (dir) => fs.readdirSync(dir, {withFileTypes:true}).flatMap((e) => {
+  const p = path.join(dir, e.name); return e.isDirectory() ? walk(p) : [p];
+});
+const files = walk(path.join(root, "app")).concat(walk(path.join(root, "components")), walk(path.join(root, "lib")));
+const text = files.filter(f => /\.(ts|tsx)$/.test(f)).map(f => fs.readFileSync(f,"utf8")).join("\n").toLowerCase();
+for (const token of ["walletconnect", "@reown", "privy", "supabase", "firebase"]) {
+  if (text.includes(token)) throw new Error(`forbidden dependency marker: ${token}`);
+}
+if (!text.includes("61999")) throw new Error("61999 hard gate missing");
+if (!text.includes(".ethereum") || !text.includes("eth_requestaccounts")) throw new Error("injected wallet path missing");
+if (!text.includes("accountschanged") || !text.includes("chainchanged")) throw new Error("wallet event handling missing");
+if (!text.includes("localstorage") || !text.includes("resumefinalization")) throw new Error("transaction refresh recovery missing");
+console.log("frontend static test: PASS");

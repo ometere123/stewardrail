@@ -1,0 +1,7 @@
+"use client";
+import { useState } from "react";
+import { DEPLOYMENTS } from "@/lib/deployments";
+import { Panel } from "@/components/Panel";
+import { WriteAction } from "@/components/WriteAction";
+import { ReadJson } from "@/components/ReadJson";
+export default function Vault(){const [fund,setFund]=useState("1000000000000000000");const [id,setId]=useState("0");return <><div className="routeTag">/vault</div><h1 className="sectionTitle">Custody rail</h1><p className="sectionIntro">The agent cannot withdraw. The vault cannot adjudicate. It pays an exact terminal ALLOW once.</p><div className="grid"><Panel title="Treasury" className="wide"><ReadJson address={DEPLOYMENTS.vault} method="status"/><div className="divider"/><div className="formGrid"><div className="field"><label>Fund amount (wei)</label><input value={fund} onChange={e=>setFund(e.target.value)}/></div><div className="field"><label>Spend ID</label><input value={id} onChange={e=>setId(e.target.value)}/></div></div><div className="ctaRow"><WriteAction address={DEPLOYMENTS.vault} method="fund" args={[]} value={BigInt(fund||"0")} action="Fund shared treasury" label="Fund vault"/><WriteAction address={DEPLOYMENTS.vault} method="pay" args={[Number(id)]} action="Settle terminal spend" label="Pay terminal allow"/></div></Panel><Panel title="Payment state"><ReadJson address={DEPLOYMENTS.vault} method="payment" args={[Number(id)]}/></Panel></div></>}

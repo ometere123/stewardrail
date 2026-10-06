@@ -1,0 +1,50 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - name: Unit + exact-source adversarial harness
+        run: python -m pytest -q
+      - name: GenVM lint exact deployable sources
+        run: bash scripts/genvm_lint.sh
+      - name: Mutation battery
+        run: python tests/mutation_check.py
+      - name: Exact source manifest
+        run: python scripts/update_source_manifest.py --check
+      - name: Repository preflight
+        run: python scripts/preflight.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+      - run: npm run test
+      - run: npm run typecheck
+      - run: npm run build
+
+  cli-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+      - name: Repository-local CLI is exactly 0.39.1
+        run: npx --no-install genlayer --version | grep '0.39.1'

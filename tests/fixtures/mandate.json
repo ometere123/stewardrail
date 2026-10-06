@@ -1,0 +1,29 @@
+{
+  "name": "Shared Growth Treasury v1",
+  "deterministic": {
+    "max_per_spend": 5000000000000000000,
+    "rolling_limit": {"seconds": 86400, "amount": 12000000000000000000},
+    "category_allowlist": ["creative", "distribution", "research"],
+    "recipient_denylist": ["0x9999999999999999999999999999999999999999"]
+  },
+  "semantic_rules": [
+    {
+      "id": "brief-fit",
+      "when": {"type": "amount_gte", "value": 1000000000000000000},
+      "question": "Does the delivered work materially satisfy the frozen campaign brief?",
+      "evidence_roles": ["vendor", "delivery"]
+    },
+    {
+      "id": "independent-proof",
+      "when": {"type": "category_in", "values": ["research"]},
+      "question": "Does the independent report support the claimed completion?",
+      "evidence_roles": ["auditor"]
+    }
+  ],
+  "issuers": [
+    {"address": "0x1111111111111111111111111111111111111111", "role": "vendor", "origins": ["https://vendor.example"]},
+    {"address": "0x2222222222222222222222222222222222222222", "role": "delivery", "origins": ["https://delivery.example"]},
+    {"address": "0x3333333333333333333333333333333333333333", "role": "auditor", "origins": ["https://audit.example"]}
+  ],
+  "appeal": {"window_seconds": 3600, "bond": 0}
+}

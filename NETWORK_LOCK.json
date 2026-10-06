@@ -1,0 +1,10 @@
+{
+  "name": "studionet",
+  "chain_id": 61999,
+  "chain_id_hex": "0xF22F",
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "cli": "0.39.1",
+  "genlayer_js": "1.1.8",
+  "policy": "All deployments, writes, proof packets and frontend signing must hard-gate this chain. No alternate network is permitted for this repository."
+}

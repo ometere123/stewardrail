@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "policy": "These exact readable files are the deployment inputs; no generated/minified deployable form exists.",
+  "contracts": {
+    "steward_charter.py": {
+      "sha256": "28082a7fe8a0ec7a3b39d8d1ef5a9a77670ed771ca01e860902ea608abbd8ff4",
+      "bytes": 11311
+    },
+    "evidence_registry.py": {
+      "sha256": "dce2933387294da73dbc0e3c3bd7f75352f29daea5efc8401199704f35bb6253",
+      "bytes": 3672
+    },
+    "steward_court.py": {
+      "sha256": "51f17eba676c9d4260f3c7f6aaf7c49d3a0311131f4ebb3c56bd4537a56af776",
+      "bytes": 13324
+    },
+    "steward_guard.py": {
+      "sha256": "2ff900cba542aadce2ba99da6dcb31435a2ad309d839287deac0c6b9d558cbc8",
+      "bytes": 16439
+    },
+    "steward_vault.py": {
+      "sha256": "4136ebe4fdf471e5c1e0ddde76bd69b43eb26cd8a74d88cdc21439954cedbba4",
+      "bytes": 5260
+    }
+  }
+}

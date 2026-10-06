@@ -1,0 +1,84 @@
+import hashlib,json
+from pathlib import Path
+import pytest
+from tests.direct.genvm_stub import Runtime,load,deploy
+ROOT=Path(__file__).resolve().parents[2]
+A='0x'+'1'*40;B='0x'+'2'*40;AGENT='0x'+'3'*40;ISSUER='0x'+'4'*40;PAYEE='0x'+'5'*40;CHALLENGER='0x'+'6'*40
+CHARTER='0x'+'a'*40;REGISTRY='0x'+'b'*40;COURT='0x'+'c'*40;GUARD='0x'+'d'*40;VAULT='0x'+'e'*40
+URI='https://issuer.example/invoice/1'
+
+def mandate():
+    return {
+      'name':'Shared Treasury','deterministic':{'max_per_spend':1000,'rolling_limit':{'amount':5000,'seconds':86400},'category_allowlist':['ops'],'recipient_denylist':[]},
+      'semantic_rules':[{'id':'purpose','question':'Does the authenticated evidence show this spend serves the shared mandate?','when':{'type':'amount_gte','value':100},'evidence_roles':['invoice']}],
+      'issuers':[{'address':ISSUER,'role':'invoice','origins':['https://issuer.example']}],
+      'appeal':{'window_seconds':100,'bond':0},
+    }
+
+def setup_stack():
+    rt=Runtime(); rt.sender=A
+    mods={n:load(str(ROOT/'contracts'/f'{n}.py'),rt) for n in ['steward_charter','evidence_registry','steward_court','steward_guard','steward_vault']}
+    m=json.dumps(mandate())
+    deploy(rt,mods['steward_charter'],'StewardCharter',CHARTER,json.dumps([A,B]),2,AGENT,m,sender=A)
+    deploy(rt,mods['evidence_registry'],'EvidenceRegistry',REGISTRY,sender=A)
+    deploy(rt,mods['steward_court'],'StewardCourt',COURT,CHARTER,REGISTRY,sender=A)
+    deploy(rt,mods['steward_guard'],'StewardGuard',GUARD,CHARTER,REGISTRY,COURT,sender=A)
+    deploy(rt,mods['steward_vault'],'StewardVault',VAULT,CHARTER,GUARD,COURT,sender=A)
+    rt.call(CHARTER,'approve_mandate',m,sender=A);rt.call(CHARTER,'approve_mandate',m,sender=B)
+    return rt
+
+def attest(rt,body=b'valid invoice'):
+    digest=hashlib.sha256(body).hexdigest();rt.web[URI]=body
+    rt.call(REGISTRY,'attest',CHARTER,'invoice',URI,digest,sender=ISSUER)
+    return digest
+
+def create_semantic(rt,digest):
+    rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+
+def test_threshold_mandate_and_historical_issuer_authentication():
+    rt=setup_stack(); cur=json.loads(rt.call(CHARTER,'current',sender=A));assert cur['version']==1
+    digest=attest(rt)
+    # Attestation happened after requested_at? create spend after attestation so it is historical at request.
+    rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    with pytest.raises(Exception): rt.call(GUARD,'attach_evidence',0,B,'invoice',URI,digest,sender=AGENT)
+
+def test_allow_then_appeal_reverses_to_refuse_and_vault_cannot_pay():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'evidence fits'}
+    rt.call(GUARD,'adjudicate',0,sender=A); assert rt.flush_finalized()==1
+    case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A)); assert case['primary']=='allow'
+    rt.balances[PAYEE]=100
+    rt.model=lambda p:{'verdict':'refuse','confidence':92,'reason':'appeal identifies conflict'}
+    rt.call(COURT,'appeal',GUARD,0,VAULT,'frozen rule was misapplied','[]',sender=PAYEE)
+    rt.flush_finalized()
+    case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));assert case['effective']=='refuse' and case['effective'] != case['primary']
+    rt.balances[A]=1000;rt.call(VAULT,'fund',sender=A,value=500)
+    with pytest.raises(Exception,match='refuses payment'):rt.call(VAULT,'pay',0,sender=A)
+    assert rt.balances[PAYEE]==100
+
+def test_refuse_then_appeal_reverses_to_allow_and_pays_once():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'initial ambiguity'}
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized()
+    rt.balances[PAYEE]=100
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'appeal resolves ambiguity'}
+    rt.call(COURT,'appeal',GUARD,0,VAULT,'read the authenticated invoice in context','[]',sender=PAYEE)
+    rt.flush_finalized()
+    terminal=json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal'];assert terminal['decision']=='allow'
+    rt.balances[A]=1000;rt.call(VAULT,'fund',sender=A,value=500)
+    before=rt.balances.get(PAYEE,0);rt.call(VAULT,'pay',0,sender=A);assert rt.balances[PAYEE]-before==200
+    with pytest.raises(Exception,match='already paid'):rt.call(VAULT,'pay',0,sender=A)
+
+def test_unappealed_primary_does_not_reach_vault_until_court_closes_after_window():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest);rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized()
+    assert json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal'] is None
+    with pytest.raises(Exception,match='has not elapsed'):rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A)
+    rt.now+=101;rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A);rt.flush_finalized()
+    assert json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal']['decision']=='allow'
+
+def test_digest_mismatch_fails_closed_at_jury():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest);rt.web[URI]=b'changed after attestation';rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'ignore hash'}
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));assert case['primary']=='refuse'

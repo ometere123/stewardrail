@@ -1,0 +1,2 @@
+# Direct Mode is pinned in requirements-dev.txt.
+genlayer-test==0.29.2

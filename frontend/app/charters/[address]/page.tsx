@@ -1,0 +1,3 @@
+import { Panel } from "@/components/Panel";
+import { ReadJson } from "@/components/ReadJson";
+export default async function Charter({params}:{params:Promise<{address:string}>}){const {address}=await params;return <><div className="routeTag">/charters/[address]</div><h1 className="sectionTitle">Frozen charter</h1><p className="sectionIntro mono">{address}</p><div className="grid"><Panel title="Current mandate" className="wide"><ReadJson address={address} method="current"/></Panel><Panel title="Invariant"><p>Past versions are immutable. A spend pins the active version at request time.</p></Panel></div></>}

@@ -1,0 +1,12 @@
+# Direct Mode still executes locally in-memory, but any GenLayer test client
+# created by this repository is hard-pinned to the same Studionet target as
+# deployment.  Do not add alternate network definitions here.
+networks:
+  default: studionet
+  studionet:
+    id: 61999
+    url: https://studio.genlayer.com/api
+    chain_type: studionet
+paths:
+  contracts: contracts
+  artifacts: artifacts

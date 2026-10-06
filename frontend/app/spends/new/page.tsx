@@ -1,0 +1,8 @@
+"use client";
+import { useState } from "react";
+import { DEPLOYMENTS } from "@/lib/deployments";
+import { Panel } from "@/components/Panel";
+import { ReadJson } from "@/components/ReadJson";
+import { WriteAction } from "@/components/WriteAction";
+
+export default function NewSpend(){const [recipient,setRecipient]=useState("0x");const [amount,setAmount]=useState("1000000000000000000");const [category,setCategory]=useState("creative");const args=[recipient,BigInt(amount||"0"),category];return <><div className="routeTag">/spends/new</div><h1 className="sectionTitle">Preview before the agent asks</h1><p className="sectionIntro">The frontend does not reimplement the policy engine. The same guard that will receive the write performs the preview.</p><div className="grid"><Panel title="Spend" className="wide"><div className="stack"><div className="formGrid"><div className="field"><label>Recipient</label><input value={recipient} onChange={e=>setRecipient(e.target.value)}/></div><div className="field"><label>Amount (wei)</label><input value={amount} onChange={e=>setAmount(e.target.value)}/></div></div><div className="field"><label>Category</label><input value={category} onChange={e=>setCategory(e.target.value)}/></div><div className="row"><ReadJson address={DEPLOYMENTS.guard} method="preview_spend" args={args}/><WriteAction address={DEPLOYMENTS.guard} method="request_spend" args={args} action="Request spend" label="Request from agent wallet"/></div></div></Panel><Panel title="Before signing"><ul className="list"><li>chain 61999 required</li><li>exact guard address shown</li><li>no wallet prompt on wrong network</li><li>decision and finalization tracked separately</li></ul></Panel></div></>}

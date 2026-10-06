@@ -1,0 +1,4 @@
+import { DEPLOYMENTS } from "@/lib/deployments";
+import { Panel } from "@/components/Panel";
+import { ReadJson } from "@/components/ReadJson";
+export default async function Spend({params}:{params:Promise<{id:string}>}){const {id}=await params;const n=Number(id);return <><div className="routeTag">/spends/[id]</div><h1 className="sectionTitle">Spend #{n}</h1><p className="sectionIntro">Guard facts, appeal state and payout state are intentionally separate reads.</p><div className="grid"><Panel title="Guard record"><ReadJson address={DEPLOYMENTS.guard} method="get_spend" args={[n]}/></Panel><Panel title="Court case"><ReadJson address={DEPLOYMENTS.court} method="case" args={[DEPLOYMENTS.guard,n]}/></Panel><Panel title="Vault payment"><ReadJson address={DEPLOYMENTS.vault} method="payment" args={[n]}/></Panel></div></>}

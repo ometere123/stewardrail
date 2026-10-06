@@ -1,0 +1,14 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+.env.*
+node_modules/
+.next/
+out/
+dist/
+coverage/
+frontend/.env.local
+deploy/live-*.json
+deploy/addresses.local.json
+.DS_Store

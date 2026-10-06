@@ -1,0 +1,12 @@
+{
+  "name": "stewardrail-tooling",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "network:check": "node deploy/network-check.mjs",
+    "preflight": "python3 scripts/preflight.py"
+  },
+  "devDependencies": {
+    "genlayer": "0.39.1"
+  }
+}
