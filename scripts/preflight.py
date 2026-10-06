@@ -24,9 +24,21 @@ for rel in required:
     if not (ROOT / rel).exists():
         raise SystemExit(f"missing required file: {rel}")
 for path in (ROOT / "contracts").glob("*.py"):
-    ast.parse(path.read_text())
-    if 'py-genlayer:' not in path.read_text().splitlines()[0]:
+    source = path.read_text()
+    tree = ast.parse(source)
+    if 'py-genlayer:' not in source.splitlines()[0]:
         raise SystemExit(f"runtime pin missing: {path.name}")
+    if 'raise Exception(' in source:
+        raise SystemExit(f"bare user-facing Exception is forbidden: {path.name}")
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Raise) and isinstance(node.exc, ast.Call) and ast.unparse(node.exc.func) == "Exception":
+            raise SystemExit(f"bare user-facing Exception is forbidden: {path.name}:{node.lineno}")
+    for marker in (
+        'str(Address(', 'str(gl.message.sender_address)', 'str(gl.message.contract_address)',
+        'str(self.agent)', 'str(self.charter)', 'str(self.registry)', 'str(self.court)', 'str(self.guard)',
+    ):
+        if marker in source:
+            raise SystemExit(f"unsafe Address serialization in {path.name}: {marker}")
 if (ROOT / "contracts" / "build").exists() or list((ROOT / "contracts").glob("*.min.py")):
     raise SystemExit("generated/minified deployable source is forbidden")
 front_roots = [ROOT / "frontend" / "app", ROOT / "frontend" / "components", ROOT / "frontend" / "lib"]

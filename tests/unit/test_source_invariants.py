@@ -1,4 +1,5 @@
 from pathlib import Path
+import ast
 ROOT=Path(__file__).resolve().parents[2]
 CONTRACTS=ROOT/'contracts'
 
@@ -50,3 +51,32 @@ def test_contract_cross_calls_stay_outside_nondet_closures():
             end=s.find('\n        raw = gl.vm.run_nondet', start)
             if end==-1: end=s.find('\n        result =',start)
             assert 'gl.get_contract_at' not in s[start:end]
+
+
+def test_user_facing_rejections_use_genvm_user_error():
+    for path in CONTRACTS.glob('*.py'):
+        source = path.read_text()
+        assert 'raise Exception(' not in source, path.name
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, ast.Raise) or not isinstance(node.exc, ast.Call):
+                continue
+            called = ast.unparse(node.exc.func)
+            assert called != 'Exception', f'{path.name}:{node.lineno} uses bare Exception'
+
+
+def test_sdk_addresses_are_never_stringified_before_normalization():
+    forbidden = (
+        'str(Address(',
+        'str(gl.message.sender_address)',
+        'str(gl.message.contract_address)',
+        'str(self.agent)',
+        'str(self.charter)',
+        'str(self.registry)',
+        'str(self.court)',
+        'str(self.guard)',
+    )
+    for path in CONTRACTS.glob('*.py'):
+        source = path.read_text()
+        for marker in forbidden:
+            assert marker not in source, f'{path.name} reintroduced unsafe address serialization: {marker}'
+        assert 'getattr(address, "as_hex", address)' in source, path.name

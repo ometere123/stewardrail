@@ -82,9 +82,9 @@ class StewardGuard(gl.Contract):
         info = json.loads(str(gl.get_contract_at(self.charter).view().info()))
         court_info = json.loads(str(gl.get_contract_at(self.court).view().info()))
         if _addr(court_info["charter"]) != _addr(self.charter):
-            raise Exception("[EXPECTED] court is bound to another charter")
+            raise gl.vm.UserError("[EXPECTED] court is bound to another charter")
         if _addr(court_info["registry"]) != _addr(self.registry):
-            raise Exception("[EXPECTED] court is bound to another evidence registry")
+            raise gl.vm.UserError("[EXPECTED] court is bound to another evidence registry")
         self.agent = Address(str(info["agent"]))
         self.spend_count = u256(0)
 
@@ -103,7 +103,7 @@ class StewardGuard(gl.Contract):
     def _require_spend(self, spend_id: int):
         sid = int(spend_id)
         if sid < 0 or sid >= int(self.spend_count):
-            raise Exception("[EXPECTED] unknown spend")
+            raise gl.vm.UserError("[EXPECTED] unknown spend")
         return u256(sid)
 
     def _rolling_total(self, now: int, seconds: int) -> int:
@@ -204,11 +204,11 @@ class StewardGuard(gl.Contract):
     @gl.public.write
     def request_spend(self, recipient: str, amount: int, category: str) -> None:
         if gl.message.sender_address != self.agent:
-            raise Exception("[EXPECTED] only the charter agent may request a spend")
+            raise gl.vm.UserError("[EXPECTED] only the charter agent may request a spend")
         current = json.loads(str(self._charter().current()))
         version = int(current["version"])
         if version <= 0:
-            raise Exception("[EXPECTED] charter has no active mandate")
+            raise gl.vm.UserError("[EXPECTED] charter has no active mandate")
         mandate = json.loads(str(current["mandate"]))
         now = self._now()
         decision = self._classify(mandate, int(amount), str(recipient), str(category), now)
@@ -232,13 +232,13 @@ class StewardGuard(gl.Contract):
     def attach_evidence(self, spend_id: int, issuer: str, role: str, uri: str, digest: str) -> None:
         key = self._require_spend(spend_id)
         if self.state[key] != HELD:
-            raise Exception("[EXPECTED] evidence can only be attached while spend is held")
+            raise gl.vm.UserError("[EXPECTED] evidence can only be attached while spend is held")
         if int(self.evidence_count.get(key, u256(0))) >= 12:
-            raise Exception("[EXPECTED] evidence item limit reached")
+            raise gl.vm.UserError("[EXPECTED] evidence item limit reached")
         item = {"issuer": _addr(str(issuer)), "role": str(role), "uri": str(uri), "digest": str(digest).lower()}
         mandate = self._mandate(int(self.version[key]))
         if not self._valid_evidence(key, mandate, item):
-            raise Exception("[EXPECTED] evidence lacks frozen issuer authorization, historical attestation, or allowed origin")
+            raise gl.vm.UserError("[EXPECTED] evidence lacks frozen issuer authorization, historical attestation, or allowed origin")
         index = int(self.evidence_count.get(key, u256(0)))
         self.evidence[str(int(spend_id)) + "|" + str(index)] = json.dumps(item)
         self.evidence_count[key] = u256(index + 1)
@@ -247,7 +247,7 @@ class StewardGuard(gl.Contract):
     def adjudicate(self, spend_id: int) -> None:
         key = self._require_spend(spend_id)
         if self.state[key] != HELD:
-            raise Exception("[EXPECTED] spend is not held")
+            raise gl.vm.UserError("[EXPECTED] spend is not held")
         mandate = self._mandate(int(self.version[key]))
         fired = [str(x) for x in json.loads(self.fired_rules[key])]
         required = self._required_roles(mandate, fired)

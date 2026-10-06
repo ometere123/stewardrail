@@ -89,6 +89,41 @@ def test_charter_threshold_and_duplicate_approval_direct_mode(direct_vm, direct_
     current = json.loads(charter.current())
     assert current["version"] == 1
     assert json.loads(charter.mandate_at(1))["name"] == "Direct Mode shared treasury"
+    assert current["agent"] == _address(agent).lower()
+    assert current["principals"] == [_address(alice).lower(), _address(bob).lower()]
+
+
+def test_charter_expected_user_errors_direct_mode(direct_vm, direct_deploy, direct_accounts):
+    alice, bob, outsider, agent, issuer = direct_accounts[:5]
+    direct_vm.sender = alice
+    charter = direct_deploy(
+        ROOT / "contracts" / "steward_charter.py",
+        json.dumps([_address(alice), _address(bob)]), 2, _address(agent), _mandate(_address(issuer)),
+    )
+
+    with direct_vm.prank(outsider), direct_vm.expect_revert("caller is not a charter principal"):
+        charter.approve_mandate(_mandate(_address(issuer)))
+    with direct_vm.expect_revert("mandate must be valid JSON"):
+        charter.approve_mandate("not-json")
+    with direct_vm.expect_revert("unknown mandate version"):
+        charter.mandate_at(1)
+
+
+def test_charter_recovery_requires_threshold_and_rejects_duplicate_direct_mode(direct_vm, direct_deploy, direct_accounts):
+    alice, bob, agent, issuer, vault, recipient = direct_accounts[:6]
+    direct_vm.sender = alice
+    charter = direct_deploy(
+        ROOT / "contracts" / "steward_charter.py",
+        json.dumps([_address(alice), _address(bob)]), 2, _address(agent), _mandate(_address(issuer)),
+    )
+
+    charter.approve_recovery(_address(vault), _address(recipient), 25, 0)
+    assert not charter.recovery_is_approved(_address(vault), _address(recipient), 25, 0)
+    with direct_vm.expect_revert("already approved this recovery"):
+        charter.approve_recovery(_address(vault), _address(recipient), 25, 0)
+    with direct_vm.prank(bob):
+        charter.approve_recovery(_address(vault), _address(recipient), 25, 0)
+    assert charter.recovery_is_approved(_address(vault), _address(recipient), 25, 0)
 
 
 def test_registry_historical_attestation_and_revocation_direct_mode(direct_vm, direct_deploy, direct_accounts):
@@ -111,3 +146,20 @@ def test_registry_historical_attestation_and_revocation_direct_mode(direct_vm, d
     revoked = json.loads(registry.attestation(_address(charter), _address(issuer), "invoice", uri, digest))
     assert registry.status_at(_address(charter), _address(issuer), "invoice", uri, digest, record["attested_at"])
     assert not registry.status_at(_address(charter), _address(issuer), "invoice", uri, digest, revoked["revoked_at"])
+
+
+def test_registry_expected_user_errors_and_immutable_identity_direct_mode(direct_vm, direct_deploy, direct_accounts):
+    issuer, charter = direct_accounts[:2]
+    direct_vm.sender = issuer
+    registry = direct_deploy(ROOT / "contracts" / "evidence_registry.py")
+    uri = "https://issuer.example/invoice/2"
+    digest = "b" * 64
+
+    with direct_vm.expect_revert("digest must be sha256 hex"):
+        registry.attest(_address(charter), "invoice", uri, "not-a-digest")
+    registry.attest(_address(charter), "invoice", uri, digest)
+    with direct_vm.expect_revert("history is immutable"):
+        registry.attest(_address(charter), "invoice", uri, digest)
+    registry.revoke(_address(charter), "invoice", uri, digest)
+    with direct_vm.expect_revert("already revoked"):
+        registry.revoke(_address(charter), "invoice", uri, digest)

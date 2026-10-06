@@ -41,9 +41,9 @@ class StewardVault(gl.Contract):
         guard_info = json.loads(str(gl.get_contract_at(self.guard).view().info()))
         court_info = json.loads(str(gl.get_contract_at(self.court).view().info()))
         if _addr(guard_info["charter"]) != _addr(self.charter) or _addr(guard_info["court"]) != _addr(self.court):
-            raise Exception("[EXPECTED] guard binding mismatch")
+            raise gl.vm.UserError("[EXPECTED] guard binding mismatch")
         if _addr(court_info["charter"]) != _addr(self.charter):
-            raise Exception("[EXPECTED] court binding mismatch")
+            raise gl.vm.UserError("[EXPECTED] court binding mismatch")
         self.treasury = u256(0)
         self.funded = u256(0)
         self.paid_total = u256(0)
@@ -53,39 +53,39 @@ class StewardVault(gl.Contract):
     def fund(self) -> None:
         value = int(gl.message.value)
         if value <= 0:
-            raise Exception("[EXPECTED] funding value must be positive")
+            raise gl.vm.UserError("[EXPECTED] funding value must be positive")
         self.treasury = u256(int(self.treasury) + value)
         self.funded = u256(int(self.funded) + value)
 
     @gl.public.write
     def record_terminal(self, guard: str, spend_id: int, decision: str, amount: int, recipient: str) -> None:
         if gl.message.sender_address != self.court:
-            raise Exception("[EXPECTED] only the bound court may record terminal decisions")
+            raise gl.vm.UserError("[EXPECTED] only the bound court may record terminal decisions")
         if _addr(guard) != _addr(self.guard) or str(decision) not in (ALLOW, REFUSE) or int(amount) <= 0:
-            raise Exception("[EXPECTED] invalid terminal decision")
+            raise gl.vm.UserError("[EXPECTED] invalid terminal decision")
         key = u256(int(spend_id))
         incoming = json.dumps({"decision": str(decision), "amount": int(amount), "recipient": _addr(str(recipient))}, sort_keys=True)
         existing = self.terminal.get(key, "")
         if existing != "":
             if existing == incoming:
                 return
-            raise Exception("[EXPECTED] conflicting terminal decision")
+            raise gl.vm.UserError("[EXPECTED] conflicting terminal decision")
         self.terminal[key] = incoming
 
     @gl.public.write
     def pay(self, spend_id: int) -> None:
         key = u256(int(spend_id))
         if int(self.paid.get(key, u256(0))) == 1:
-            raise Exception("[EXPECTED] spend already paid")
+            raise gl.vm.UserError("[EXPECTED] spend already paid")
         raw = self.terminal.get(key, "")
         if raw == "":
-            raise Exception("[EXPECTED] no protocol-final terminal decision has reached the vault")
+            raise gl.vm.UserError("[EXPECTED] no protocol-final terminal decision has reached the vault")
         record = json.loads(raw)
         if str(record["decision"]) != ALLOW:
-            raise Exception("[EXPECTED] terminal decision refuses payment")
+            raise gl.vm.UserError("[EXPECTED] terminal decision refuses payment")
         amount = int(record["amount"])
         if amount > int(self.treasury):
-            raise Exception("[EXPECTED] insufficient treasury")
+            raise gl.vm.UserError("[EXPECTED] insufficient treasury")
         self.paid[key] = u256(1)
         self.treasury = u256(int(self.treasury) - amount)
         self.paid_total = u256(int(self.paid_total) + amount)
@@ -95,11 +95,11 @@ class StewardVault(gl.Contract):
     def recover(self, to: str, amount: int) -> None:
         value = int(amount)
         if value <= 0 or value > int(self.treasury):
-            raise Exception("[EXPECTED] invalid recovery amount")
+            raise gl.vm.UserError("[EXPECTED] invalid recovery amount")
         nonce = int(self.recovery_nonce)
         approved = bool(gl.get_contract_at(self.charter).view().recovery_is_approved(_addr(gl.message.contract_address), str(to), value, nonce))
         if not approved:
-            raise Exception("[EXPECTED] charter threshold has not approved this recovery")
+            raise gl.vm.UserError("[EXPECTED] charter threshold has not approved this recovery")
         self.recovery_nonce = u256(nonce + 1)
         self.treasury = u256(int(self.treasury) - value)
         _Payee(Address(str(to))).emit_transfer(value=u256(value))

@@ -39,14 +39,14 @@ class EvidenceRegistry(gl.Contract):
         issuer = _addr(gl.message.sender_address)
         _ = Address(str(charter))
         if str(role).strip() == "" or str(uri).strip() == "":
-            raise Exception("[EXPECTED] role and URI are required")
+            raise gl.vm.UserError("[EXPECTED] role and URI are required")
         if len(str(uri)) > 600:
-            raise Exception("[EXPECTED] URI too long")
+            raise gl.vm.UserError("[EXPECTED] URI too long")
         if not _is_sha256(str(digest)):
-            raise Exception("[EXPECTED] digest must be sha256 hex")
+            raise gl.vm.UserError("[EXPECTED] digest must be sha256 hex")
         k = _key(str(charter), issuer, str(role), str(uri), str(digest))
         if self.state.get(k, "") != "":
-            raise Exception("[EXPECTED] this exact evidence identity already exists; history is immutable")
+            raise gl.vm.UserError("[EXPECTED] this exact evidence identity already exists; history is immutable")
         nonce = int(self.issuer_nonce.get(issuer, u256(0))) + 1
         self.issuer_nonce[issuer] = u256(nonce)
         self.state[k] = json.dumps({
@@ -66,10 +66,10 @@ class EvidenceRegistry(gl.Contract):
         k = _key(str(charter), issuer, str(role), str(uri), str(digest))
         raw = self.state.get(k, "")
         if raw == "":
-            raise Exception("[EXPECTED] unknown attestation")
+            raise gl.vm.UserError("[EXPECTED] unknown attestation")
         record = json.loads(raw)
         if int(record.get("revoked_at", 0)) != 0:
-            raise Exception("[EXPECTED] attestation already revoked")
+            raise gl.vm.UserError("[EXPECTED] attestation already revoked")
         record["revoked_at"] = self._now()
         self.state[k] = json.dumps(record)
 

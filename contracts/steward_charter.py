@@ -46,17 +46,17 @@ class StewardCharter(gl.Contract):
     def __init__(self, principals_json: str, threshold: int, agent: str, initial_mandate_json: str):
         principals = json.loads(str(principals_json))
         if not isinstance(principals, list) or len(principals) < 2:
-            raise Exception("[EXPECTED] at least two principals are required")
+            raise gl.vm.UserError("[EXPECTED] at least two principals are required")
         if int(threshold) < 2 or int(threshold) > len(principals):
-            raise Exception("[EXPECTED] threshold must be between 2 and principal count")
+            raise gl.vm.UserError("[EXPECTED] threshold must be between 2 and principal count")
         seen = []
         for raw in principals:
             address = _addr(str(raw))
             if address in seen:
-                raise Exception("[EXPECTED] duplicate principal")
+                raise gl.vm.UserError("[EXPECTED] duplicate principal")
             seen.append(address)
         if _addr(gl.message.sender_address) not in seen:
-            raise Exception("[EXPECTED] deployer must be a principal")
+            raise gl.vm.UserError("[EXPECTED] deployer must be a principal")
 
         self.agent = Address(str(agent))
         self.threshold = u256(int(threshold))
@@ -72,87 +72,87 @@ class StewardCharter(gl.Contract):
     def _require_principal(self) -> str:
         caller = _addr(gl.message.sender_address)
         if int(self.principal_flag.get(caller, u256(0))) != 1:
-            raise Exception("[EXPECTED] caller is not a charter principal")
+            raise gl.vm.UserError("[EXPECTED] caller is not a charter principal")
         return caller
 
     def _validate_mandate(self, raw: str) -> str:
         try:
             m = json.loads(str(raw))
         except Exception as exc:
-            raise Exception("[EXPECTED] mandate must be valid JSON") from exc
+            raise gl.vm.UserError("[EXPECTED] mandate must be valid JSON") from exc
         if not isinstance(m, dict):
-            raise Exception("[EXPECTED] mandate must be an object")
+            raise gl.vm.UserError("[EXPECTED] mandate must be an object")
         for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal"):
             if key not in m:
-                raise Exception("[EXPECTED] mandate missing " + key)
+                raise gl.vm.UserError("[EXPECTED] mandate missing " + key)
 
         deterministic = m["deterministic"]
         if not isinstance(deterministic, dict):
-            raise Exception("[EXPECTED] deterministic policy must be an object")
+            raise gl.vm.UserError("[EXPECTED] deterministic policy must be an object")
         max_per = deterministic.get("max_per_spend")
         if isinstance(max_per, bool) or not isinstance(max_per, int) or max_per <= 0:
-            raise Exception("[EXPECTED] max_per_spend must be a positive integer")
+            raise gl.vm.UserError("[EXPECTED] max_per_spend must be a positive integer")
         rolling = deterministic.get("rolling_limit")
         if not isinstance(rolling, dict):
-            raise Exception("[EXPECTED] rolling_limit must be an object")
+            raise gl.vm.UserError("[EXPECTED] rolling_limit must be an object")
         if int(rolling.get("seconds", 0)) <= 0 or int(rolling.get("amount", 0)) <= 0:
-            raise Exception("[EXPECTED] rolling_limit needs positive seconds and amount")
+            raise gl.vm.UserError("[EXPECTED] rolling_limit needs positive seconds and amount")
 
         rules = m["semantic_rules"]
         if not isinstance(rules, list) or len(rules) < 1 or len(rules) > 16:
-            raise Exception("[EXPECTED] semantic_rules must contain 1..16 rules")
+            raise gl.vm.UserError("[EXPECTED] semantic_rules must contain 1..16 rules")
         rule_ids = []
         required_roles = []
         for rule in rules:
             if not isinstance(rule, dict):
-                raise Exception("[EXPECTED] semantic rule must be an object")
+                raise gl.vm.UserError("[EXPECTED] semantic rule must be an object")
             rid = str(rule.get("id", "")).strip()
             question = str(rule.get("question", "")).strip()
             if rid == "" or rid in rule_ids or len(rid) > 48 or question == "" or len(question) > 600:
-                raise Exception("[EXPECTED] invalid semantic rule id/question")
+                raise gl.vm.UserError("[EXPECTED] invalid semantic rule id/question")
             rule_ids.append(rid)
             when = rule.get("when", {})
             if not isinstance(when, dict) or str(when.get("type", "")) not in ("always", "amount_gte", "category_in"):
-                raise Exception("[EXPECTED] unsupported semantic trigger")
+                raise gl.vm.UserError("[EXPECTED] unsupported semantic trigger")
             roles = rule.get("evidence_roles", [])
             if not isinstance(roles, list) or len(roles) < 1 or len(roles) > 8:
-                raise Exception("[EXPECTED] each semantic rule needs 1..8 evidence roles")
+                raise gl.vm.UserError("[EXPECTED] each semantic rule needs 1..8 evidence roles")
             for role in roles:
                 role_name = str(role).strip()
                 if role_name == "" or len(role_name) > 48:
-                    raise Exception("[EXPECTED] invalid evidence role")
+                    raise gl.vm.UserError("[EXPECTED] invalid evidence role")
                 if role_name not in required_roles:
                     required_roles.append(role_name)
 
         issuers = m["issuers"]
         if not isinstance(issuers, list) or len(issuers) < 1 or len(issuers) > 32:
-            raise Exception("[EXPECTED] issuers must contain 1..32 entries")
+            raise gl.vm.UserError("[EXPECTED] issuers must contain 1..32 entries")
         coverage = []
         for issuer in issuers:
             if not isinstance(issuer, dict):
-                raise Exception("[EXPECTED] issuer entry must be an object")
+                raise gl.vm.UserError("[EXPECTED] issuer entry must be an object")
             address = _addr(str(issuer.get("address", "")))
             role = str(issuer.get("role", "")).strip()
             origins = issuer.get("origins", [])
             if role == "" or not isinstance(origins, list) or len(origins) < 1:
-                raise Exception("[EXPECTED] issuer needs role and at least one https origin")
+                raise gl.vm.UserError("[EXPECTED] issuer needs role and at least one https origin")
             for origin in origins:
                 origin_text = str(origin).strip().lower().rstrip("/")
                 if not origin_text.startswith("https://") or "/" in origin_text[8:]:
-                    raise Exception("[EXPECTED] issuer origins must be scheme+host only")
+                    raise gl.vm.UserError("[EXPECTED] issuer origins must be scheme+host only")
             marker = role + "|" + address
             if marker in coverage:
-                raise Exception("[EXPECTED] duplicate issuer-role pair")
+                raise gl.vm.UserError("[EXPECTED] duplicate issuer-role pair")
             coverage.append(marker)
         for role in required_roles:
             if not any(item.startswith(role + "|") for item in coverage):
-                raise Exception("[EXPECTED] semantic role has no authorized issuer: " + role)
+                raise gl.vm.UserError("[EXPECTED] semantic role has no authorized issuer: " + role)
 
         appeal = m["appeal"]
         if not isinstance(appeal, dict) or int(appeal.get("window_seconds", 0)) <= 0:
-            raise Exception("[EXPECTED] appeal.window_seconds must be positive")
+            raise gl.vm.UserError("[EXPECTED] appeal.window_seconds must be positive")
         if int(appeal.get("bond", 0)) != 0:
-            raise Exception("[EXPECTED] v1 participant-gated appeals do not accept a monetary bond")
+            raise gl.vm.UserError("[EXPECTED] v1 participant-gated appeals do not accept a monetary bond")
         return _canonical(json.dumps(m))
 
     @gl.public.write
@@ -161,12 +161,12 @@ class StewardCharter(gl.Contract):
         canonical = self._validate_mandate(str(mandate_json))
         digest = _sha(canonical)
         if int(self.digest_version.get(digest, u256(0))) > 0:
-            raise Exception("[EXPECTED] mandate is already active")
+            raise gl.vm.UserError("[EXPECTED] mandate is already active")
         if self.proposal_json.get(digest, "") == "":
             self.proposal_json[digest] = canonical
         key = digest + "|" + caller
         if int(self.approved_proposal.get(key, u256(0))) == 1:
-            raise Exception("[EXPECTED] principal already approved this proposal")
+            raise gl.vm.UserError("[EXPECTED] principal already approved this proposal")
         self.approved_proposal[key] = u256(1)
         count = int(self.proposal_approvals.get(digest, u256(0))) + 1
         self.proposal_approvals[digest] = u256(count)
@@ -181,11 +181,11 @@ class StewardCharter(gl.Contract):
     def approve_recovery(self, vault: str, to: str, amount: int, nonce: int) -> None:
         caller = self._require_principal()
         if int(amount) <= 0 or int(nonce) < 0:
-            raise Exception("[EXPECTED] recovery amount must be positive and nonce non-negative")
+            raise gl.vm.UserError("[EXPECTED] recovery amount must be positive and nonce non-negative")
         action = _action_hash("vault-recovery", str(vault), str(to), int(amount), int(nonce))
         key = action + "|" + caller
         if int(self.recovery_approved_by.get(key, u256(0))) == 1:
-            raise Exception("[EXPECTED] principal already approved this recovery")
+            raise gl.vm.UserError("[EXPECTED] principal already approved this recovery")
         self.recovery_approved_by[key] = u256(1)
         count = int(self.recovery_approvals.get(action, u256(0))) + 1
         self.recovery_approvals[action] = u256(count)
@@ -213,14 +213,14 @@ class StewardCharter(gl.Contract):
     def mandate_at(self, version: int) -> str:
         v = int(version)
         if v <= 0 or v > int(self.current_version):
-            raise Exception("[EXPECTED] unknown mandate version")
+            raise gl.vm.UserError("[EXPECTED] unknown mandate version")
         return self.version_json[u256(v)]
 
     @gl.public.view
     def digest_at(self, version: int) -> str:
         v = int(version)
         if v <= 0 or v > int(self.current_version):
-            raise Exception("[EXPECTED] unknown mandate version")
+            raise gl.vm.UserError("[EXPECTED] unknown mandate version")
         return self.version_digest[u256(v)]
 
     @gl.public.view
