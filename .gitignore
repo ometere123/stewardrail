@@ -8,6 +8,7 @@ node_modules/
 out/
 dist/
 coverage/
+*.tsbuildinfo
 frontend/.env.local
 deploy/live-*.json
 deploy/addresses.local.json
