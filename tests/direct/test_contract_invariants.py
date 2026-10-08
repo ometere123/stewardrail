@@ -110,3 +110,7 @@ def test_consequential_guards_remain_present():
     assert "unsupported semantic consequence" in charter
     assert "approve_unfreeze" in charter and "unfreeze_is_approved" in charter
     assert "threshold approval has not authorized this unfreeze" in guard
+    assert "self.revoked[prior_key] = u256(1)" in guard
+    assert "revoked" in guard and "is_revoked" in guard
+    assert 'if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):' in vault
+    assert "terminal authorization has been revoked" in vault

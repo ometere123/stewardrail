@@ -40,6 +40,8 @@ MUTANTS = [
     ("guard-usage-policy", "steward_guard.py", 'if str(item.get("usage", "single_use")) != expected_usage:', 'if False:'),
     ("charter-consequence-validation", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] unsupported semantic consequence")', "return"),
     ("guard-unfreeze-threshold", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] threshold approval has not authorized this unfreeze")', "return"),
+    ("guard-revocation-mark", "steward_guard.py", 'self.revoked[prior_key] = u256(1)', "self.revoked[prior_key] = u256(0)"),
+    ("vault-revocation-check", "steward_vault.py", 'if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):', "if False:"),
 ]
 
 

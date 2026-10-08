@@ -191,3 +191,18 @@ def test_recipient_rolling_limit_blocks_split_spend():
     rt.call(GUARD,'request_spend',PAYEE,199,'ops',sender=AGENT)
     third=json.loads(rt.call(GUARD,'get_spend',2,sender=A))
     assert third['state']=='refuse' and 'recipient rolling' in third['reason']
+
+def test_revoke_consequence_blocks_unpaid_prior_allow():
+    rt=setup_stack(consequence="revoke"); digest=attest(rt)
+    create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'first allowed'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    rt.call(GUARD,'attach_evidence',1,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'severe breach'}
+    rt.call(GUARD,'adjudicate',1,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,1,VAULT,sender=A); rt.flush_finalized()
+    assert json.loads(rt.call(GUARD,'get_spend',0,sender=A))['revoked'] is True
+    with pytest.raises(Exception, match='revoked'):
+        rt.call(VAULT,'pay',0,sender=A)

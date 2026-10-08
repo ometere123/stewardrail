@@ -83,6 +83,8 @@ class StewardVault(gl.Contract):
         record = json.loads(raw)
         if str(record["decision"]) != ALLOW:
             raise gl.vm.UserError("[EXPECTED] terminal decision refuses payment")
+        if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):
+            raise gl.vm.UserError("[EXPECTED] terminal authorization has been revoked")
         amount = int(record["amount"])
         if amount > int(self.treasury):
             raise gl.vm.UserError("[EXPECTED] insufficient treasury")

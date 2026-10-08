@@ -84,6 +84,8 @@ class StewardGuard(gl.Contract):
     freeze_epoch: u256
     unfreeze_nonce: u256
     freeze_reason: str
+    revoked: TreeMap[u256, u256]
+    revocation_reason: TreeMap[u256, str]
 
     def __init__(self, charter: str, registry: str, court: str):
         self.charter = Address(str(charter))
@@ -484,6 +486,14 @@ class StewardGuard(gl.Contract):
                 self.agent_frozen = u256(1)
                 self.freeze_epoch = u256(int(self.freeze_epoch) + 1)
                 self.freeze_reason = "terminal semantic breach requires " + highest
+            if highest in ("revoke", "clawback"):
+                prior = 0
+                while prior < int(spend_id):
+                    prior_key = u256(prior)
+                    if str(self.terminal_state.get(prior_key, "")) == ALLOW:
+                        self.revoked[prior_key] = u256(1)
+                        self.revocation_reason[prior_key] = "revoked by terminal " + highest + " consequence"
+                    prior += 1
         fingerprint = self._terminal_fingerprint(int(spend_id), str(semantic_decision), economic, str(vault), key, identities)
         self.terminal_semantic[key] = str(semantic_decision)
         self.terminal_state[key] = economic
@@ -521,7 +531,14 @@ class StewardGuard(gl.Contract):
             "rules": json.loads(self.fired_rules[key]), "reason": str(self.reason[key]),
             "confidence": int(self.confidence[key]), "evidence": self._evidence_items(key),
             "agent_frozen": int(self.agent_frozen) == 1,
+            "revoked": int(self.revoked.get(key, u256(0))) == 1,
+            "revocation_reason": str(self.revocation_reason.get(key, "")),
         })
+
+    @gl.public.view
+    def is_revoked(self, spend_id: int) -> bool:
+        key = self._require_spend(spend_id)
+        return int(self.revoked.get(key, u256(0))) == 1
 
     @gl.public.write
     def unfreeze(self) -> None:
