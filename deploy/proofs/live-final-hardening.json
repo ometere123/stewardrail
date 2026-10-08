@@ -1,0 +1,18 @@
+{
+  "commit": "702209b9dcc9118c896f0d846cd869ae0189e26e",
+  "network": "studionet",
+  "chain_id": 61999,
+  "addresses": {
+    "charter": "0x44B3aBA05776236bB30509811B7242c391dcA77B",
+    "registry": "0xfe8E20e4781EaE24bfa3D3a8c1B17A6A5E4d77ec",
+    "court": "0xCDff705BaCD83512FbC6Dd1441A4b5afA6a81Ee6",
+    "guard": "0x7Bcf0ee85c4BeDA5CA51FC69D8ee5a673c5d95EB",
+    "vault": "0x353F90CFa7294e922F5AA91027245086320A84AF"
+  },
+  "scenarios": [
+    {"id": "threshold-activation", "transactions": ["0xef14e17c681bc977564b2b2695023a918d223578f3d731225f5af07167073d49", "0xef692e5f58f625106d8c300056dc8e333d945df9011a2f2b7573e370654161c5"], "status": "FINALIZED", "execution": "SUCCESS", "readback": {"version": 1, "threshold": 2}},
+    {"id": "issuer-attestation", "transactions": ["0x9d890b0e17c597380b66049844648bef4e70b5f73886ccdf88609f8dccdb2c4f"], "status": "FINALIZED", "execution": "SUCCESS", "issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"},
+    {"id": "deterministic-refusal", "transactions": ["0x4bdf3a655be030a6f52e7ff26e25abf2a766a813fc3a42124d83e5bc291c0fc6"], "status": "FINALIZED", "execution": "SUCCESS", "court_readback": {"primary": "refuse", "effective": "refuse", "reason": "category is not allowed"}},
+    {"id": "semantic-adjudication-attempt", "transactions": ["0x09bda5d46933d2c294a1f82afbbe41e1af350175b243edfa48376da4ec1246fe", "0x48ae8b0d7f9c17780be08fa2315b45e2d24e3835bb113835d1516e0313d1c1ed", "0x66bd4cd35be4a70e58927fe3cdcdcf9ce97bb48d7c67bab384cfa92d017f7544"], "status": "FINALIZED", "execution": "UNDETERMINED_OR_ERROR", "guard_readback": {"state": "held", "terminal_state": ""}, "claim": "No semantic verdict is claimed because the adjudication did not produce a successful canonical state transition."}
+  ]
+}
