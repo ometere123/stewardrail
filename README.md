@@ -2,7 +2,7 @@
 
 **Neutral spending authority for shared AI treasuries.**
 
-StewardRail lets several principals fund one autonomous agent without asking any one principal, the agent, or the payee to be the final judge of ambiguous spending. Deterministic limits execute synchronously. Semantic mandate compliance is decided by GenLayer validators from a frozen mandate version and independently fetched, issuer-attested evidence. Funds move only after the application appeal window is terminal and the GenLayer transaction itself is finalized.
+StewardRail lets several principals fund one autonomous agent without asking any one principal, the agent, or the payee to be the final judge of ambiguous spending. Deterministic limits execute synchronously. Semantic mandate compliance is decided by GenLayer validators from a frozen mandate version and independently fetched, issuer-attested evidence. Funds move only after the application appeal window is terminal and the Court → Guard → Vault message chain has finalized successfully.
 
 ## Why this needs GenLayer
 
@@ -36,18 +36,25 @@ This creates three independent trust layers:
 +---------+---------+
           |
           v
-+-------------------+
-| StewardCourt      |
-| app-level appeal  |
-| fresh re-decision |
-+---------+---------+
-          |
-          v
-+-------------------+
-| StewardVault      |
-| GEN custody       |
-| terminal payout   |
-+-------------------+
+ +-------------------+
+ | StewardCourt      |
+ | app-level appeal  |
+ | effective result  |
+ +---------+---------+
+           | finalized
+           v
+ +-------------------+
+ | StewardGuard      |
+ | terminal economic |
+ | authorization     |
+ +---------+---------+
+           | finalized
+           v
+ +-------------------+
+ | StewardVault      |
+ | GEN custody       |
+ | terminal payout   |
+ +-------------------+
 ```
 
 ### Contract responsibilities
@@ -58,7 +65,7 @@ This creates three independent trust layers:
 | `evidence_registry.py` | bind issuer wallet → charter → role → URI → digest | judge evidence meaning |
 | `steward_guard.py` | synchronous deterministic screening + semantic jury | hold GEN; amend mandates; override verdicts |
 | `steward_court.py` | one explicit application-level appeal with reversal semantics | pay funds; rewrite original record |
-| `steward_vault.py` | hold GEN and pay only terminal effective ALLOW decisions | adjudicate; bypass appeal/finality windows |
+| `steward_vault.py` | hold GEN and pay only Guard-delivered terminal economic ALLOW decisions | adjudicate; accept direct Court authority |
 
 ## Protocol boundaries
 
@@ -75,7 +82,7 @@ The contracts are deliberately separated by authority rather than file size:
 - leader and validators independently fetch and hash each artifact;
 - validators re-answer the same question rather than grading leader prose;
 - application appeals can **reverse** either direction and are tested as state transitions;
-- the vault reads the court's effective terminal decision and pays exact recipient + exact amount once;
+- Court sends only a finalized semantic result to Guard; Guard's terminal economic record is the only custody authority and fixes recipient + amount;
 - no single principal override exists for an adjudicated historical spend.
 
 ### Reproducibility
@@ -164,6 +171,55 @@ Repository structure alone is not live evidence. A canonical Studionet deploymen
 9. every relevant GenLayer transaction is `FINALIZED`, validator consensus agrees, and execution succeeded.
 
 The scripts in `deploy/` are written to produce a machine-readable packet rather than relying on screenshots.
+
+## Canonical deployment
+
+| Contract | Studionet address |
+| --- | --- |
+| StewardCharter | [0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31](https://explorer-studio.genlayer.com/address/0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31) |
+| EvidenceRegistry | [0x93938Fad09F0133BDF8e10f2F447E498B59165a7](https://explorer-studio.genlayer.com/address/0x93938Fad09F0133BDF8e10f2F447E498B59165a7) |
+| StewardCourt | [0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2](https://explorer-studio.genlayer.com/address/0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2) |
+| StewardGuard | [0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4](https://explorer-studio.genlayer.com/address/0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4) |
+| StewardVault | [0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f](https://explorer-studio.genlayer.com/address/0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f) |
+
+Network: Studionet · Chain ID 61999 · RPC `https://studio.genlayer.com/api` · CLI `0.39.1`.
+
+Deployment transactions and source hashes are recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). Fresh lifecycle observations are in [`deploy/proofs/fresh-correction-live.json`](deploy/proofs/fresh-correction-live.json).
+
+The five deployed source hashes are:
+
+```text
+steward_charter.py  a0708f90c2cb4765bfc4ba7f7db44d2a776a2b699c729a356fb6f88e0a0ac9fa
+evidence_registry.py f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
+steward_court.py    30f6bf7284c6efab21d44db4d3d5fc44ccd932a8a8594db52a5c37a33c76d6a8
+steward_guard.py    864bf85964c76e8046631d0fefab991140f555c39ebfdb4f7886f6ee83e29606
+steward_vault.py    3c17f4d45793d80aa752187537093fb0325ce8e3c3999c40b5c1eba61a56e0d0
+```
+
+## Observed live scenarios
+
+The fresh packet records a two-principal mandate readback, deterministic cap refusal, semantic REFUSE, semantic ALLOW, and both application reversal directions. The ALLOW→REFUSE case includes the finalized Court→Guard→Vault child chain and a refused Vault payment readback. The REFUSE→ALLOW case includes the finalized Court→Guard delivery and an ALLOW terminal readback in Guard and Vault.
+
+Fresh funded payout, duplicate-payout rejection, and threshold-recovery transactions are not present in the packet and are intentionally not claimed here.
+
+## Verification
+
+```bash
+python -m pytest -q
+python tests/mutation_check.py
+python scripts/direct_mode.py
+bash scripts/genvm_lint.sh
+python scripts/update_source_manifest.py --check
+python scripts/preflight.py
+
+cd frontend
+npm ci
+npm run test
+npm run typecheck
+npm run build
+```
+
+The current local results are 47 Python tests passed with 6 skipped, 6 official Direct Mode tests passed, 25 of 25 source mutants killed, all five contract lint checks passed, and frontend test/typecheck/build passed.
 
 ## License
 
