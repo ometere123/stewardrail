@@ -1,0 +1,17 @@
+{
+  "scenario": "expanded-stack-deployment",
+  "source_commit": "2a5fec611de03adfd3f732559aff302c3cd2c1f6",
+  "network": "studionet",
+  "chain_id": 61999,
+  "contracts": {
+    "charter": {"address": "0xd42FFa9Fb7fbecc151FFa38408B764c34471b225", "tx": "0xf018f779ba5c8ac6b9bc7a1d37fd1f055685a50c533f4cc995bcccd493537b61"},
+    "registry": {"address": "0x40E54913Ad12e70531De905415E4B9a5D44B8760", "tx": "0xbc48ec40dfadfa1d8c43549e771738ef6404e9f3f59a33589b56630eecd90267"},
+    "court": {"address": "0x0F2DA1BeA53833EAbBe6842DCB185DB50A0bF32f", "tx": "0x556f853d308ce95b03a07c427a12b3eddd2b73049183e0462fc5353772cb09d1"},
+    "bond_vault": {"address": "0x6781e714D2b11647EB225b74223F715a4F090ccf", "tx": "0xf3effe80481e60b9f6500618f33a04c33bb8bb08c832a41fd3622acf594b768d"},
+    "guard": {"address": "0x0257850837f4e4AEB978c851144D4744a8A46524", "tx": "0xe67e5ee34d6e30d3434c8d2af57cd96e3145f6d143b728943e9296f3563b1665"},
+    "vault": {"address": "0x936EfE417E0CCC020D425D9440a924d2994Bd9E1", "tx": "0x273281be78b65f0c65bf02964034cc2eb15bf33186842c9bf70108b3c8e3e73f"}
+  },
+  "binding": {"tx": "0xd0cdf76aee7ef872af6c1b0cf0549f5cea34b4a7543b6906bf530074c62c61a1", "status": "FINALIZED", "execution": "SUCCESS"},
+  "all_deployments": {"status": "FINALIZED", "execution": "SUCCESS"},
+  "note": "This packet records deployment and threshold binding. Economic lifecycle scenarios remain to be executed and are not claimed here."
+}

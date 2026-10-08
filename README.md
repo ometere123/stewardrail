@@ -180,29 +180,31 @@ The scripts in `deploy/` are written to produce a machine-readable packet rather
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31](https://explorer-studio.genlayer.com/address/0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31) |
-| EvidenceRegistry | [0x93938Fad09F0133BDF8e10f2F447E498B59165a7](https://explorer-studio.genlayer.com/address/0x93938Fad09F0133BDF8e10f2F447E498B59165a7) |
-| StewardCourt | [0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2](https://explorer-studio.genlayer.com/address/0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2) |
-| StewardGuard | [0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4](https://explorer-studio.genlayer.com/address/0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4) |
-| StewardVault | [0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f](https://explorer-studio.genlayer.com/address/0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f) |
+| StewardCharter | [0xd42FFa9Fb7fbecc151FFa38408B764c34471b225](https://explorer-studio.genlayer.com/address/0xd42FFa9Fb7fbecc151FFa38408B764c34471b225) |
+| EvidenceRegistry | [0x40E54913Ad12e70531De905415E4B9a5D44B8760](https://explorer-studio.genlayer.com/address/0x40E54913Ad12e70531De905415E4B9a5D44B8760) |
+| StewardCourt | [0x0F2DA1BeA53833EAbBe6842DCB185DB50A0bF32f](https://explorer-studio.genlayer.com/address/0x0F2DA1BeA53833EAbBe6842DCB185DB50A0bF32f) |
+| StewardBondVault | [0x6781e714D2b11647EB225b74223F715a4F090ccf](https://explorer-studio.genlayer.com/address/0x6781e714D2b11647EB225b74223F715a4F090ccf) |
+| StewardGuard | [0x0257850837f4e4AEB978c851144D4744a8A46524](https://explorer-studio.genlayer.com/address/0x0257850837f4e4AEB978c851144D4744a8A46524) |
+| StewardVault | [0x936EfE417E0CCC020D425D9440a924d2994Bd9E1](https://explorer-studio.genlayer.com/address/0x936EfE417E0CCC020D425D9440a924d2994Bd9E1) |
 
 Network: Studionet · Chain ID 61999 · RPC `https://studio.genlayer.com/api` · CLI `0.39.1`.
 
-Deployment transactions and source hashes are recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). Fresh lifecycle observations are in [`deploy/proofs/fresh-correction-live.json`](deploy/proofs/fresh-correction-live.json).
+Deployment transactions and source hashes are recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). The expanded deployment record is [`deploy/proofs/expanded-deployment.json`](deploy/proofs/expanded-deployment.json).
 
-The five deployed source hashes are:
+The six deployed source hashes are:
 
 ```text
-steward_charter.py  a0708f90c2cb4765bfc4ba7f7db44d2a776a2b699c729a356fb6f88e0a0ac9fa
+steward_charter.py  726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 evidence_registry.py f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
 steward_court.py    30f6bf7284c6efab21d44db4d3d5fc44ccd932a8a8594db52a5c37a33c76d6a8
-steward_guard.py    864bf85964c76e8046631d0fefab991140f555c39ebfdb4f7886f6ee83e29606
-steward_vault.py    3c17f4d45793d80aa752187537093fb0325ce8e3c3999c40b5c1eba61a56e0d0
+steward_bond_vault.py 680b837bbf5258bc11caa3b4c799a0d91856044d200b116e260b68b3af3c22a9
+steward_guard.py    34673c66bdcc6bd037cbbdaafac1b2f121bd81a1d421051272292708f67e63ee
+steward_vault.py    685347698db01fa0dd282dee4e3b836fd792c3d4d20bb30757749975f7f656d6
 ```
 
 ## Observed live scenarios
 
-The fresh packet records a two-principal mandate readback, deterministic cap refusal, semantic REFUSE, semantic ALLOW, and both application reversal directions. The ALLOW→REFUSE case includes the finalized Court→Guard→Vault child chain and a refused Vault payment readback. The REFUSE→ALLOW case includes the finalized Court→Guard delivery and an ALLOW terminal readback in Guard and Vault.
+The expanded deployment packet records six finalized deployments and threshold collateral binding. Economic lifecycle evidence remains separate and is only claimed when a corresponding proof row exists.
 
 Fresh funded payout, duplicate-payout rejection, and threshold-recovery transactions are not present in the packet and are intentionally not claimed here.
 
