@@ -1,12 +1,26 @@
 {
   "network": "studionet",
   "chainId": 61999,
-  "sourceCommit": "UNSET",
-  "charter": "",
-  "registry": "",
-  "court": "",
-  "guard": "",
-  "vault": "",
-  "deployedAt": "",
-  "transactions": {}
+  "sourceCommit": "c307ab78be63f3a2c56ddd9b0d2a003c18a01069",
+  "deployer": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+  "charter": "0xa7b510DdE3F57cbCCB1802CFD2ae85a756Ca4EA5",
+  "registry": "0x46127eafa44532ff273901c586f36c0544e9e15c",
+  "court": "0xc97a65b46bcef1ac2fb0176dfbc8ba93929c33bf",
+  "guard": "0x8723731b86E782F9086a92166E8E004504Da25D4",
+  "vault": "0xff8b6c5eaed9ed71555688efb1a15f41df997436",
+  "deployedAt": "2026-10-08T05:12:38Z",
+  "sourceSha256": {
+    "contracts/steward_charter.py": "FB55CCB71AC5CE9E7B1DE27D03733F344A950331B51BA25F82E1914833283168",
+    "contracts/evidence_registry.py": "F7BF6547440F954C18ACB191FD211307D6CDECF953D3FACEAA7946D8F5D831DD",
+    "contracts/steward_court.py": "D552A7C87877B6DFFC22B8FA72CCF6AA3DDDD47BE51A69907DCE769567CC6E7F",
+    "contracts/steward_guard.py": "3C4AD0C53158BB831D96B4CF00B3CC37E103F241D69896D10B8C2828C947F057",
+    "contracts/steward_vault.py": "572EA8B33542D8EB4645BC9B5FB53F4274C78985381C380D60B6F6D03C5B159B"
+  },
+  "transactions": {
+    "charter": {"hash": "0x88b6f3de56892fa9a494396da732343c558205058b1ac8413b69b1fa3732e67b", "status": "FINALIZED", "execution": "SUCCESS"},
+    "registry": {"hash": "0xeadb961168bb48a3a821560f20844b3f0d52d245f576e891287a02507df18f81", "status": "FINALIZED", "execution": "SUCCESS"},
+    "court": {"hash": "0x693d7e49dfbf0b1b0c021e22a496a29486f16f148926c27629e231e408794d26", "status": "FINALIZED", "execution": "SUCCESS"},
+    "guard": {"hash": "0xce0754d9682842f1b163b0022b92ba37c42ac1fef68fe5d87f962a0f406a9f45", "status": "FINALIZED", "execution": "SUCCESS"},
+    "vault": {"hash": "0x94909a71e871ba289845a0ec0678782ac3eac566014c361f68b5c873d7921f79", "status": "FINALIZED", "execution": "SUCCESS"}
+  }
 }
