@@ -34,6 +34,7 @@ class StewardVault(gl.Contract):
     recovery_nonce: u256
     terminal: TreeMap[u256, str]
     paid: TreeMap[u256, u256]
+    challenge_outcome: TreeMap[u256, str]
 
     def __init__(self, charter: str, guard: str, court: str, bond_vault: str):
         self.charter = Address(str(charter))
@@ -88,6 +89,23 @@ class StewardVault(gl.Contract):
         self.terminal[key] = incoming
 
     @gl.public.write
+    def apply_challenge_result(self, challenge_id: int, spend_id: int, upheld: bool, bond_vault: str) -> None:
+        if gl.message.sender_address != self.guard:
+            raise gl.vm.UserError("[EXPECTED] only the bound guard may apply challenge outcomes")
+        if _addr(str(bond_vault)) != _addr(self.bond_vault):
+            raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
+        info = json.loads(str(gl.get_contract_at(self.bond_vault).view().info()))
+        if _addr(info.get("guard", "")) != _addr(self.guard) or _addr(info.get("vault", "")) != _addr(gl.message.contract_address):
+            raise gl.vm.UserError("[EXPECTED] challenge collateral is not bound to this vault")
+        key = u256(int(spend_id))
+        incoming = json.dumps({"challenge_id": int(challenge_id), "upheld": bool(upheld)}, sort_keys=True)
+        existing = self.challenge_outcome.get(key, "")
+        if existing != "" and existing != incoming:
+            raise gl.vm.UserError("[EXPECTED] conflicting challenge outcome")
+        self.challenge_outcome[key] = incoming
+        gl.get_contract_at(self.bond_vault).emit(on="finalized").settle(int(challenge_id), bool(upheld))
+
+    @gl.public.write
     def pay(self, spend_id: int) -> None:
         key = u256(int(spend_id))
         if int(self.paid.get(key, u256(0))) == 1:
@@ -132,6 +150,7 @@ class StewardVault(gl.Contract):
         return json.dumps({
             "spend_id": int(spend_id), "terminal": None if raw == "" else json.loads(raw),
             "paid": int(self.paid.get(key, u256(0))) == 1,
+            "challenge": None if self.challenge_outcome.get(key, "") == "" else json.loads(self.challenge_outcome[key]),
         })
 
     @gl.public.view

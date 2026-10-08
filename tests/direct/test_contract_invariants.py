@@ -54,21 +54,26 @@ def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
     assert "terminal decision refuses payment" in src
     assert "recovery_is_approved" in src
     assert "emit_transfer" in src
+    assert 'raise gl.vm.UserError("[EXPECTED] only the bound guard may apply challenge outcomes")' in src
 
 
 def test_bond_vault_is_narrow_and_guard_bound():
     src = text("steward_bond_vault.py")
-    assert "only the bound guard may settle challenges" in src
+    assert "only the bound vault may settle challenges" in src
     assert "only the configured agent may withdraw standing collateral" in src
     assert "quote_bond" in src and "open_challenge" in src and "settle" in src
     assert "gl.nondet" not in src
     assert 'raise gl.vm.UserError("[EXPECTED] collateral binding lacks threshold approval")' in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the configured agent may withdraw standing collateral")' in src
-    assert 'raise gl.vm.UserError("[EXPECTED] only the bound guard may settle challenges")' in src
+    assert 'raise gl.vm.UserError("[EXPECTED] only the bound vault may settle challenges")' in src
+    assert 'emit(on="finalized").open_challenge' in src
+    assert 'open_by_spend' in src
+    assert 'return int(self.open_by_spend.get(u256(int(spend_id)), u256(0))) == 1' in src
     assert 'raise gl.vm.UserError("[EXPECTED] an open challenge blocks payment")' in text("steward_vault.py")
     assert 'raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")' in text("steward_vault.py")
     assert 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")' in text("steward_charter.py")
     assert 'floor = int(policy["bond_floor"])' in src
+    assert 'raise gl.vm.UserError("[EXPECTED] only the bound court may apply challenge results")' in text("steward_guard.py")
 
 
 def test_charter_has_no_unilateral_historical_override():
@@ -100,6 +105,7 @@ def test_consequential_guards_remain_present():
     assert "if _origin(uri) not in allowed:" in court
     assert "if not bool(registry.status_at" in court
     assert 'emit(on="finalized").apply_terminal_decision' in court
+    assert 'guard_target.emit(on="finalized").apply_challenge_result' in court
     assert "appeal cannot produce ALLOW without authenticated roles" in court
     assert "raise gl.vm.UserError(\"[EXPECTED] conflicting primary decision\")" in court
     assert "if gl.message.sender_address != self.guard:" in vault
@@ -110,6 +116,7 @@ def test_consequential_guards_remain_present():
     guard = text("steward_guard.py")
     assert "apply_terminal_decision" in guard
     assert "if gl.message.sender_address != self.court:" in guard
+    assert 'raise gl.vm.UserError("[EXPECTED] only the bound court may apply terminal decisions")' in guard
     assert 'raise gl.vm.UserError("[EXPECTED] conflicting terminal authorization payload")' in guard
     assert "single-use evidence already consumed" in guard
     assert "if previous != \"\" and previous != str(int(spend_id)):" in guard

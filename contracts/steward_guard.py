@@ -80,6 +80,7 @@ class StewardGuard(gl.Contract):
     terminal_semantic: TreeMap[u256, str]
     terminal_reason: TreeMap[u256, str]
     terminal_fingerprint: TreeMap[u256, str]
+    terminal_at: TreeMap[u256, u256]
     terminal_evidence: TreeMap[str, str]
     enforcement: TreeMap[u256, str]
     agent_frozen: u256
@@ -527,13 +528,41 @@ class StewardGuard(gl.Contract):
         self.terminal_state[key] = economic
         self.terminal_reason[key] = reason
         self.terminal_fingerprint[key] = fingerprint
+        self.terminal_at[key] = u256(self._now())
         self.terminal_evidence[str(int(spend_id))] = json.dumps(identities)
+        vault_info = self._vault_info(str(vault))
+        bond_vault = str(vault_info.get("bond_vault", ""))
+        if bond_vault != "":
+            mandate_challenge = mandate.get("challenge", {})
+            lock_deadline = int(self.terminal_at[key]) + int(mandate_challenge.get("window_seconds", 0))
+            if economic == ALLOW and lock_deadline > int(self.terminal_at[key]):
+                gl.get_contract_at(Address(str(bond_vault))).emit(on="finalized").lock_exposure(
+                    int(spend_id), int(self.amount[key]), lock_deadline
+                )
         if economic == ALLOW:
             for token in identities:
                 if normalized[identities.index(token)]["usage"] != "reusable":
                     self.terminal_evidence[token] = str(int(spend_id))
         vault_target.emit(on="finalized").record_terminal(
             _addr(gl.message.contract_address), int(spend_id), economic, int(self.amount[key]), str(self.recipient[key])
+        )
+
+    @gl.public.write
+    def apply_challenge_result(self, challenge_id: int, spend_id: int, upheld: bool, bond_vault: str, vault: str) -> None:
+        if gl.message.sender_address != self.court:
+            raise gl.vm.UserError("[EXPECTED] only the bound court may apply challenge results")
+        key = self._require_spend(spend_id)
+        vault_info = self._vault_info(str(vault))
+        if _addr(vault_info.get("bond_vault", "")) != _addr(str(bond_vault)):
+            raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
+        bond_info = json.loads(str(gl.get_contract_at(Address(str(bond_vault))).view().info()))
+        if _addr(bond_info.get("guard", "")) != _addr(gl.message.contract_address) or _addr(bond_info.get("vault", "")) != _addr(str(vault)):
+            raise gl.vm.UserError("[EXPECTED] challenge collateral is not bound to this guard and vault")
+        if bool(upheld):
+            self.revoked[key] = u256(1)
+            self.revocation_reason[key] = "bonded challenge upheld"
+        gl.get_contract_at(Address(str(vault))).emit(on="finalized").apply_challenge_result(
+            int(challenge_id), int(spend_id), bool(upheld), str(bond_vault)
         )
 
     @gl.public.view
@@ -555,6 +584,7 @@ class StewardGuard(gl.Contract):
             "terminal_semantic": str(self.terminal_semantic.get(key, "")),
             "terminal_economic": str(self.terminal_state.get(key, "")),
             "terminal_state": str(self.terminal_state.get(key, "")),
+            "terminal_at": int(self.terminal_at.get(key, u256(0))),
             "enforcement": str(self.enforcement.get(key, "")),
             "terminal_reason": str(self.terminal_reason.get(key, "")),
             "terminal_evidence": json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")),

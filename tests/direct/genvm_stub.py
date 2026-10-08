@@ -112,9 +112,9 @@ class Runtime:
         class Emitter:
             def __init__(self,target,on,value=0): self.target=str(target).lower();self.on=on;self.value=int(value)
             def __getattr__(self,name):
-                def send(*args):
+                def send(*args, **kwargs):
                     if self.on!='finalized': raise Exception('stub only accepts finalized messages')
-                    rt.finalized.append((rt.current,self.target,name,args,self.value))
+                    rt.finalized.append((rt.current,self.target,name,args,int(kwargs.get('value', self.value))))
                 return send
         class Proxy:
             def __init__(self,target): self.target=str(target).lower()

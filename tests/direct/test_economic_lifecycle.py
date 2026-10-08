@@ -266,8 +266,12 @@ def test_bonded_challenge_quote_open_blocks_payment_and_dismissal_settles():
     quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER); assert quote == 10
     rt.balances[CHALLENGER]=100; rt.call(BOND,'open_challenge',0,200,'missing delivery',sender=CHALLENGER,value=quote)
     with pytest.raises(Exception,match='open challenge blocks payment'): rt.call(VAULT,'pay',0,sender=A)
-    rt.call(BOND,'settle',0,False,0,0,sender=GUARD); rt.flush_finalized()
+    rt.flush_finalized()
+    rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'challenge dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     rt.call(VAULT,'pay',0,sender=A)
 
 def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
@@ -277,6 +281,61 @@ def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
     rt.balances[AGENT]=1000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
     rt.balances[CHALLENGER]=100; rt.call(BOND,'open_challenge',0,200,'cause',sender=CHALLENGER,value=10)
-    with pytest.raises(Exception,match='only the bound guard'): rt.call(BOND,'settle',0,False,0,0,sender=A)
-    rt.call(BOND,'settle',0,False,0,0,sender=GUARD)
-    rt.call(BOND,'settle',0,False,0,0,sender=GUARD)
+    with pytest.raises(Exception,match='only the bound vault'): rt.call(BOND,'settle',0,False,sender=A)
+    rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
+    rt.call(BOND,'settle',0,False,sender=VAULT)
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+
+def test_upheld_prepayment_challenge_revokes_and_settles_through_all_contracts():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.balances[AGENT]=2000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.balances[CHALLENGER]=100; rt.call(BOND,'open_challenge',0,200,'delivery is false',sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'challenge upheld'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(GUARD,'get_spend',0,sender=A))['revoked'] is True
+    assert json.loads(rt.call(VAULT,'payment',0,sender=A))['challenge']['upheld'] is True
+    with pytest.raises(Exception,match='revoked'):
+        rt.call(VAULT,'pay',0,sender=A)
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
+
+def test_upheld_postpayment_challenge_reimburses_without_rewriting_payment():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.balances[AGENT]=2000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    before=rt.balances.get(PAYEE,0); rt.call(VAULT,'pay',0,sender=A)
+    assert rt.balances[PAYEE]-before==200
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'post-payment defect',sender=CHALLENGER,value=quote); rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'post-payment challenge upheld'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    payment=json.loads(rt.call(VAULT,'payment',0,sender=A)); settlement=json.loads(rt.call(BOND,'challenge',0,sender=A))
+    assert payment['paid'] is True and payment['challenge']['upheld'] is True
+    assert '"result": "upheld"' in settlement['settlement']
+    assert json.loads(rt.call(BOND,'status',sender=A))['standing']==300
+
+def test_standing_lock_is_obligation_specific_and_blocks_withdrawal_until_settlement():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.balances[AGENT]=1000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
+    with pytest.raises(Exception,match='locked or insufficient'):
+        rt.call(BOND,'withdraw_standing',AGENT,400,sender=AGENT)
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'dismissed',sender=CHALLENGER,value=quote); rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
