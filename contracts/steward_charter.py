@@ -16,10 +16,16 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _json_value(raw):
-    if isinstance(raw, (dict, list)):
-        return raw
-    return json.loads(str(raw))
+def _json_value(raw, parse_text=True):
+    if hasattr(raw, "as_hex"):
+        return str(raw.as_hex).lower()
+    if isinstance(raw, dict):
+        return {str(key): _json_value(value, False) for key, value in raw.items()}
+    if isinstance(raw, list):
+        return [_json_value(value, False) for value in raw]
+    if parse_text:
+        return json.loads(str(raw))
+    return raw
 
 
 def _canonical(raw) -> str:

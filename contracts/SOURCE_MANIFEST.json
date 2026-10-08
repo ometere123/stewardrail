@@ -3,8 +3,8 @@
   "policy": "These exact readable files are the deployment inputs; no generated/minified deployable form exists.",
   "contracts": {
     "steward_charter.py": {
-      "sha256": "5255b2d4c4eda34bc220df032a6ba40d16bac99ec86e94e6b1f7bf140dc54599",
-      "bytes": 11572
+      "sha256": "fb55ccb71ac5ce9e7b1de27d03733f344a950331b51ba25f82e1914833283168",
+      "bytes": 11843
     },
     "evidence_registry.py": {
       "sha256": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
