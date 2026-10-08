@@ -1,12 +1,14 @@
 # Studionet live evidence index
 
-The machine-readable records in `deploy/proofs/` contain only transactions and
-readbacks observed on the fresh Studionet deployment at chain 61999.
+The machine-readable records in `deploy/proofs/` distinguish fresh observations
+from historical records at chain 61999.
 
 Observed evidence:
 
-- `final-deployment.json` records all five finalized deployment transactions and the
-  exact source hashes used for the deployment.
+- `deployment.json` records the five finalized deployment transactions and the
+  exact source hashes used for the corrected deployment.
+- `fresh-correction-live.json` records the fresh mandate readback and a finalized
+  deterministic refusal against that deployment.
 - `live-scenarios.json` and `live-final-hardening.json` are historical records
   for earlier source deployments and are explicitly not final-deployment proof.
 

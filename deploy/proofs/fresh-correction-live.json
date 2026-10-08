@@ -1,0 +1,39 @@
+{
+  "scenario": "fresh-correction-live-observations",
+  "commit": "12ccd28bf53022bef496ef1c60fe747fac3de56f",
+  "network": "studionet",
+  "chain_id": 61999,
+  "addresses": {
+    "charter": "0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31",
+    "registry": "0x93938Fad09F0133BDF8e10f2F447E498B59165a7",
+    "court": "0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2",
+    "guard": "0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4",
+    "vault": "0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f"
+  },
+  "observations": [
+    {
+      "id": "threshold-current-mandate-readback",
+      "tx": "0x309f1b10f0187e32f0f18413b6afb890204149c9a9cd539ba700001fab927194",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "readback": {"version": 1, "threshold": 2, "principals": ["0xac3ac69dc0bde389256dd6748c75817ead9286d9", "0xa7eeae0e93793e3146cb14b0700251b8b0ebadfb"]},
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x309f1b10f0187e32f0f18413b6afb890204149c9a9cd539ba700001fab927194"
+    },
+    {
+      "id": "deterministic-per-spend-cap-refusal",
+      "tx": "0x80bb85f9e7910ab69db90023a6455e3d90d53289fe53b19fbc06cc8edf71c2a6",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "before": {"mandate_version": 1, "rolling_total": 0},
+      "after": {"spend_id": 0, "state": "refuse", "reason": "per-spend cap exceeded", "rules": ["max_per_spend"]},
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x80bb85f9e7910ab69db90023a6455e3d90d53289fe53b19fbc06cc8edf71c2a6"
+    }
+  ],
+  "not_observed": [
+    "fresh semantic adjudication",
+    "nested Court-to-Guard-to-Vault terminal chain",
+    "appeal reversals",
+    "fresh payout and duplicate payout rejection",
+    "fresh threshold recovery"
+  ]
+}
