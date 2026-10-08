@@ -107,7 +107,7 @@ class StewardCharter(gl.Contract):
         rolling = deterministic.get("rolling_limit")
         if not isinstance(rolling, dict):
             raise gl.vm.UserError("[EXPECTED] rolling_limit must be an object")
-        if int(rolling.get("seconds", 0)) <= 0 or int(rolling.get("amount", 0)) <= 0:
+        if isinstance(rolling.get("seconds"), bool) or not isinstance(rolling.get("seconds"), int) or isinstance(rolling.get("amount"), bool) or not isinstance(rolling.get("amount"), int) or int(rolling.get("seconds", 0)) <= 0 or int(rolling.get("amount", 0)) <= 0:
             raise gl.vm.UserError("[EXPECTED] rolling_limit needs positive seconds and amount")
 
         rules = m["semantic_rules"]
@@ -126,6 +126,15 @@ class StewardCharter(gl.Contract):
             when = rule.get("when", {})
             if not isinstance(when, dict) or str(when.get("type", "")) not in ("always", "amount_gte", "category_in"):
                 raise gl.vm.UserError("[EXPECTED] unsupported semantic trigger")
+            trigger = str(when.get("type", ""))
+            if trigger == "always" and len(when) != 1:
+                raise gl.vm.UserError("[EXPECTED] always trigger has no operands")
+            if trigger == "amount_gte" and (isinstance(when.get("value"), bool) or not isinstance(when.get("value"), int) or int(when.get("value")) < 0):
+                raise gl.vm.UserError("[EXPECTED] amount_gte value must be a non-negative integer")
+            if trigger == "category_in":
+                values = when.get("values")
+                if not isinstance(values, list) or len(values) == 0 or len(values) > 32 or any(not isinstance(x, str) or len(x) == 0 or len(x) > 64 for x in values):
+                    raise gl.vm.UserError("[EXPECTED] category_in values are invalid")
             roles = rule.get("evidence_roles", [])
             if not isinstance(roles, list) or len(roles) < 1 or len(roles) > 8:
                 raise gl.vm.UserError("[EXPECTED] each semantic rule needs 1..8 evidence roles")

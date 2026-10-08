@@ -82,3 +82,29 @@ def test_unappealed_primary_does_not_reach_vault_until_court_closes_after_window
 def test_digest_mismatch_fails_closed_at_jury():
     rt=setup_stack();digest=attest(rt);create_semantic(rt,digest);rt.web[URI]=b'changed after attestation';rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'ignore hash'}
     rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));assert case['primary']=='refuse'
+
+def test_terminal_refusal_is_removed_from_guard_exposure():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized()
+    rt.balances[PAYEE]=100
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'reversed'}
+    rt.call(COURT,'appeal',GUARD,0,VAULT,'conflicting evidence','[]',sender=PAYEE);rt.flush_finalized()
+    spend=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert spend['state']=='allow' and spend['terminal_state']=='refuse'
+    preview=json.loads(rt.call(GUARD,'preview_spend',PAYEE,200,'ops',sender=A))
+    assert preview['state']=='held'
+
+def test_terminal_allow_consumes_single_use_evidence():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'initial ambiguity'}
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();rt.balances[PAYEE]=100
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'appeal resolves'}
+    rt.call(COURT,'appeal',GUARD,0,VAULT,'authenticated invoice','[]',sender=PAYEE);rt.flush_finalized()
+    rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    rt.call(GUARD,'attach_evidence',1,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'reuse'}
+    rt.call(GUARD,'adjudicate',1,sender=A);rt.flush_finalized()
+    rt.now+=101
+    with pytest.raises(Exception,match='single-use evidence'):
+        rt.call(COURT,'close_unappealed',GUARD,1,VAULT,sender=A);rt.flush_finalized()

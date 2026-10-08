@@ -117,7 +117,17 @@ class StewardCourt(gl.Contract):
         registry = gl.get_contract_at(self.registry).view()
         if not bool(registry.status_at(_addr(self.charter), issuer, role, uri, digest, int(at))):
             raise gl.vm.UserError("[EXPECTED] appeal evidence lacks issuer attestation at appeal time")
-        return {"issuer": issuer, "role": role, "uri": uri, "digest": digest}
+        usage = "reusable" if str(policy.get("usage", "single_use")) == "reusable" else "single_use"
+        return {"issuer": issuer, "role": role, "uri": uri, "digest": digest, "usage": usage}
+
+    def _required_roles(self, mandate: dict, rule_ids: list) -> list:
+        roles = []
+        for rule in mandate.get("semantic_rules", []):
+            if str(rule.get("id", "")) in rule_ids:
+                for role in rule.get("evidence_roles", []):
+                    if str(role) not in roles:
+                        roles.append(str(role))
+        return roles
 
     def _terminal_emit(self, vault: str, guard: str, spend_id: int, record: dict) -> None:
         self._validate_vault(str(vault), str(guard))
@@ -125,9 +135,13 @@ class StewardCourt(gl.Contract):
         target.emit(on="finalized").record_terminal(
             str(guard), int(spend_id), str(record["effective"]), int(record["amount"]), str(record["recipient"])
         )
+        terminal_evidence = record.get("appeal_evidence", record.get("primary_evidence", []))
+        gl.get_contract_at(Address(str(guard))).emit(on="finalized").record_terminal_effective(
+            int(spend_id), str(record["effective"]), json.dumps(terminal_evidence)
+        )
 
     @gl.public.write
-    def record_primary(self, spend_id: int, decision: str, reason: str, confidence: int, amount: int, recipient: str, version: int) -> None:
+    def record_primary(self, spend_id: int, decision: str, reason: str, confidence: int, amount: int, recipient: str, version: int, evidence_json: str) -> None:
         guard = _addr(gl.message.sender_address)
         self._validate_guard(guard)
         if str(decision) not in (ALLOW, REFUSE):
@@ -142,12 +156,19 @@ class StewardCourt(gl.Contract):
         mandate = json.loads(str(gl.get_contract_at(self.charter).view().mandate_at(int(version))))
         window = int(mandate["appeal"]["window_seconds"])
         now = self._now()
+        try:
+            primary_evidence = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
+        except Exception as exc:
+            raise gl.vm.UserError("[EXPECTED] primary evidence must be valid JSON") from exc
+        if not isinstance(primary_evidence, list) or len(primary_evidence) > 12:
+            raise gl.vm.UserError("[EXPECTED] primary evidence list is invalid")
         self.records[key] = json.dumps({
             "guard": _addr(guard), "spend_id": int(spend_id), "version": int(version),
             "primary": str(decision), "primary_reason": str(reason)[:240], "primary_confidence": int(confidence),
             "effective": str(decision), "amount": int(amount), "recipient": _addr(str(recipient)),
             "recorded_at": now, "appeal_deadline": now + window, "status": OPEN,
             "appeal_by": "", "appeal_statement": "", "appeal_reason": "", "appeal_confidence": 0,
+            "primary_evidence": primary_evidence,
         })
 
     @gl.public.write
@@ -175,8 +196,9 @@ class StewardCourt(gl.Contract):
         if not isinstance(added, list) or len(added) > 6:
             raise gl.vm.UserError("[EXPECTED] appeal evidence must be a list of at most six items")
         appeal_at = self._now()
+        requested_at = int(spend.get("requested_at", 0))
         for item in added:
-            evidence.append(self._validate_appeal_item(mandate, item, appeal_at))
+            evidence.append(self._validate_appeal_item(mandate, item, requested_at))
         # de-duplicate exact evidence identities while preserving stable order.
         deduped = []
         seen = []
@@ -187,6 +209,18 @@ class StewardCourt(gl.Contract):
                 deduped.append(item)
         evidence = deduped
         rule_ids = [str(x) for x in spend.get("rules", [])]
+        required_roles = self._required_roles(mandate, rule_ids)
+        valid_roles = []
+        registry_view = gl.get_contract_at(self.registry).view()
+        for item in evidence:
+            policy = self._issuer_policy(mandate, str(item.get("issuer", "")), str(item.get("role", "")))
+            origin_ok = policy is not None and _origin(str(item.get("uri", ""))) in [str(x).lower().rstrip("/") for x in policy.get("origins", [])]
+            historical_ok = bool(registry_view.status_at(_addr(self.charter), str(item.get("issuer", "")), str(item.get("role", "")), str(item.get("uri", "")), str(item.get("digest", "")), requested_at))
+            if origin_ok and historical_ok and str(item.get("role", "")) not in valid_roles:
+                valid_roles.append(str(item.get("role", "")))
+        missing = [role for role in required_roles if role not in valid_roles]
+        if missing:
+            raise gl.vm.UserError("[EXPECTED] appeal cannot produce ALLOW without authenticated roles: " + ",".join(missing))
         questions = []
         for rule in mandate["semantic_rules"]:
             if str(rule["id"]) in rule_ids:
@@ -201,7 +235,7 @@ class StewardCourt(gl.Contract):
             + "\nSPEND:" + json.dumps({"amount": spend["amount"], "recipient": spend["recipient"], "category": spend["category"]})
             + "\nAPPEAL STATEMENT (UNTRUSTED):" + str(statement)
         )
-        frozen = [{"role": str(i["role"]), "issuer": str(i["issuer"]), "uri": str(i["uri"]), "digest": str(i["digest"])} for i in evidence]
+        frozen = [{"role": str(i["role"]), "issuer": str(i["issuer"]), "uri": str(i["uri"]), "digest": str(i["digest"]), "usage": str(i.get("usage", "single_use"))} for i in evidence]
 
         def leader() -> str:
             blocks = []

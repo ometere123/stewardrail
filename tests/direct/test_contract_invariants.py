@@ -85,9 +85,19 @@ def test_consequential_guards_remain_present():
     assert "if _origin(uri) not in allowed:" in court
     assert "if not bool(registry.status_at" in court
     assert 'target.emit(on="finalized").record_terminal' in court
+    assert 'emit(on="finalized").record_terminal_effective' in court
+    assert "appeal cannot produce ALLOW without authenticated roles" in court
     assert "raise gl.vm.UserError(\"[EXPECTED] conflicting primary decision\")" in court
     assert "if gl.message.sender_address != self.court:" in vault
     assert "raise gl.vm.UserError(\"[EXPECTED] conflicting terminal decision\")" in vault
     assert 'if str(record["decision"]) != ALLOW:' in vault
     assert "if int(self.paid.get(key, u256(0))) == 1:" in vault
     assert "if not approved:" in vault
+    guard = text("steward_guard.py")
+    assert "record_terminal_effective" in guard
+    assert "if gl.message.sender_address != self.court:" in guard
+    assert 'raise gl.vm.UserError("[EXPECTED] conflicting terminal accounting decision")' in guard
+    assert "single-use evidence already consumed" in guard
+    assert "category must be 1..64 characters" in guard
+    assert "terminal == ALLOW" in guard
+    assert "amount_gte value must be a non-negative integer" in charter

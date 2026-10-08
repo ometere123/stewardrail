@@ -28,6 +28,12 @@ MUTANTS = [
     ("vault-terminal-allow", "steward_vault.py", 'if str(record["decision"]) != ALLOW:', "if False:"),
     ("vault-duplicate-payout", "steward_vault.py", "if int(self.paid.get(key, u256(0))) == 1:", "if False:"),
     ("vault-threshold-recovery", "steward_vault.py", "if not approved:", "if False:"),
+    ("guard-terminal-court-binding", "steward_guard.py", "if gl.message.sender_address != self.court:", "if False:"),
+    ("guard-terminal-conflict", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] conflicting terminal accounting decision")', "return"),
+    ("guard-single-use-evidence", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] single-use evidence already consumed")', "return"),
+    ("guard-category-bound", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] category must be 1..64 characters")', "return"),
+    ("court-appeal-role-gate", "steward_court.py", 'raise gl.vm.UserError("[EXPECTED] appeal cannot produce ALLOW without authenticated roles: " + ",".join(missing))', "return"),
+    ("charter-trigger-type", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] amount_gte value must be a non-negative integer")', "return"),
 ]
 
 

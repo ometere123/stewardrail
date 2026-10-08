@@ -74,6 +74,8 @@ class StewardGuard(gl.Contract):
     confidence: TreeMap[u256, u256]
     evidence_count: TreeMap[u256, u256]
     evidence: TreeMap[str, str]
+    terminal_state: TreeMap[u256, str]
+    terminal_evidence: TreeMap[str, str]
 
     def __init__(self, charter: str, registry: str, court: str):
         self.charter = Address(str(charter))
@@ -113,7 +115,8 @@ class StewardGuard(gl.Contract):
         while i < int(self.spend_count):
             key = u256(i)
             at = int(self.requested_at[key])
-            if floor < at <= int(now) and self.state[key] != REFUSE:
+            terminal = str(self.terminal_state.get(key, ""))
+            if floor < at <= int(now) and (terminal == ALLOW or (terminal == "" and self.state[key] != REFUSE)):
                 total += int(self.amount[key])
             i += 1
         return total
@@ -199,12 +202,17 @@ class StewardGuard(gl.Contract):
             int(self.amount[key]),
             str(self.recipient[key]),
             int(self.version[key]),
+            json.dumps(self._evidence_items(key)),
         )
 
     @gl.public.write
     def request_spend(self, recipient: str, amount: int, category: str) -> None:
         if gl.message.sender_address != self.agent:
             raise gl.vm.UserError("[EXPECTED] only the charter agent may request a spend")
+        if not isinstance(category, str) or len(category) == 0 or len(category) > 64:
+            raise gl.vm.UserError("[EXPECTED] category must be 1..64 characters")
+        if any((not (ch.isalnum() or ch in " _-")) for ch in category):
+            raise gl.vm.UserError("[EXPECTED] category contains unsupported characters")
         current = json.loads(str(self._charter().current()))
         version = int(current["version"])
         if version <= 0:
@@ -216,7 +224,7 @@ class StewardGuard(gl.Contract):
         key = u256(sid)
         self.amount[key] = u256(max(0, int(amount)))
         self.recipient[key] = _addr(str(recipient))
-        self.category[key] = str(category)[:64]
+        self.category[key] = str(category)
         self.requested_at[key] = u256(now)
         self.version[key] = u256(version)
         self.state[key] = str(decision["state"])
@@ -239,6 +247,8 @@ class StewardGuard(gl.Contract):
         mandate = self._mandate(int(self.version[key]))
         if not self._valid_evidence(key, mandate, item):
             raise gl.vm.UserError("[EXPECTED] evidence lacks frozen issuer authorization, historical attestation, or allowed origin")
+        policy = self._issuer_policy(mandate, item["issuer"], item["role"])
+        item["usage"] = "reusable" if policy is not None and str(policy.get("usage", "single_use")) == "reusable" else "single_use"
         index = int(self.evidence_count.get(key, u256(0)))
         self.evidence[str(int(spend_id)) + "|" + str(index)] = json.dumps(item)
         self.evidence_count[key] = u256(index + 1)
@@ -317,6 +327,41 @@ class StewardGuard(gl.Contract):
         self.confidence[key] = u256(int(agreed["confidence"]))
         self._send_primary(int(spend_id), str(agreed["verdict"]), str(agreed["reason"]), int(agreed["confidence"]))
 
+    @gl.public.write
+    def record_terminal_effective(self, spend_id: int, decision: str, evidence_json: str) -> None:
+        if gl.message.sender_address != self.court:
+            raise gl.vm.UserError("[EXPECTED] only the bound court may record terminal accounting")
+        key = self._require_spend(spend_id)
+        if str(decision) not in (ALLOW, REFUSE):
+            raise gl.vm.UserError("[EXPECTED] invalid terminal accounting decision")
+        existing = str(self.terminal_state.get(key, ""))
+        if existing != "" and existing != str(decision):
+            raise gl.vm.UserError("[EXPECTED] conflicting terminal accounting decision")
+        if existing == str(decision):
+            return
+        try:
+            items = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
+        except Exception as exc:
+            raise gl.vm.UserError("[EXPECTED] terminal evidence must be valid JSON") from exc
+        if not isinstance(items, list) or len(items) > 12:
+            raise gl.vm.UserError("[EXPECTED] terminal evidence list is invalid")
+        identities = []
+        for item in items:
+            if str(item.get("usage", "single_use")) == "reusable":
+                continue
+            token = "|".join([_addr(str(item.get("issuer", ""))), str(item.get("role", "")), str(item.get("uri", "")), str(item.get("digest", "")).lower()])
+            if token not in identities:
+                identities.append(token)
+        if str(decision) == ALLOW:
+            for token in identities:
+                previous = self.terminal_evidence.get(token, "")
+                if previous != "" and previous != str(int(spend_id)):
+                    raise gl.vm.UserError("[EXPECTED] single-use evidence already consumed")
+            for token in identities:
+                self.terminal_evidence[token] = str(int(spend_id))
+        self.terminal_state[key] = str(decision)
+        self.terminal_evidence[str(int(spend_id))] = json.dumps(identities)
+
     @gl.public.view
     def preview_spend(self, recipient: str, amount: int, category: str) -> str:
         current = json.loads(str(self._charter().current()))
@@ -331,6 +376,7 @@ class StewardGuard(gl.Contract):
             "id": int(spend_id), "amount": int(self.amount[key]), "recipient": str(self.recipient[key]),
             "category": str(self.category[key]), "requested_at": int(self.requested_at[key]),
             "version": int(self.version[key]), "state": str(self.state[key]),
+            "terminal_state": str(self.terminal_state.get(key, "")),
             "rules": json.loads(self.fired_rules[key]), "reason": str(self.reason[key]),
             "confidence": int(self.confidence[key]), "evidence": self._evidence_items(key),
         })
