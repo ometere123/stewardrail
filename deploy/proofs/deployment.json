@@ -1,23 +1,23 @@
 {
   "scenario": "fresh-five-contract-deployment",
-  "commit": "25f3794215f1fe53b5ddce613fac02d75f808adf",
+  "commit": "12ccd28bf53022bef496ef1c60fe747fac3de56f",
   "network": "studionet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
   "deployment_wallet": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
   "contracts": {
-    "charter": {"address": "0x1e8D48Ace8Aca0DC1D61b5dEdf71c70Fc47dFf39", "tx": "0x2a4f0e1d078a2bdc12442a3212ded1b291502d27a4f39094585141220c8b5dbc", "status": "FINALIZED", "execution": "SUCCESS"},
-    "registry": {"address": "0x97C06c5216D87Bb46E98Ad24e9e61188019c92c5", "tx": "0xe78e4f5be2d4bac0ad2707a5636b8e80b289701e81d35209a956be8b848b8742", "status": "FINALIZED", "execution": "SUCCESS"},
-    "court": {"address": "0x1Aa4872A40B68Ae9F9AB500e21556DAccD74989C", "tx": "0x0ed704e1ac2b1c356015cd269856cbec1b653d8266cfd5efeea94a9697900edb", "status": "FINALIZED", "execution": "SUCCESS"},
-    "guard": {"address": "0x26f452a6e8b079D0d31Db4bAa7f7731Dfe114474", "tx": "0xa08cb0a3c29ab32eb3a3633db428e1a6be4027e7e21edf04a1ef3975de7540f7", "status": "FINALIZED", "execution": "SUCCESS"},
-    "vault": {"address": "0x537D02445BBABD9Af37083f04Db3EEE19cDd7938", "tx": "0xbf50b02878b11b744d7166adab60a7a40728117a7307577a9a2a4d43de7196f3", "status": "FINALIZED", "execution": "SUCCESS"}
+    "charter": {"address": "0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31", "tx": "0xa04eddbccf11cc659f7f79cbd5a2fec37d6a7c9f7f1538d0c4c65dfd95489e8b", "status": "FINALIZED", "execution": "SUCCESS"},
+    "registry": {"address": "0x93938Fad09F0133BDF8e10f2F447E498B59165a7", "tx": "0xa7b596ba93bac4678b15157cdb590ea74c14466f906216d067ecb1411568747e", "status": "FINALIZED", "execution": "SUCCESS"},
+    "court": {"address": "0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2", "tx": "0xd8b3ec1bc9a7e65c1ed993f9e0bd0a2a5d16f6dbe6fbdc9572ca31aee85cc58e", "status": "FINALIZED", "execution": "SUCCESS"},
+    "guard": {"address": "0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4", "tx": "0x8157095a937e3011d3630414b82a6a1dd66bbeba311aa1d0bd9d33b853c967d7", "status": "FINALIZED", "execution": "SUCCESS"},
+    "vault": {"address": "0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f", "tx": "0x0b0a761a4bffd3ceff7a7f181fb349b5dadb56ae9f48682331ab62c79d61f3f0", "status": "FINALIZED", "execution": "SUCCESS"}
   },
   "source_sha256": {
     "contracts/steward_charter.py": "A0708F90C2CB4765BFC4BA7F7DB44D2A776A2B699C729A356FB6F88E0A0AC9FA",
     "contracts/evidence_registry.py": "F7BF6547440F954C18ACB191FD211307D6CDECF953D3FACEAA7946D8F5D831DD",
-    "contracts/steward_court.py": "8EB3F7FBE9A484170425A4268F86B29DD65203D080B57D424BE26333584EC461",
-    "contracts/steward_guard.py": "BD8CA24CDF70424ACB869D6AAF31AB52FE3B5C64BFAFA666D52238E31E018C5B",
-    "contracts/steward_vault.py": "572EA8B33542D8EB4645BC9B5FB53F4274C78985381C380D60B6F6D03C5B159B"
+    "contracts/steward_court.py": "30F6BF7284C6EFAB21D44DB4D3D5FC44CCD932A8A8594DB52A5C37A33C76D6A8",
+    "contracts/steward_guard.py": "864BF85964C76E8046631D0FEFAB991140F555C39EBFDB4F7886F6EE83E29606",
+    "contracts/steward_vault.py": "3C17F4D45793D80AA752187537093FB0325CE8E3C3999C40B5C1EBA61A56E0D0"
   }
 }

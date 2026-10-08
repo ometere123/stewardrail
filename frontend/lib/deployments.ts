@@ -8,11 +8,11 @@ export const NETWORK = {
 
 // Filled from deploy/deployments.json after the clean 61999 deployment.
 export const DEPLOYMENTS = {
-  charter: "0x1e8D48Ace8Aca0DC1D61b5dEdf71c70Fc47dFf39",
-  registry: "0x97C06c5216D87Bb46E98Ad24e9e61188019c92c5",
-  court: "0x1Aa4872A40B68Ae9F9AB500e21556DAccD74989C",
-  guard: "0x26f452a6e8b079D0d31Db4bAa7f7731Dfe114474",
-  vault: "0x537D02445BBABD9Af37083f04Db3EEE19cDd7938",
+  charter: "0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31",
+  registry: "0x93938Fad09F0133BDF8e10f2F447E498B59165a7",
+  court: "0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2",
+  guard: "0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4",
+  vault: "0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f",
 } as const;
 
 export const deployed = Object.values(DEPLOYMENTS).every(Boolean);
