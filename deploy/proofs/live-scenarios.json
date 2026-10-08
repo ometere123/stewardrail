@@ -1,0 +1,53 @@
+{
+  "network": "studionet",
+  "chain_id": 61999,
+  "scenarios": [
+    {
+      "id": "threshold-governance-v1",
+      "status": "observed",
+      "transactions": [
+        {"role": "principal_a", "tx": "0x7336e97f8667c8c429431577d74b085fed60a15bd1949533e686c7de3b8d0871", "status": "FINALIZED", "execution": "SUCCESS"},
+        {"role": "principal_b", "tx": "0xe55b6d2b03b09889b5edfa375e160c7c83405a4e20a854c657d17440d9374d25", "status": "FINALIZED", "execution": "SUCCESS"}
+      ],
+      "readback": {"charter_version": 1, "threshold": 2}
+    },
+    {
+      "id": "authenticated-evidence",
+      "status": "observed",
+      "transactions": [{"tx": "0x2f16222ddcf83b95bdbc90ba6d0a1d0e1a5ab3633c7359a0fb96d19394b0558f", "status": "FINALIZED", "execution": "SUCCESS"}],
+      "evidence": {"issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0", "uri": "https://example.com/", "sha256": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484"}
+    },
+    {
+      "id": "deterministic-refusal",
+      "status": "observed",
+      "transactions": [{"tx": "0x621f2323b1fc23361705cb3b99e21350c4ce9dbe884599232d20ed54957b403f", "status": "FINALIZED", "execution": "SUCCESS"}],
+      "readback": {"primary": "refuse", "effective": "refuse", "reason": "category is not allowed"}
+    },
+    {
+      "id": "semantic-refusal",
+      "status": "observed",
+      "transactions": [
+        {"tx": "0x93d7a7bd5e8d836b522986505a640f201bcfa692b50a6c6470c1465010fba38a", "status": "FINALIZED", "execution": "SUCCESS"},
+        {"tx": "0xaede5387745cf4b9a07f11b44b9db9672859a71bf301c374014c3908efd362ca", "status": "FINALIZED", "execution": "SUCCESS"},
+        {"tx": "0x3c2cf8fc2451da826ebb03e9fe7718bdd3e88415a24e1408e6f37764e9af3e67", "status": "FINALIZED", "execution": "SUCCESS"}
+      ],
+      "readback": {"primary": "refuse", "effective": "refuse", "confidence": 96}
+    },
+    {
+      "id": "appeal-refuse-to-allow",
+      "status": "not_observed",
+      "attempts": [{"tx": "0xf23e2b8049a1b9364cb6d73ef742479151874f2e85fdad65eafc1ccbebdd8c25", "status": "FINALIZED", "execution": "ERROR", "consensus": "MAJORITY_DISAGREE"}],
+      "reason": "The deployed Court remained OPEN because the appeal consensus did not finalize a valid result. No allow reversal is claimed."
+    },
+    {
+      "id": "appeal-allow-to-refuse",
+      "status": "not_observed",
+      "reason": "No primary semantic ALLOW was finalized on the fresh deployment."
+    },
+    {
+      "id": "vault-payout",
+      "status": "not_observed",
+      "reason": "No finalized terminal ALLOW reached the Vault, so no payout is claimed."
+    }
+  ]
+}
