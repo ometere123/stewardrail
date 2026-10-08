@@ -1,26 +1,26 @@
 {
   "network": "studionet",
   "chainId": 61999,
-  "sourceCommit": "702209b9dcc9118c896f0d846cd869ae0189e26e",
+  "sourceCommit": "25f3794215f1fe53b5ddce613fac02d75f808adf",
   "deployer": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
-  "charter": "0x44B3aBA05776236bB30509811B7242c391dcA77B",
-  "registry": "0xfe8E20e4781EaE24bfa3D3a8c1B17A6A5E4d77ec",
-  "court": "0xCDff705BaCD83512FbC6Dd1441A4b5afA6a81Ee6",
-  "guard": "0x7Bcf0ee85c4BeDA5CA51FC69D8ee5a673c5d95EB",
-  "vault": "0x353F90CFa7294e922F5AA91027245086320A84AF",
-  "deployedAt": "2026-10-08T05:12:38Z",
+  "charter": "0x1e8D48Ace8Aca0DC1D61b5dEdf71c70Fc47dFf39",
+  "registry": "0x97C06c5216D87Bb46E98Ad24e9e61188019c92c5",
+  "court": "0x1Aa4872A40B68Ae9F9AB500e21556DAccD74989C",
+  "guard": "0x26f452a6e8b079D0d31Db4bAa7f7731Dfe114474",
+  "vault": "0x537D02445BBABD9Af37083f04Db3EEE19cDd7938",
+  "deployedAt": "2026-10-08T07:24:00Z",
   "sourceSha256": {
-    "contracts/steward_charter.py": "C99DC2E2831AD1A9D6CF8DA91A5862048F0AA4C7BB847783BCB11D0227790F6B",
+    "contracts/steward_charter.py": "A0708F90C2CB4765BFC4BA7F7DB44D2A776A2B699C729A356FB6F88E0A0AC9FA",
     "contracts/evidence_registry.py": "F7BF6547440F954C18ACB191FD211307D6CDECF953D3FACEAA7946D8F5D831DD",
-    "contracts/steward_court.py": "A71F7F7E27E7A314C3B337202E443D42C7748D835249A9261295CC2A70660287",
+    "contracts/steward_court.py": "8EB3F7FBE9A484170425A4268F86B29DD65203D080B57D424BE26333584EC461",
     "contracts/steward_guard.py": "BD8CA24CDF70424ACB869D6AAF31AB52FE3B5C64BFAFA666D52238E31E018C5B",
     "contracts/steward_vault.py": "572EA8B33542D8EB4645BC9B5FB53F4274C78985381C380D60B6F6D03C5B159B"
   },
   "transactions": {
-    "charter": {"hash": "0x814a1cb53c6037ee9d3926b2b27ee1a914c45ac550dc5f90ae84eea4248fae0b", "status": "FINALIZED", "execution": "SUCCESS"},
-    "registry": {"hash": "0x4311fad2624988bfb7dc71677fe7d03cffa47640a919c74867332acd09b176e6", "status": "FINALIZED", "execution": "SUCCESS"},
-    "court": {"hash": "0xfe0207c1fde9da7afe860eed1e9b490366cb5eed63181231d6347d7ff9294674", "status": "FINALIZED", "execution": "SUCCESS"},
-    "guard": {"hash": "0x7571796f14e7a79c3564bca110b9cfa390fd916e00319a069c3d9902a10dad2d", "status": "FINALIZED", "execution": "SUCCESS"},
-    "vault": {"hash": "0x89d9be669432ad55bdb6c1283e6115b7bd4e67a4eba00bd53c04c04a9fc388af", "status": "FINALIZED", "execution": "SUCCESS"}
+    "charter": {"hash": "0x2a4f0e1d078a2bdc12442a3212ded1b291502d27a4f39094585141220c8b5dbc", "status": "FINALIZED", "execution": "SUCCESS"},
+    "registry": {"hash": "0xe78e4f5be2d4bac0ad2707a5636b8e80b289701e81d35209a956be8b848b8742", "status": "FINALIZED", "execution": "SUCCESS"},
+    "court": {"hash": "0x0ed704e1ac2b1c356015cd269856cbec1b653d8266cfd5efeea94a9697900edb", "status": "FINALIZED", "execution": "SUCCESS"},
+    "guard": {"hash": "0xa08cb0a3c29ab32eb3a3633db428e1a6be4027e7e21edf04a1ef3975de7540f7", "status": "FINALIZED", "execution": "SUCCESS"},
+    "vault": {"hash": "0xbf50b02878b11b744d7166adab60a7a40728117a7307577a9a2a4d43de7196f3", "status": "FINALIZED", "execution": "SUCCESS"}
   }
 }

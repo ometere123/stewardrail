@@ -5,10 +5,10 @@ readbacks observed on the fresh Studionet deployment at chain 61999.
 
 Observed evidence:
 
-- `deployment.json` records all five finalized deployment transactions and the
+- `final-deployment.json` records all five finalized deployment transactions and the
   exact source hashes used for the deployment.
-- `live-scenarios.json` records threshold activation, issuer-attested evidence,
-  deterministic refusal, and a finalized semantic refusal.
+- `live-scenarios.json` and `live-final-hardening.json` are historical records
+  for earlier source deployments and are explicitly not final-deployment proof.
 
 The required appeal reversals and Vault payout are explicitly marked
 `not_observed`. An appeal attempt finalized with execution `ERROR` and consensus

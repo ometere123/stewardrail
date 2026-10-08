@@ -1,5 +1,5 @@
 {
-  "scenario": "fresh-five-contract-deployment",
+  "scenario": "final-source-five-contract-deployment",
   "commit": "25f3794215f1fe53b5ddce613fac02d75f808adf",
   "network": "studionet",
   "chain_id": 61999,
@@ -14,10 +14,10 @@
     "vault": {"address": "0x537D02445BBABD9Af37083f04Db3EEE19cDd7938", "tx": "0xbf50b02878b11b744d7166adab60a7a40728117a7307577a9a2a4d43de7196f3", "status": "FINALIZED", "execution": "SUCCESS"}
   },
   "source_sha256": {
-    "contracts/steward_charter.py": "A0708F90C2CB4765BFC4BA7F7DB44D2A776A2B699C729A356FB6F88E0A0AC9FA",
-    "contracts/evidence_registry.py": "F7BF6547440F954C18ACB191FD211307D6CDECF953D3FACEAA7946D8F5D831DD",
-    "contracts/steward_court.py": "8EB3F7FBE9A484170425A4268F86B29DD65203D080B57D424BE26333584EC461",
-    "contracts/steward_guard.py": "BD8CA24CDF70424ACB869D6AAF31AB52FE3B5C64BFAFA666D52238E31E018C5B",
-    "contracts/steward_vault.py": "572EA8B33542D8EB4645BC9B5FB53F4274C78985381C380D60B6F6D03C5B159B"
+    "contracts/steward_charter.py": "a0708f90c2cb4765bfc4ba7f7db44d2a776a2b699c729a356fb6f88e0a0ac9fa",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "8eb3f7fbe9a484170425a4268f86b29dd65203d080b57d424be26333584ec461",
+    "contracts/steward_guard.py": "bd8ca24cdf70424acb869d6aaf31ab52fe3b5c64bfafa666d52238e31e018c5b",
+    "contracts/steward_vault.py": "572ea8b33542d8eb4645bc9b5fb53f4274c78985381c380d60b6f6d03c5b159b"
   }
 }
