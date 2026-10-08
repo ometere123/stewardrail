@@ -85,6 +85,10 @@ The contracts are deliberately separated by authority rather than file size:
 - Court sends only a finalized semantic result to Guard; Guard's terminal economic record is the only custody authority and fixes recipient + amount;
 - no single principal override exists for an adjudicated historical spend.
 
+Semantic rules may also freeze the agent or revoke eligible unpaid prior authorizations. `observe` consequences record an observed breach without making that rule an economic refusal. A freeze blocks new agent requests until principals approve the exact Guard, freeze epoch, and nonce through Charter. A severe terminal result can mark earlier unpaid ALLOW records revoked; Vault checks the Guard's finalized revocation state before paying, while already-paid history remains unchanged.
+
+An optional `recipient_rolling` policy aggregates exposure by the canonical recipient address stored in each spend. The agent cannot provide an alternate grouping key to evade that limit.
+
 ### Reproducibility
 
 There is **one source representation per deployable contract**. `contracts/*.py` is both the human-readable source and the deployment source. CI rejects drift in `contracts/SOURCE_MANIFEST.json`, runs deterministic model tests, contract structure/adversarial tests, mutation checks, frontend type/build tests, and source-reference checks. The frontend never reimplements mandate classification; it calls `preview_spend` on the guard.
