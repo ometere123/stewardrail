@@ -1,18 +1,24 @@
-export const NETWORK = {
-  name: "Studionet",
-  chainId: 61999,
-  chainHex: "0xF22F",
-  rpc: "https://studio.genlayer.com/api",
-  explorer: "https://explorer-studio.genlayer.com",
-} as const;
-
-// Filled from deploy/deployments.json after the clean 61999 deployment.
+const requireValue = (name: string, value: string | undefined): string => {
+  if (!value?.trim()) throw new Error(`Missing required public configuration: ${name}`);
+  return value.trim();
+};
+const address = (name: string, value: string | undefined): string => {
+  const result = requireValue(name, value);
+  if (!/^0x[0-9a-fA-F]{40}$/.test(result)) throw new Error(`Invalid public contract address: ${name}`);
+  return result;
+};
+const networkName = requireValue("NEXT_PUBLIC_GENLAYER_NETWORK", process.env.NEXT_PUBLIC_GENLAYER_NETWORK);
+const chainId = Number(requireValue("NEXT_PUBLIC_GENLAYER_CHAIN_ID", process.env.NEXT_PUBLIC_GENLAYER_CHAIN_ID));
+const rpc = requireValue("NEXT_PUBLIC_GENLAYER_RPC", process.env.NEXT_PUBLIC_GENLAYER_RPC);
+const explorer = requireValue("NEXT_PUBLIC_GENLAYER_EXPLORER", process.env.NEXT_PUBLIC_GENLAYER_EXPLORER);
+if (!Number.isInteger(chainId) || chainId !== 61999) throw new Error("StewardRail frontend only supports Studionet 61999");
+if (!/^https:\/\//.test(rpc) || !/^https:\/\//.test(explorer)) throw new Error("Public RPC and explorer must use HTTPS");
+export const NETWORK = { name: networkName, chainId, chainHex: "0xF22F", rpc, explorer } as const;
 export const DEPLOYMENTS = {
-  charter: "0xDCC1D6c08CFff25e793dd608e01218c597Ed9e31",
-  registry: "0x93938Fad09F0133BDF8e10f2F447E498B59165a7",
-  court: "0xD6112e5B534E4A3029e11fc9aa42A0d7D1089Fc2",
-  guard: "0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4",
-  vault: "0xABBe722224e5C9Ab7B9a6fbB24C9AF92D454F30f",
+  charter: address("NEXT_PUBLIC_STEWARD_CHARTER", process.env.NEXT_PUBLIC_STEWARD_CHARTER),
+  registry: address("NEXT_PUBLIC_EVIDENCE_REGISTRY", process.env.NEXT_PUBLIC_EVIDENCE_REGISTRY),
+  court: address("NEXT_PUBLIC_STEWARD_COURT", process.env.NEXT_PUBLIC_STEWARD_COURT),
+  guard: address("NEXT_PUBLIC_STEWARD_GUARD", process.env.NEXT_PUBLIC_STEWARD_GUARD),
+  vault: address("NEXT_PUBLIC_STEWARD_VAULT", process.env.NEXT_PUBLIC_STEWARD_VAULT),
 } as const;
-
-export const deployed = Object.values(DEPLOYMENTS).every(Boolean);
+export const deployed = true;

@@ -29,6 +29,7 @@ function parseChain(value: string | number | null): number | null {
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [address, setAddress] = useState("");
   const [chainId, setChainId] = useState<number | null>(null);
+  const [disconnected, setDisconnected] = useState(false);
 
   const refresh = useCallback(async () => {
     const p = provider();
@@ -37,6 +38,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       p.request({ method: "eth_accounts" }),
       p.request({ method: "eth_chainId" }),
     ]);
+    if (localStorage.getItem("stewardrail.wallet.disconnected") === "1") return;
     setAddress(Array.isArray(accounts) && accounts[0] ? String(accounts[0]) : "");
     setChainId(parseChain(chain));
   }, []);
@@ -59,6 +61,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const p = provider();
     if (!p) throw new Error("No injected EIP-1193 wallet found.");
     const accounts = await p.request({ method: "eth_requestAccounts" });
+    setDisconnected(false);
+    localStorage.removeItem("stewardrail.wallet.disconnected");
     setAddress(String(accounts?.[0] ?? ""));
     setChainId(parseChain(await p.request({ method: "eth_chainId" })));
   }, []);
@@ -81,7 +85,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setChainId(parseChain(await p.request({ method: "eth_chainId" })));
   }, []);
 
-  const disconnect = useCallback(() => setAddress(""), []);
+  const disconnect = useCallback(() => {
+    localStorage.setItem("stewardrail.wallet.disconnected", "1");
+    setDisconnected(true);
+    setAddress("");
+  }, []);
   const value = useMemo(() => ({
     address, chainId, connected: Boolean(address), correctNetwork: chainId === NETWORK.chainId,
     connect, switchNetwork, disconnect,

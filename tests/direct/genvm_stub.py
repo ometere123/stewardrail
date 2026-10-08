@@ -3,7 +3,7 @@
 It is intentionally not a replacement for GenLayer Direct Mode. It executes the
 exact deployable Python files and models message sender, payable value, balances,
 nondeterministic web/LLM calls and `emit(on="finalized")` queues. The handoff
-requires the same cases to be re-run with official tooling before submission.
+requires the same cases to be re-run with official tooling before release.
 """
 from __future__ import annotations
 import copy, json, sys, types

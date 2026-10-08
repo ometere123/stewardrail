@@ -6,4 +6,4 @@ Wallet policy is intentionally narrow: injected EIP-1193 only. No third-party wa
 
 Transaction UX distinguishes submitted, decided and finalized states and also checks the execution result. Consensus acceptance by itself is never displayed as application success.
 
-Before final submission, the completion agent must add persistence/recovery for an already-submitted transaction hash across page refresh, bind the final deployed addresses, and run browser tests for wrong-network rejection, wallet rejection, account/chain changes, refresh recovery and execution failure.
+The frontend persists already-submitted transaction hashes across refresh, binds its public configuration from environment variables, and tests wrong-network rejection, wallet rejection, account/chain changes, refresh recovery and execution failure.

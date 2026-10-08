@@ -1,6 +1,6 @@
 # Studionet 61999 live proof plan
 
-The final submission should not claim completion until this packet exists from a fresh deployment.
+The canonical deployment record should not claim completion until this packet exists from a fresh deployment.
 
 ## Network gate
 

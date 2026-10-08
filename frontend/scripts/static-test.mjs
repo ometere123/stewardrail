@@ -14,4 +14,7 @@ if (!text.includes(".ethereum") || !text.includes("eth_requestaccounts")) throw 
 if (!text.includes("accountschanged") || !text.includes("chainchanged")) throw new Error("wallet event handling missing");
 if (!text.includes("localstorage") || !text.includes("resumefinalization")) throw new Error("transaction refresh recovery missing");
 if (!text.includes("gettriggeredtransactionids") || !text.includes("children")) throw new Error("nested triggered transaction tracking missing");
+if (!text.includes("parsegen") || !text.includes("formatgen")) throw new Error("exact GEN conversion utilities missing");
+if (!text.includes("disconnect")) throw new Error("explicit disconnect control missing");
+if (text.includes("amount (wei)") || text.includes("fund amount (wei)")) throw new Error("raw wei label remains in the primary UI");
 console.log("frontend static test: PASS");

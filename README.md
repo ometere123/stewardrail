@@ -60,13 +60,11 @@ This creates three independent trust layers:
 | `steward_court.py` | one explicit application-level appeal with reversal semantics | pay funds; rewrite original record |
 | `steward_vault.py` | hold GEN and pay only terminal effective ALLOW decisions | adjudicate; bypass appeal/finality windows |
 
-## Design goals
-
-### GenLayer fit
+## Protocol boundaries
 
 StewardRail's primary deployment is a jointly funded agent treasury. An ambiguous spend can benefit the agent, vendor, one principal, or another principal differently. No single participant is a neutral authority. A deterministic threshold engine cannot decide whether a delivered service actually satisfies the frozen shared mandate, while a conventional human approval re-centralizes the exact trust problem. GenLayer consensus is therefore at the consequence boundary: a validator verdict can authorize or withhold treasury value.
 
-### Contract quality
+### Contract boundaries
 
 The contracts are deliberately separated by authority rather than file size:
 
@@ -80,7 +78,7 @@ The contracts are deliberately separated by authority rather than file size:
 - the vault reads the court's effective terminal decision and pays exact recipient + exact amount once;
 - no single principal override exists for an adjudicated historical spend.
 
-### Engineering quality
+### Reproducibility
 
 There is **one source representation per deployable contract**. `contracts/*.py` is both the human-readable source and the deployment source. CI rejects drift in `contracts/SOURCE_MANIFEST.json`, runs deterministic model tests, contract structure/adversarial tests, mutation checks, frontend type/build tests, and source-reference checks. The frontend never reimplements mandate classification; it calls `preview_spend` on the guard.
 
@@ -111,7 +109,7 @@ Routes:
 - `/court` — open and resolve application appeals
 - `/vault` — fund, inspect, and settle treasury
 - `/verify` — source/address verification
-- `/docs` — reviewer-oriented architecture and threat model
+- `/docs` — protocol documentation and verification links
 
 Every signing surface hard-blocks the wrong network and displays the exact action, contract, value, and chain before the wallet prompt. Submitted transactions are tracked by their existing hash; the UI never treats `ACCEPTED` alone as application success.
 
@@ -125,8 +123,7 @@ scripts/                 manifest, preflight, mutation and repository checks
 tests/unit/              deterministic model tests
 tests/direct/            exact-source in-memory adversarial harness
 deploy/                  61999 deploy + lifecycle scripts and evidence schema
-docs/                    architecture, threat model, live proof plan, reviewer packet
-STEWARDRAIL_CODEX_MASTER_HANDOFF.txt  completion/deployment instructions
+docs/                    architecture, threat model, live proof plan and deployment notes
 ```
 
 ## Local verification
@@ -152,9 +149,9 @@ npm run test
 npm run build
 ```
 
-## Live proof required before submission
+## Live deployment verification
 
-Repository structure alone is not live evidence. Before submission, run and preserve a fresh Studionet lifecycle proving:
+Repository structure alone is not live evidence. A canonical Studionet deployment should be accompanied by a machine-readable lifecycle record proving:
 
 1. two of three principals activate a mandate;
 2. an authorized issuer attests an evidence digest;

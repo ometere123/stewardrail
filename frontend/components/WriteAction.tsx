@@ -4,6 +4,7 @@ import { useWallet } from "@/lib/wallet";
 import { useTx } from "@/lib/tx";
 import { writeContract } from "@/lib/genlayer";
 import { NETWORK } from "@/lib/deployments";
+import { formatGen } from "@/lib/gen";
 
 export function WriteAction({ address, method, action, args, value=0n, label }: { address: string; method: string; action: string; args: unknown[]; value?: bigint; label: string }) {
   const wallet = useWallet();
@@ -22,7 +23,7 @@ export function WriteAction({ address, method, action, args, value=0n, label }: 
     <div className="txPreview">
       <small>ACTION</small><b>{action}</b>
       <small>CONTRACT</small><code>{address || "not deployed"}</code>
-      <small>CHAIN / VALUE</small><code>{NETWORK.chainId} · {value.toString()} wei</code>
+      <small>NETWORK / VALUE</small><code>{NETWORK.name} · {NETWORK.chainId} · {formatGen(value)} GEN</code>
     </div>
     <button className="button" onClick={go}>{label}</button>{error && <p className="error">{error}</p>}
   </div>;

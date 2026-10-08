@@ -15,12 +15,12 @@ elif command -v python3 >/dev/null 2>&1 && python3 -c 'import genvm_linter.cli' 
 elif command -v powershell.exe >/dev/null 2>&1 && command -v wslpath >/dev/null 2>&1; then
   WINDOWS_LINTER="$({ powershell.exe -NoProfile -Command '(Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA "Python\*\Scripts\genvm-lint.exe") | Select-Object -First 1 -ExpandProperty FullName)' || true; } | tr -d '\r')"
   if [[ -z "$WINDOWS_LINTER" ]]; then
-    echo "genvm-lint not installed; install the stable GenLayer tooling before submission" >&2
+    echo "genvm-lint not installed; install the stable GenLayer tooling before deployment verification" >&2
     exit 2
   fi
   LINTER=("$(wslpath -u "$WINDOWS_LINTER")")
 else
-  echo "genvm-lint not installed; install the stable GenLayer tooling before submission" >&2
+  echo "genvm-lint not installed; install the stable GenLayer tooling before deployment verification" >&2
   exit 2
 fi
 for f in contracts/*.py; do
