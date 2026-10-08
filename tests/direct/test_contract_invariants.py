@@ -67,8 +67,10 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'raise gl.vm.UserError("[EXPECTED] only the configured agent may withdraw standing collateral")' in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound vault may settle challenges")' in src
     assert 'emit(on="finalized").open_challenge' in src
+    assert 'emit(on="finalized").open_challenge(\n            _addr(self.guard), int(spend_id)' in src
     assert 'open_by_spend' in src
     assert 'return int(self.open_by_spend.get(u256(int(spend_id)), u256(0))) == 1' in src
+    assert 'int(self.challenge_deadline[u256(challenge_id)])' in src
     assert 'raise gl.vm.UserError("[EXPECTED] an open challenge blocks payment")' in text("steward_vault.py")
     assert 'raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")' in text("steward_vault.py")
     assert 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")' in text("steward_charter.py")
