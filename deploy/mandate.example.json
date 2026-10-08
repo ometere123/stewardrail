@@ -19,5 +19,6 @@
     {"address": "0x2222222222222222222222222222222222222222", "role": "delivery", "origins": ["https://delivery.example"]}
   ],
   "appeal": {"window_seconds": 3600, "bond": 0},
-  "evidence_window_seconds": 3600
+  "evidence_window_seconds": 3600,
+  "challenge": {"window_seconds": 3600, "response_window_seconds": 1800, "bond_floor": 5, "bond_bps": 500, "max_multiplier_bps": 30000, "decay_seconds": 86400}
 }
