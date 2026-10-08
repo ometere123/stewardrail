@@ -68,6 +68,7 @@ def _mandate(issuer: str) -> str:
             "origins": ["https://issuer.example"],
         }],
         "appeal": {"window_seconds": 60, "bond": 0},
+        "evidence_window_seconds": 60,
     })
 
 

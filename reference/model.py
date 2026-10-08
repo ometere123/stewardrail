@@ -41,7 +41,7 @@ def origin(uri: str) -> str:
 
 
 def validate_mandate(m: dict) -> None:
-    for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal"):
+    for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal", "evidence_window_seconds"):
         if key not in m:
             raise ValueError(f"missing {key}")
     d = m["deterministic"]
@@ -61,6 +61,8 @@ def validate_mandate(m: dict) -> None:
             raise ValueError("bad trigger")
         if not rule.get("evidence_roles"):
             raise ValueError("missing evidence role")
+        if str(rule.get("consequence", "refuse")).lower() not in {"observe", "refuse", "freeze", "revoke", "clawback"}:
+            raise ValueError("bad consequence")
         roles |= {str(x) for x in rule["evidence_roles"]}
     issuer_roles = set()
     for item in m["issuers"]:
@@ -74,6 +76,8 @@ def validate_mandate(m: dict) -> None:
         raise ValueError("uncovered role")
     if int(m["appeal"].get("window_seconds", 0)) <= 0:
         raise ValueError("bad appeal window")
+    if not isinstance(m["evidence_window_seconds"], int) or isinstance(m["evidence_window_seconds"], bool) or not 0 < m["evidence_window_seconds"] <= 604800:
+        raise ValueError("bad evidence window")
 
 
 @dataclass(frozen=True)

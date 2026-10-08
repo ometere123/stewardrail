@@ -42,6 +42,11 @@ MUTANTS = [
     ("guard-unfreeze-threshold", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] threshold approval has not authorized this unfreeze")', "return"),
     ("guard-revocation-mark", "steward_guard.py", 'self.revoked[prior_key] = u256(1)', "self.revoked[prior_key] = u256(0)"),
     ("vault-revocation-check", "steward_vault.py", 'if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):', "if False:"),
+    ("guard-evidence-deadline", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] evidence submission window is still open")', "return"),
+    ("guard-evidence-agent-binding", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] only the charter agent may attach initial evidence")', "return"),
+    ("guard-evidence-duplicate", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] duplicate evidence identity")', "return"),
+    ("guard-evidence-seal", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] evidence is sealed")', "return"),
+    ("charter-evidence-window-validation", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] evidence_window_seconds must be 1..604800")', "return"),
 ]
 
 

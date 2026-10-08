@@ -7,21 +7,21 @@ A='0x'+'1'*40;B='0x'+'2'*40;AGENT='0x'+'3'*40;ISSUER='0x'+'4'*40;PAYEE='0x'+'5'*
 CHARTER='0x'+'a'*40;REGISTRY='0x'+'b'*40;COURT='0x'+'c'*40;GUARD='0x'+'d'*40;VAULT='0x'+'e'*40
 URI='https://issuer.example/invoice/1'
 
-def mandate(tight=False, consequence="refuse", recipient_limit=None):
+def mandate(tight=False, consequence="refuse", recipient_limit=None, usage="single_use"):
     rolling_amount = 1000 if tight else 5000
     deterministic={'max_per_spend':1000,'rolling_limit':{'amount':rolling_amount,'seconds':86400},'category_allowlist':['ops'],'recipient_denylist':[]}
     if recipient_limit is not None: deterministic['recipient_rolling']={'amount':recipient_limit,'seconds':86400}
     return {
       'name':'Shared Treasury','deterministic':deterministic,
       'semantic_rules':[{'id':'purpose','question':'Does the authenticated evidence show this spend serves the shared mandate?','when':{'type':'amount_gte','value':100},'evidence_roles':['invoice'],'consequence':consequence}],
-      'issuers':[{'address':ISSUER,'role':'invoice','origins':['https://issuer.example']}],
-      'appeal':{'window_seconds':100,'bond':0},
+      'issuers':[{'address':ISSUER,'role':'invoice','origins':['https://issuer.example'],'usage':usage}],
+      'appeal':{'window_seconds':100,'bond':0},'evidence_window_seconds':60,
     }
 
-def setup_stack(tight=False, consequence="refuse"):
+def setup_stack(tight=False, consequence="refuse", usage="single_use"):
     rt=Runtime(); rt.sender=A
     mods={n:load(str(ROOT/'contracts'/f'{n}.py'),rt) for n in ['steward_charter','evidence_registry','steward_court','steward_guard','steward_vault']}
-    m=json.dumps(mandate(tight, consequence))
+    m=json.dumps(mandate(tight, consequence, usage=usage))
     deploy(rt,mods['steward_charter'],'StewardCharter',CHARTER,json.dumps([A,B]),2,AGENT,m,sender=A)
     deploy(rt,mods['evidence_registry'],'EvidenceRegistry',REGISTRY,sender=A)
     deploy(rt,mods['steward_court'],'StewardCourt',COURT,CHARTER,REGISTRY,sender=A)
@@ -38,6 +38,7 @@ def attest(rt,body=b'valid invoice'):
 def create_semantic(rt,digest):
     rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
     rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.call(GUARD,'seal_evidence',0,sender=AGENT)
 
 def test_threshold_mandate_and_historical_issuer_authentication():
     rt=setup_stack(); cur=json.loads(rt.call(CHARTER,'current',sender=A));assert cur['version']==1
@@ -106,6 +107,7 @@ def test_terminal_allow_consumes_single_use_evidence():
     rt.call(COURT,'appeal',GUARD,0,VAULT,'authenticated invoice','[]',sender=PAYEE);rt.flush_finalized()
     rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
     rt.call(GUARD,'attach_evidence',1,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.call(GUARD,'seal_evidence',1,sender=AGENT)
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'reuse'}
     rt.call(GUARD,'adjudicate',1,sender=A);rt.flush_finalized()
     rt.now+=101
@@ -129,6 +131,7 @@ def test_semantic_refuse_reserves_capacity_until_terminal_release():
     rt=setup_stack(tight=True); digest=attest(rt)
     rt.call(GUARD,'request_spend',PAYEE,600,'ops',sender=AGENT)
     rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.call(GUARD,'seal_evidence',0,sender=AGENT)
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'not satisfied'}
     rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
     rt.call(GUARD,'request_spend',PAYEE,600,'ops',sender=AGENT)
@@ -200,9 +203,51 @@ def test_revoke_consequence_blocks_unpaid_prior_allow():
     rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
     rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
     rt.call(GUARD,'attach_evidence',1,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.call(GUARD,'seal_evidence',1,sender=AGENT)
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'severe breach'}
     rt.call(GUARD,'adjudicate',1,sender=A); rt.flush_finalized(); rt.now += 101
     rt.call(COURT,'close_unappealed',GUARD,1,VAULT,sender=A); rt.flush_finalized()
     assert json.loads(rt.call(GUARD,'get_spend',0,sender=A))['revoked'] is True
     with pytest.raises(Exception, match='revoked'):
         rt.call(VAULT,'pay',0,sender=A)
+
+def test_evidence_window_blocks_premature_permissionless_adjudication():
+    rt=setup_stack(); digest=attest(rt)
+    rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    with pytest.raises(Exception, match='window is still open'):
+        rt.call(GUARD,'adjudicate',0,sender=B)
+    rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.call(GUARD,'seal_evidence',0,sender=AGENT)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'sealed evidence'}
+    rt.call(GUARD,'adjudicate',0,sender=B); rt.flush_finalized()
+    assert json.loads(rt.call(GUARD,'get_spend',0,sender=A))['state']=='allow'
+
+def test_expired_unsealed_spend_has_permissionless_exit():
+    rt=setup_stack(); rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    rt.now += 61
+    rt.call(GUARD,'adjudicate',0,sender=B); rt.flush_finalized()
+    spend=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert spend['state']=='refuse' and 'missing authenticated evidence' in spend['reason']
+
+def test_attachment_requires_agent_is_bounded_and_sealed():
+    rt=setup_stack(); digest=attest(rt); rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+    with pytest.raises(Exception, match='charter agent'):
+        rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=B)
+    rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    with pytest.raises(Exception, match='duplicate evidence'):
+        rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.call(GUARD,'seal_evidence',0,sender=AGENT)
+    with pytest.raises(Exception, match='evidence is sealed'):
+        rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+
+def test_reusable_evidence_can_support_two_spends():
+    rt=setup_stack(usage='reusable'); digest=attest(rt)
+    for spend_id in (0, 1):
+        rt.call(GUARD,'request_spend',PAYEE,200,'ops',sender=AGENT)
+        rt.call(GUARD,'attach_evidence',spend_id,ISSUER,'invoice',URI,digest,sender=AGENT)
+        rt.call(GUARD,'seal_evidence',spend_id,sender=AGENT)
+        rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'reusable evidence'}
+        rt.call(GUARD,'adjudicate',spend_id,sender=A); rt.flush_finalized()
+        rt.now += 101
+        rt.call(COURT,'close_unappealed',GUARD,spend_id,VAULT,sender=A); rt.flush_finalized()
+    assert json.loads(rt.call(GUARD,'get_spend',1,sender=A))['terminal_economic']=='allow'

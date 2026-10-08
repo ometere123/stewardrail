@@ -67,6 +67,8 @@ class StewardGuard(gl.Contract):
     recipient: TreeMap[u256, str]
     category: TreeMap[u256, str]
     requested_at: TreeMap[u256, u256]
+    evidence_deadline: TreeMap[u256, u256]
+    evidence_sealed: TreeMap[u256, u256]
     version: TreeMap[u256, u256]
     state: TreeMap[u256, str]
     fired_rules: TreeMap[u256, str]
@@ -286,6 +288,8 @@ class StewardGuard(gl.Contract):
         self.recipient[key] = _addr(str(recipient))
         self.category[key] = str(category)
         self.requested_at[key] = u256(now)
+        self.evidence_deadline[key] = u256(now + int(mandate["evidence_window_seconds"]))
+        self.evidence_sealed[key] = u256(0)
         self.version[key] = u256(version)
         self.state[key] = str(decision["state"])
         self.enforcement[key] = "allow" if decision["state"] == ALLOW else ("held" if decision["state"] == HELD else "refuse")
@@ -302,23 +306,47 @@ class StewardGuard(gl.Contract):
         key = self._require_spend(spend_id)
         if self.state[key] != HELD:
             raise gl.vm.UserError("[EXPECTED] evidence can only be attached while spend is held")
+        if gl.message.sender_address != self.agent:
+            raise gl.vm.UserError("[EXPECTED] only the charter agent may attach initial evidence")
+        if int(self.evidence_sealed.get(key, u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] evidence is sealed")
+        if self._now() > int(self.evidence_deadline[key]):
+            raise gl.vm.UserError("[EXPECTED] evidence submission window has elapsed")
         if int(self.evidence_count.get(key, u256(0))) >= 12:
             raise gl.vm.UserError("[EXPECTED] evidence item limit reached")
         item = {"issuer": _addr(str(issuer)), "role": str(role), "uri": str(uri), "digest": str(digest).lower()}
         mandate = self._mandate(int(self.version[key]))
+        policy = self._issuer_policy(mandate, item["issuer"], item["role"])
+        if policy is None:
+            raise gl.vm.UserError("[EXPECTED] evidence issuer and role are not authorized")
+        item["usage"] = "reusable" if str(policy.get("usage", "single_use")) == "reusable" else "single_use"
         if not self._valid_evidence(key, mandate, item):
             raise gl.vm.UserError("[EXPECTED] evidence lacks frozen issuer authorization, historical attestation, or allowed origin")
-        policy = self._issuer_policy(mandate, item["issuer"], item["role"])
-        item["usage"] = "reusable" if policy is not None and str(policy.get("usage", "single_use")) == "reusable" else "single_use"
+        for existing in self._evidence_items(key):
+            if all(str(existing.get(field, "")) == str(item.get(field, "")) for field in ("issuer", "role", "uri", "digest")):
+                raise gl.vm.UserError("[EXPECTED] duplicate evidence identity")
         index = int(self.evidence_count.get(key, u256(0)))
         self.evidence[str(int(spend_id)) + "|" + str(index)] = json.dumps(item)
         self.evidence_count[key] = u256(index + 1)
+
+    @gl.public.write
+    def seal_evidence(self, spend_id: int) -> None:
+        key = self._require_spend(spend_id)
+        if self.state[key] != HELD:
+            raise gl.vm.UserError("[EXPECTED] only held spends can seal evidence")
+        if gl.message.sender_address != self.agent:
+            raise gl.vm.UserError("[EXPECTED] only the charter agent may seal evidence")
+        if self._now() > int(self.evidence_deadline[key]):
+            raise gl.vm.UserError("[EXPECTED] evidence submission window has elapsed")
+        self.evidence_sealed[key] = u256(1)
 
     @gl.public.write
     def adjudicate(self, spend_id: int) -> None:
         key = self._require_spend(spend_id)
         if self.state[key] != HELD:
             raise gl.vm.UserError("[EXPECTED] spend is not held")
+        if int(self.evidence_sealed.get(key, u256(0))) != 1 and self._now() <= int(self.evidence_deadline[key]):
+            raise gl.vm.UserError("[EXPECTED] evidence submission window is still open")
         mandate = self._mandate(int(self.version[key]))
         fired = [str(x) for x in json.loads(self.fired_rules[key])]
         required = self._required_roles(mandate, fired)
@@ -521,6 +549,8 @@ class StewardGuard(gl.Contract):
         return json.dumps({
             "id": int(spend_id), "amount": int(self.amount[key]), "recipient": str(self.recipient[key]),
             "category": str(self.category[key]), "requested_at": int(self.requested_at[key]),
+            "evidence_deadline": int(self.evidence_deadline[key]),
+            "evidence_sealed": int(self.evidence_sealed.get(key, u256(0))) == 1,
             "version": int(self.version[key]), "state": str(self.state[key]),
             "terminal_semantic": str(self.terminal_semantic.get(key, "")),
             "terminal_economic": str(self.terminal_state.get(key, "")),

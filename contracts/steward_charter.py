@@ -97,7 +97,7 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] mandate must be valid JSON") from exc
         if not isinstance(m, dict):
             raise gl.vm.UserError("[EXPECTED] mandate must be an object")
-        for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal"):
+        for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal", "evidence_window_seconds"):
             if key not in m:
                 raise gl.vm.UserError("[EXPECTED] mandate missing " + key)
 
@@ -187,6 +187,8 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] appeal.window_seconds must be positive")
         if int(appeal.get("bond", 0)) != 0:
             raise gl.vm.UserError("[EXPECTED] v1 participant-gated appeals do not accept a monetary bond")
+        if isinstance(m["evidence_window_seconds"], bool) or not isinstance(m["evidence_window_seconds"], int) or int(m["evidence_window_seconds"]) <= 0 or int(m["evidence_window_seconds"]) > 604800:
+            raise gl.vm.UserError("[EXPECTED] evidence_window_seconds must be 1..604800")
         return _canonical(m)
 
     @gl.public.write

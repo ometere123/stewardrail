@@ -108,9 +108,15 @@ def test_consequential_guards_remain_present():
     assert "terminal == ALLOW" in guard
     assert "amount_gte value must be a non-negative integer" in charter
     assert "unsupported semantic consequence" in charter
+    assert "evidence_window_seconds must be 1..604800" in charter
     assert "approve_unfreeze" in charter and "unfreeze_is_approved" in charter
     assert "threshold approval has not authorized this unfreeze" in guard
     assert "self.revoked[prior_key] = u256(1)" in guard
     assert "revoked" in guard and "is_revoked" in guard
     assert 'if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):' in vault
     assert "terminal authorization has been revoked" in vault
+    assert "evidence submission window is still open" in guard
+    assert "only the charter agent may attach initial evidence" in guard
+    assert "duplicate evidence identity" in guard
+    assert "seal_evidence" in guard
+    assert "raise gl.vm.UserError(\"[EXPECTED] evidence is sealed\")" in guard
