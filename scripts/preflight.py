@@ -18,7 +18,6 @@ required = [
     "contracts/steward_charter.py", "contracts/evidence_registry.py", "contracts/steward_guard.py",
     "contracts/steward_court.py", "contracts/steward_vault.py", "frontend/package.json",
     "docs/ARCHITECTURE.md", "docs/THREAT_MODEL.md", "docs/LIVE_TEST_PLAN.md",
-    "STEWARDRAIL_CODEX_MASTER_HANDOFF.txt",
 ]
 for rel in required:
     if not (ROOT / rel).exists():

@@ -30,10 +30,54 @@
     }
   ],
   "not_observed": [
-    "fresh semantic adjudication",
-    "nested Court-to-Guard-to-Vault terminal chain",
-    "appeal reversals",
     "fresh payout and duplicate payout rejection",
     "fresh threshold recovery"
-  ]
+  ],
+  "semantic_cases": [
+    {
+      "id": "semantic-refuse",
+      "request_tx": "0xcf2effd3f95f8b1a889ac37ddb07d1c023e8c802c3bb2a85f46ed4102e392a6b",
+      "adjudication_tx": "0x8efff99d2f4467b021ad56b8bdfee1c14f70209a3e8110c8c56231ead76500e2",
+      "decision": "REFUSE",
+      "execution": "SUCCESS",
+      "readback": {"spend_id": 1, "version": 2, "state": "refuse", "confidence": 100},
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x8efff99d2f4467b021ad56b8bdfee1c14f70209a3e8110c8c56231ead76500e2"
+    },
+    {
+      "id": "semantic-allow",
+      "request_tx": "0x62bbdcc26dbe989fc5fb25bba800ed51b70a8d2702fa0bbd2f934766697aef67",
+      "adjudication_tx": "0x4201da01547b7d68d38da29422e55ff944a170333ad79d21d1ea681f37d7eaa0",
+      "decision": "ALLOW",
+      "execution": "SUCCESS",
+      "readback": {"spend_id": 3, "version": 3, "state": "allow", "confidence": 95},
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x4201da01547b7d68d38da29422e55ff944a170333ad79d21d1ea681f37d7eaa0"
+    }
+  ],
+  "allow_to_refuse": {
+    "court_tx": "0x28bfe4ae6062275de9296b2e0dd6e66688f56b6a3481ac8a9ff293572839058c",
+    "court_readback": {"spend_id": 3, "primary": "allow", "effective": "refuse", "status": "appealed", "reversed": true},
+    "guard_child_tx": "0x2fe569eeac1e2225b90dc7eb576796393affeb124de6a475c5007d07286c9fb3",
+    "vault_grandchild_tx": "0x1a6523b72e9cfa971478cb33b4e12677e44569772faa7f44ec727f6227c2ebfb",
+    "guard_readback": {"spend_id": 3, "terminal_semantic": "refuse", "terminal_economic": "refuse", "terminal_state": "refuse"},
+    "vault_readback": {"spend_id": 3, "decision": "refuse", "paid": false},
+    "all_transactions": "FINALIZED with successful leader execution",
+    "explorer": {
+      "court": "https://explorer-studio.genlayer.com/tx/0x28bfe4ae6062275de9296b2e0dd6e66688f56b6a3481ac8a9ff293572839058c",
+      "guard": "https://explorer-studio.genlayer.com/tx/0x2fe569eeac1e2225b90dc7eb576796393affeb124de6a475c5007d07286c9fb3",
+      "vault": "https://explorer-studio.genlayer.com/tx/0x1a6523b72e9cfa971478cb33b4e12677e44569772faa7f44ec727f6227c2ebfb"
+    }
+  },
+  "refuse_to_allow": {
+    "court_tx": "0xb3caf430ff6b3e77610f31de3f9f762f117b6034692eaea866e1b32461a931ae",
+    "court_readback": {"spend_id": 4, "primary": "refuse", "effective": "allow", "status": "appealed", "reversed": true},
+    "guard_child_tx": "0x8a36c70194a9b15243e91b3dd3ec5b33143f3d40d750a4ec078323443aa372eb",
+    "guard_child_to": "0x00a790c46Ae285F2431E70b97c95Ec910f63A1d4",
+    "guard_readback": {"spend_id": 4, "terminal_semantic": "allow", "terminal_economic": "allow", "terminal_state": "allow"},
+    "vault_readback": {"spend_id": 4, "decision": "allow", "paid": false},
+    "all_observed_transactions": "FINALIZED with successful leader execution",
+    "explorer": {
+      "court": "https://explorer-studio.genlayer.com/tx/0xb3caf430ff6b3e77610f31de3f9f762f117b6034692eaea866e1b32461a931ae",
+      "guard": "https://explorer-studio.genlayer.com/tx/0x8a36c70194a9b15243e91b3dd3ec5b33143f3d40d750a4ec078323443aa372eb"
+    }
+  }
 }
