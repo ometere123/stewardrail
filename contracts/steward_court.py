@@ -169,7 +169,7 @@ class StewardCourt(gl.Contract):
 
         evidence = list(spend.get("evidence", []))
         try:
-            added = json.loads(str(appeal_evidence_json))
+            added = appeal_evidence_json if isinstance(appeal_evidence_json, list) else json.loads(str(appeal_evidence_json))
         except Exception as exc:
             raise gl.vm.UserError("[EXPECTED] appeal evidence must be valid JSON") from exc
         if not isinstance(added, list) or len(added) > 6:

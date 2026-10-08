@@ -16,8 +16,14 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _canonical(raw: str) -> str:
-    return json.dumps(json.loads(str(raw)), separators=(",", ":"), sort_keys=True)
+def _json_value(raw):
+    if isinstance(raw, (dict, list)):
+        return raw
+    return json.loads(str(raw))
+
+
+def _canonical(raw) -> str:
+    return json.dumps(_json_value(raw), separators=(",", ":"), sort_keys=True)
 
 
 def _action_hash(kind: str, target: str, to: str, amount: int, nonce: int) -> str:
@@ -44,7 +50,7 @@ class StewardCharter(gl.Contract):
     recovery_ready: TreeMap[str, u256]
 
     def __init__(self, principals_json: str, threshold: int, agent: str, initial_mandate_json: str):
-        principals = json.loads(str(principals_json))
+        principals = _json_value(principals_json)
         if not isinstance(principals, list) or len(principals) < 2:
             raise gl.vm.UserError("[EXPECTED] at least two principals are required")
         if int(threshold) < 2 or int(threshold) > len(principals):
@@ -66,7 +72,7 @@ class StewardCharter(gl.Contract):
             self.principal_at[u256(index)] = address
             self.principal_flag[address] = u256(1)
 
-        canonical = self._validate_mandate(str(initial_mandate_json))
+        canonical = self._validate_mandate(initial_mandate_json)
         self.proposal_json[_sha(canonical)] = canonical
 
     def _require_principal(self) -> str:
@@ -75,9 +81,9 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] caller is not a charter principal")
         return caller
 
-    def _validate_mandate(self, raw: str) -> str:
+    def _validate_mandate(self, raw) -> str:
         try:
-            m = json.loads(str(raw))
+            m = _json_value(raw)
         except Exception as exc:
             raise gl.vm.UserError("[EXPECTED] mandate must be valid JSON") from exc
         if not isinstance(m, dict):
@@ -153,12 +159,12 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] appeal.window_seconds must be positive")
         if int(appeal.get("bond", 0)) != 0:
             raise gl.vm.UserError("[EXPECTED] v1 participant-gated appeals do not accept a monetary bond")
-        return _canonical(json.dumps(m))
+        return _canonical(m)
 
     @gl.public.write
     def approve_mandate(self, mandate_json: str) -> None:
         caller = self._require_principal()
-        canonical = self._validate_mandate(str(mandate_json))
+        canonical = self._validate_mandate(mandate_json)
         digest = _sha(canonical)
         if int(self.digest_version.get(digest, u256(0))) > 0:
             raise gl.vm.UserError("[EXPECTED] mandate is already active")

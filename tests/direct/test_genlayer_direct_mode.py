@@ -163,3 +163,17 @@ def test_registry_expected_user_errors_and_immutable_identity_direct_mode(direct
     registry.revoke(_address(charter), "invoice", uri, digest)
     with direct_vm.expect_revert("already revoked"):
         registry.revoke(_address(charter), "invoice", uri, digest)
+
+
+def test_charter_accepts_cli_native_json_values_direct_mode(direct_vm, direct_deploy, direct_accounts):
+    alice, bob, agent, issuer = direct_accounts[:4]
+    direct_vm.sender = alice
+    mandate = json.loads(_mandate(_address(issuer)))
+    charter = direct_deploy(
+        ROOT / "contracts" / "steward_charter.py",
+        [_address(alice), _address(bob)], 2, _address(agent), mandate,
+    )
+    charter.approve_mandate(mandate)
+    with direct_vm.prank(bob):
+        charter.approve_mandate(mandate)
+    assert json.loads(charter.current())["version"] == 1
