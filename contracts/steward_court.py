@@ -293,6 +293,19 @@ class StewardCourt(gl.Contract):
         self._save(str(guard), int(spend_id), record)
         self._terminal_emit(str(vault), str(guard), int(spend_id), record)
 
+    @gl.public.write
+    def reconcile_terminal(self, guard: str, spend_id: int, vault: str) -> None:
+        """Re-emit an already-terminal result after a child delivery failure.
+
+        The stored Court record is authoritative; this method cannot change the
+        effective decision and all receivers enforce their own bindings and
+        idempotence rules.
+        """
+        record = self._load(str(guard), int(spend_id))
+        if str(record["status"]) not in (APPEALED, TERMINAL):
+            raise gl.vm.UserError("[EXPECTED] only terminal court records can be reconciled")
+        self._terminal_emit(str(vault), str(guard), int(spend_id), record)
+
     @gl.public.view
     def case(self, guard: str, spend_id: int) -> str:
         return json.dumps(self._load(str(guard), int(spend_id)))

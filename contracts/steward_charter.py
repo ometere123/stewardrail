@@ -155,8 +155,11 @@ class StewardCharter(gl.Contract):
             address = _addr(str(issuer.get("address", "")))
             role = str(issuer.get("role", "")).strip()
             origins = issuer.get("origins", [])
+            usage = str(issuer.get("usage", "single_use")).strip().lower()
             if role == "" or not isinstance(origins, list) or len(origins) < 1:
                 raise gl.vm.UserError("[EXPECTED] issuer needs role and at least one https origin")
+            if usage not in ("single_use", "reusable"):
+                raise gl.vm.UserError("[EXPECTED] issuer usage must be single_use or reusable")
             for origin in origins:
                 origin_text = str(origin).strip().lower().rstrip("/")
                 if not origin_text.startswith("https://") or "/" in origin_text[8:]:
