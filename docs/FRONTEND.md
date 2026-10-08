@@ -1,6 +1,6 @@
 # Frontend contract
 
-The UI is a Next.js App Router control plane with task-specific routes for workspace, threshold charter governance, spend request/case inspection, issuer evidence, appeal court, custody, verification and reviewer docs.
+The UI is a Next.js App Router control plane with task-specific routes for workspace, threshold charter governance, spend request/case inspection, issuer evidence, appeal court, custody, verification and protocol documentation.
 
 Wallet policy is intentionally narrow: injected EIP-1193 only. No third-party wallet orchestration, embedded wallet, burner key, hardcoded account or application backend. Every signing action is hard-blocked unless the provider reports chain id 61999. Account and chain changes are subscribed globally.
 
