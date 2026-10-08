@@ -41,7 +41,7 @@ def origin(uri: str) -> str:
 
 
 def validate_mandate(m: dict) -> None:
-    for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal", "evidence_window_seconds"):
+    for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal", "evidence_window_seconds", "challenge"):
         if key not in m:
             raise ValueError(f"missing {key}")
     d = m["deterministic"]
@@ -78,6 +78,14 @@ def validate_mandate(m: dict) -> None:
         raise ValueError("bad appeal window")
     if not isinstance(m["evidence_window_seconds"], int) or isinstance(m["evidence_window_seconds"], bool) or not 0 < m["evidence_window_seconds"] <= 604800:
         raise ValueError("bad evidence window")
+    challenge = m["challenge"]
+    if not isinstance(challenge, dict):
+        raise ValueError("bad challenge policy")
+    required = ("window_seconds", "response_window_seconds", "bond_floor", "bond_bps", "max_multiplier_bps", "decay_seconds")
+    if any(not isinstance(challenge.get(key), int) or isinstance(challenge.get(key), bool) for key in required):
+        raise ValueError("bad challenge policy fields")
+    if challenge["window_seconds"] <= 0 or challenge["response_window_seconds"] <= 0 or challenge["bond_floor"] <= 0 or not 0 <= challenge["bond_bps"] <= 10000 or challenge["max_multiplier_bps"] < 10000 or challenge["decay_seconds"] <= 0:
+        raise ValueError("bad challenge policy bounds")
 
 
 @dataclass(frozen=True)

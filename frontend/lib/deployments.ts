@@ -20,5 +20,6 @@ export const DEPLOYMENTS = {
   court: address("NEXT_PUBLIC_STEWARD_COURT", process.env.NEXT_PUBLIC_STEWARD_COURT),
   guard: address("NEXT_PUBLIC_STEWARD_GUARD", process.env.NEXT_PUBLIC_STEWARD_GUARD),
   vault: address("NEXT_PUBLIC_STEWARD_VAULT", process.env.NEXT_PUBLIC_STEWARD_VAULT),
+  bondVault: address("NEXT_PUBLIC_STEWARD_BOND_VAULT", process.env.NEXT_PUBLIC_STEWARD_BOND_VAULT),
 } as const;
 export const deployed = true;

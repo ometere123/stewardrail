@@ -16,7 +16,7 @@ assert network == {
 }
 required = [
     "contracts/steward_charter.py", "contracts/evidence_registry.py", "contracts/steward_guard.py",
-    "contracts/steward_court.py", "contracts/steward_vault.py", "frontend/package.json",
+    "contracts/steward_court.py", "contracts/steward_vault.py", "contracts/steward_bond_vault.py", "frontend/package.json",
     "docs/ARCHITECTURE.md", "docs/THREAT_MODEL.md", "docs/LIVE_TEST_PLAN.md",
 ]
 for rel in required:

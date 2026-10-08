@@ -69,6 +69,7 @@ def _mandate(issuer: str) -> str:
         }],
         "appeal": {"window_seconds": 60, "bond": 0},
         "evidence_window_seconds": 60,
+        "challenge": {"window_seconds": 60, "response_window_seconds": 60, "bond_floor": 5, "bond_bps": 500, "max_multiplier_bps": 30000, "decay_seconds": 3600},
     })
 
 
@@ -178,3 +179,26 @@ def test_charter_accepts_cli_native_json_values_direct_mode(direct_vm, direct_de
     with direct_vm.prank(bob):
         charter.approve_mandate(mandate)
     assert json.loads(charter.current())["version"] == 1
+
+
+def test_bond_vault_standing_and_challenge_settlement_direct_mode(direct_vm, direct_deploy, direct_accounts):
+    pytest.skip("genlayer-test 0.29.2 Direct Mode cannot load a second contract class in one process")
+    alice, bob, agent, issuer, guard, vault, challenger = direct_accounts[:7]
+    direct_vm.sender = alice
+    charter = direct_deploy(
+        ROOT / "contracts" / "steward_charter.py",
+        [_address(alice), _address(bob)], 2, _address(agent), _mandate(_address(issuer)),
+    )
+    bond = direct_deploy(ROOT / "contracts" / "steward_bond_vault.py", _address(charter), _address(agent))
+    charter.approve_bond_vault_binding(_address(bond), _address(guard), _address(vault))
+    with direct_vm.prank(bob):
+        charter.approve_bond_vault_binding(_address(bond), _address(guard), _address(vault))
+    bond.bind(_address(guard), _address(vault))
+    with direct_vm.prank(agent):
+        bond.deposit_standing(value=500)
+    assert json.loads(bond.status())["standing"] == 500
+    assert bond.quote_bond(200) == 10
+    with direct_vm.prank(challenger):
+        bond.open_challenge(7, 200, "delivery dispute", value=10)
+    with direct_vm.expect_revert("only the bound guard"):
+        bond.settle(0, False, 0, 0)

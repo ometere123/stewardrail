@@ -57,6 +57,9 @@ class StewardCharter(gl.Contract):
     unfreeze_approvals: TreeMap[str, u256]
     unfreeze_approved_by: TreeMap[str, u256]
     unfreeze_ready: TreeMap[str, u256]
+    bond_vault_approvals: TreeMap[str, u256]
+    bond_vault_approved_by: TreeMap[str, u256]
+    bond_vault_ready: TreeMap[str, u256]
 
     def __init__(self, principals_json: str, threshold: int, agent: str, initial_mandate_json: str):
         principals = _json_value(principals_json)
@@ -97,7 +100,7 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] mandate must be valid JSON") from exc
         if not isinstance(m, dict):
             raise gl.vm.UserError("[EXPECTED] mandate must be an object")
-        for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal", "evidence_window_seconds"):
+        for key in ("name", "deterministic", "semantic_rules", "issuers", "appeal", "evidence_window_seconds", "challenge"):
             if key not in m:
                 raise gl.vm.UserError("[EXPECTED] mandate missing " + key)
 
@@ -189,6 +192,14 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] v1 participant-gated appeals do not accept a monetary bond")
         if isinstance(m["evidence_window_seconds"], bool) or not isinstance(m["evidence_window_seconds"], int) or int(m["evidence_window_seconds"]) <= 0 or int(m["evidence_window_seconds"]) > 604800:
             raise gl.vm.UserError("[EXPECTED] evidence_window_seconds must be 1..604800")
+        challenge = m["challenge"]
+        if not isinstance(challenge, dict):
+            raise gl.vm.UserError("[EXPECTED] challenge policy must be an object")
+        for key in ("window_seconds", "response_window_seconds", "bond_floor", "bond_bps", "max_multiplier_bps", "decay_seconds"):
+            if isinstance(challenge.get(key), bool) or not isinstance(challenge.get(key), int):
+                raise gl.vm.UserError("[EXPECTED] challenge policy fields must be integers")
+        if int(challenge["window_seconds"]) <= 0 or int(challenge["response_window_seconds"]) <= 0 or int(challenge["bond_floor"]) <= 0 or int(challenge["bond_bps"]) < 0 or int(challenge["bond_bps"]) > 10000 or int(challenge["max_multiplier_bps"]) < 10000 or int(challenge["decay_seconds"]) <= 0:
+            raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")
         return _canonical(m)
 
     @gl.public.write
@@ -252,6 +263,24 @@ class StewardCharter(gl.Contract):
     def unfreeze_is_approved(self, guard: str, freeze_epoch: int, nonce: int) -> bool:
         action = _action_hash("guard-unfreeze-" + str(int(freeze_epoch)), str(guard), str(guard), 0, int(nonce))
         return int(self.unfreeze_ready.get(action, u256(0))) == 1
+
+    @gl.public.write
+    def approve_bond_vault_binding(self, bond_vault: str, guard: str, vault: str) -> None:
+        caller = self._require_principal()
+        action = _sha("bond-vault|" + _addr(bond_vault) + "|" + _addr(guard) + "|" + _addr(vault))
+        key = action + "|" + caller
+        if int(self.bond_vault_approved_by.get(key, u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] principal already approved this collateral binding")
+        self.bond_vault_approved_by[key] = u256(1)
+        count = int(self.bond_vault_approvals.get(action, u256(0))) + 1
+        self.bond_vault_approvals[action] = u256(count)
+        if count >= int(self.threshold):
+            self.bond_vault_ready[action] = u256(1)
+
+    @gl.public.view
+    def bond_vault_is_approved(self, bond_vault: str, guard: str, vault: str) -> bool:
+        action = _sha("bond-vault|" + _addr(bond_vault) + "|" + _addr(guard) + "|" + _addr(vault))
+        return int(self.bond_vault_ready.get(action, u256(0))) == 1
 
     @gl.public.view
     def current(self) -> str:

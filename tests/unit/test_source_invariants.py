@@ -9,7 +9,7 @@ def text(name): return (CONTRACTS/name).read_text()
 
 def test_exactly_five_deployable_contracts_and_no_generated_build_tree():
     names=sorted(p.name for p in CONTRACTS.glob('*.py'))
-    assert names==sorted(['steward_charter.py','evidence_registry.py','steward_guard.py','steward_court.py','steward_vault.py'])
+    assert names==sorted(['steward_charter.py','evidence_registry.py','steward_guard.py','steward_court.py','steward_vault.py','steward_bond_vault.py'])
     assert not (CONTRACTS/'build').exists()
     assert not list(CONTRACTS.rglob('*.min.py'))
 

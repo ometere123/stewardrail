@@ -27,6 +27,7 @@ class StewardVault(gl.Contract):
     charter: Address
     guard: Address
     court: Address
+    bond_vault: Address
     treasury: u256
     funded: u256
     paid_total: u256
@@ -34,16 +35,20 @@ class StewardVault(gl.Contract):
     terminal: TreeMap[u256, str]
     paid: TreeMap[u256, u256]
 
-    def __init__(self, charter: str, guard: str, court: str):
+    def __init__(self, charter: str, guard: str, court: str, bond_vault: str):
         self.charter = Address(str(charter))
         self.guard = Address(str(guard))
         self.court = Address(str(court))
+        self.bond_vault = Address(str(bond_vault))
         guard_info = json.loads(str(gl.get_contract_at(self.guard).view().info()))
         court_info = json.loads(str(gl.get_contract_at(self.court).view().info()))
         if _addr(guard_info["charter"]) != _addr(self.charter) or _addr(guard_info["court"]) != _addr(self.court):
             raise gl.vm.UserError("[EXPECTED] guard binding mismatch")
         if _addr(court_info["charter"]) != _addr(self.charter):
             raise gl.vm.UserError("[EXPECTED] court binding mismatch")
+        bond_info = json.loads(str(gl.get_contract_at(self.bond_vault).view().info()))
+        if _addr(bond_info["charter"]) != _addr(self.charter):
+            raise gl.vm.UserError("[EXPECTED] collateral binding mismatch")
         self.treasury = u256(0)
         self.funded = u256(0)
         self.paid_total = u256(0)
@@ -54,6 +59,16 @@ class StewardVault(gl.Contract):
         value = int(gl.message.value)
         if value <= 0:
             raise gl.vm.UserError("[EXPECTED] funding value must be positive")
+        self.treasury = u256(int(self.treasury) + value)
+        self.funded = u256(int(self.funded) + value)
+
+    @gl.public.write.payable
+    def receive_reimbursement(self) -> None:
+        if gl.message.sender_address != self.bond_vault:
+            raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may reimburse treasury")
+        value = int(gl.message.value)
+        if value <= 0:
+            raise gl.vm.UserError("[EXPECTED] reimbursement must be positive")
         self.treasury = u256(int(self.treasury) + value)
         self.funded = u256(int(self.funded) + value)
 
@@ -85,6 +100,10 @@ class StewardVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] terminal decision refuses payment")
         if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):
             raise gl.vm.UserError("[EXPECTED] terminal authorization has been revoked")
+        if bool(gl.get_contract_at(self.bond_vault).view().has_open_challenge(int(spend_id))):
+            raise gl.vm.UserError("[EXPECTED] an open challenge blocks payment")
+        if bool(gl.get_contract_at(self.bond_vault).view().has_upheld_challenge(int(spend_id))):
+            raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")
         amount = int(record["amount"])
         if amount > int(self.treasury):
             raise gl.vm.UserError("[EXPECTED] insufficient treasury")
@@ -118,11 +137,11 @@ class StewardVault(gl.Contract):
     @gl.public.view
     def status(self) -> str:
         return json.dumps({
-            "charter": _addr(self.charter), "guard": _addr(self.guard), "court": _addr(self.court),
+            "charter": _addr(self.charter), "guard": _addr(self.guard), "court": _addr(self.court), "bond_vault": _addr(self.bond_vault),
             "treasury": int(self.treasury), "funded": int(self.funded), "paid_total": int(self.paid_total),
             "recovery_nonce": int(self.recovery_nonce), "release": "steward-vault/1",
         })
 
     @gl.public.view
     def info(self) -> str:
-        return json.dumps({"charter": _addr(self.charter), "guard": _addr(self.guard), "court": _addr(self.court), "release": "steward-vault/1"})
+        return json.dumps({"charter": _addr(self.charter), "guard": _addr(self.guard), "court": _addr(self.court), "bond_vault": _addr(self.bond_vault), "release": "steward-vault/2"})

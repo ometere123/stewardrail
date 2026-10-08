@@ -25,13 +25,21 @@ be the intended charter principal.
    npx --no-install genlayer deploy --contract contracts/steward_court.py \
      --args <charter-address> <registry-address>
 
-4) Guard
+4) BondVault
+   npx --no-install genlayer deploy --contract contracts/steward_bond_vault.py \
+     --args <charter-address> <agent-address>
+
+5) Guard
    npx --no-install genlayer deploy --contract contracts/steward_guard.py \
      --args <charter-address> <registry-address> <court-address>
 
-5) Vault
+6) Vault
    npx --no-install genlayer deploy --contract contracts/steward_vault.py \
-     --args <charter-address> <guard-address> <court-address>
+     --args <charter-address> <guard-address> <court-address> <bond-vault-address>
+
+7) Threshold binding
+   Both principals approve `approve_bond_vault_binding(bond, guard, vault)`;
+   then any caller may execute `BondVault.bind(guard, vault)` exactly once.
 
 After every transaction, wait for FINALIZED and confirm successful execution.
 Record addresses and tx hashes in deploy/deployments.json. Never continue from an

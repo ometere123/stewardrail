@@ -20,6 +20,7 @@ def test_contract_class_names_are_stable():
     expected={
       'steward_charter.py':'StewardCharter','evidence_registry.py':'EvidenceRegistry',
       'steward_guard.py':'StewardGuard','steward_court.py':'StewardCourt','steward_vault.py':'StewardVault'}
+    expected['steward_bond_vault.py']='StewardBondVault'
     for file, cls in expected.items(): assert cls in class_names(file)
 
 

@@ -4,7 +4,7 @@ import pytest
 from tests.direct.genvm_stub import Runtime,load,deploy
 ROOT=Path(__file__).resolve().parents[2]
 A='0x'+'1'*40;B='0x'+'2'*40;AGENT='0x'+'3'*40;ISSUER='0x'+'4'*40;PAYEE='0x'+'5'*40;CHALLENGER='0x'+'6'*40
-CHARTER='0x'+'a'*40;REGISTRY='0x'+'b'*40;COURT='0x'+'c'*40;GUARD='0x'+'d'*40;VAULT='0x'+'e'*40
+CHARTER='0x'+'a'*40;REGISTRY='0x'+'b'*40;COURT='0x'+'c'*40;GUARD='0x'+'d'*40;VAULT='0x'+'e'*40;BOND='0x'+'f'*40
 URI='https://issuer.example/invoice/1'
 
 def mandate(tight=False, consequence="refuse", recipient_limit=None, usage="single_use"):
@@ -16,18 +16,22 @@ def mandate(tight=False, consequence="refuse", recipient_limit=None, usage="sing
       'semantic_rules':[{'id':'purpose','question':'Does the authenticated evidence show this spend serves the shared mandate?','when':{'type':'amount_gte','value':100},'evidence_roles':['invoice'],'consequence':consequence}],
       'issuers':[{'address':ISSUER,'role':'invoice','origins':['https://issuer.example'],'usage':usage}],
       'appeal':{'window_seconds':100,'bond':0},'evidence_window_seconds':60,
+      'challenge':{'window_seconds':1000,'response_window_seconds':60,'bond_floor':5,'bond_bps':500,'max_multiplier_bps':30000,'decay_seconds':3600},
     }
 
 def setup_stack(tight=False, consequence="refuse", usage="single_use"):
     rt=Runtime(); rt.sender=A
-    mods={n:load(str(ROOT/'contracts'/f'{n}.py'),rt) for n in ['steward_charter','evidence_registry','steward_court','steward_guard','steward_vault']}
+    mods={n:load(str(ROOT/'contracts'/f'{n}.py'),rt) for n in ['steward_charter','evidence_registry','steward_court','steward_guard','steward_vault','steward_bond_vault']}
     m=json.dumps(mandate(tight, consequence, usage=usage))
     deploy(rt,mods['steward_charter'],'StewardCharter',CHARTER,json.dumps([A,B]),2,AGENT,m,sender=A)
     deploy(rt,mods['evidence_registry'],'EvidenceRegistry',REGISTRY,sender=A)
     deploy(rt,mods['steward_court'],'StewardCourt',COURT,CHARTER,REGISTRY,sender=A)
+    deploy(rt,mods['steward_bond_vault'],'StewardBondVault',BOND,CHARTER,AGENT,sender=A)
     deploy(rt,mods['steward_guard'],'StewardGuard',GUARD,CHARTER,REGISTRY,COURT,sender=A)
-    deploy(rt,mods['steward_vault'],'StewardVault',VAULT,CHARTER,GUARD,COURT,sender=A)
+    deploy(rt,mods['steward_vault'],'StewardVault',VAULT,CHARTER,GUARD,COURT,BOND,sender=A)
     rt.call(CHARTER,'approve_mandate',m,sender=A);rt.call(CHARTER,'approve_mandate',m,sender=B)
+    rt.call(CHARTER,'approve_bond_vault_binding',BOND,GUARD,VAULT,sender=A);rt.call(CHARTER,'approve_bond_vault_binding',BOND,GUARD,VAULT,sender=B)
+    rt.call(BOND,'bind',GUARD,VAULT,sender=A)
     return rt
 
 def attest(rt,body=b'valid invoice'):
@@ -251,3 +255,28 @@ def test_reusable_evidence_can_support_two_spends():
         rt.now += 101
         rt.call(COURT,'close_unappealed',GUARD,spend_id,VAULT,sender=A); rt.flush_finalized()
     assert json.loads(rt.call(GUARD,'get_spend',1,sender=A))['terminal_economic']=='allow'
+
+def test_bonded_challenge_quote_open_blocks_payment_and_dismissal_settles():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.balances[AGENT]=2000; rt.call(BOND,'deposit_standing',sender=AGENT,value=1000)
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER); assert quote == 10
+    rt.balances[CHALLENGER]=100; rt.call(BOND,'open_challenge',0,200,'missing delivery',sender=CHALLENGER,value=quote)
+    with pytest.raises(Exception,match='open challenge blocks payment'): rt.call(VAULT,'pay',0,sender=A)
+    rt.call(BOND,'settle',0,False,0,0,sender=GUARD); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    rt.call(VAULT,'pay',0,sender=A)
+
+def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[AGENT]=1000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.balances[CHALLENGER]=100; rt.call(BOND,'open_challenge',0,200,'cause',sender=CHALLENGER,value=10)
+    with pytest.raises(Exception,match='only the bound guard'): rt.call(BOND,'settle',0,False,0,0,sender=A)
+    rt.call(BOND,'settle',0,False,0,0,sender=GUARD)
+    rt.call(BOND,'settle',0,False,0,0,sender=GUARD)

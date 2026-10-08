@@ -18,7 +18,7 @@ def text(name):
 
 def test_exactly_five_deployable_sources_and_each_has_runtime_pin():
     files = sorted(p.name for p in CONTRACTS.glob("*.py"))
-    assert files == ["evidence_registry.py", "steward_charter.py", "steward_court.py", "steward_guard.py", "steward_vault.py"]
+    assert files == ["evidence_registry.py", "steward_bond_vault.py", "steward_charter.py", "steward_court.py", "steward_guard.py", "steward_vault.py"]
     for name in files:
         first = text(name).splitlines()[0]
         assert '"Depends"' in first and "py-genlayer:" in first
@@ -54,6 +54,21 @@ def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
     assert "terminal decision refuses payment" in src
     assert "recovery_is_approved" in src
     assert "emit_transfer" in src
+
+
+def test_bond_vault_is_narrow_and_guard_bound():
+    src = text("steward_bond_vault.py")
+    assert "only the bound guard may settle challenges" in src
+    assert "only the configured agent may withdraw standing collateral" in src
+    assert "quote_bond" in src and "open_challenge" in src and "settle" in src
+    assert "gl.nondet" not in src
+    assert 'raise gl.vm.UserError("[EXPECTED] collateral binding lacks threshold approval")' in src
+    assert 'raise gl.vm.UserError("[EXPECTED] only the configured agent may withdraw standing collateral")' in src
+    assert 'raise gl.vm.UserError("[EXPECTED] only the bound guard may settle challenges")' in src
+    assert 'raise gl.vm.UserError("[EXPECTED] an open challenge blocks payment")' in text("steward_vault.py")
+    assert 'raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")' in text("steward_vault.py")
+    assert 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")' in text("steward_charter.py")
+    assert 'floor = int(policy["bond_floor"])' in src
 
 
 def test_charter_has_no_unilateral_historical_override():

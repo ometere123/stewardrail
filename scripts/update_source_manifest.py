@@ -8,6 +8,7 @@ OUT = CONTRACTS / "SOURCE_MANIFEST.json"
 FILES = [
     "steward_charter.py", "evidence_registry.py", "steward_court.py",
     "steward_guard.py", "steward_vault.py",
+    "steward_bond_vault.py",
 ]
 
 def build():

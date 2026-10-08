@@ -47,6 +47,13 @@ MUTANTS = [
     ("guard-evidence-duplicate", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] duplicate evidence identity")', "return"),
     ("guard-evidence-seal", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] evidence is sealed")', "return"),
     ("charter-evidence-window-validation", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] evidence_window_seconds must be 1..604800")', "return"),
+    ("bond-binding-approval", "steward_bond_vault.py", 'raise gl.vm.UserError("[EXPECTED] collateral binding lacks threshold approval")', "return"),
+    ("bond-agent-withdrawal", "steward_bond_vault.py", 'raise gl.vm.UserError("[EXPECTED] only the configured agent may withdraw standing collateral")', "return"),
+    ("bond-guard-settlement", "steward_bond_vault.py", 'raise gl.vm.UserError("[EXPECTED] only the bound guard may settle challenges")', "return"),
+    ("vault-open-challenge-block", "steward_vault.py", 'raise gl.vm.UserError("[EXPECTED] an open challenge blocks payment")', "return"),
+    ("vault-upheld-challenge-block", "steward_vault.py", 'raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")', "return"),
+    ("charter-challenge-schema", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")', "return"),
+    ("bond-quote-floor", "steward_bond_vault.py", 'floor = int(policy["bond_floor"])', 'floor = 0'),
 ]
 
 
