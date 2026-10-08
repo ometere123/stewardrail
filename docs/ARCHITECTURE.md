@@ -71,11 +71,19 @@ The vault does **not** infer finality from timestamps or from an `ACCEPTED` rece
 
 The frontend also reads accounting state with `LATEST_FINAL` where supported and reports consensus status and execution result separately.
 
-## 8. Custody and recovery
+## 8. Frozen enforcement consequences
+
+Each semantic rule may carry a mandate-approved consequence: `observe`, `refuse`, `freeze`, `revoke`, or `clawback`. Charter validates this enum before a version can activate. Observe-only rules still run through semantic adjudication and are recorded as an observed breach without refusing the spend solely because of that rule. A refusal-level result is an economic refusal. Freeze-level and stronger results set Guard's frozen state before new agent requests are considered.
+
+Unfreezing is not an owner operation. Principals approve an exact `(guard, freeze_epoch, nonce)` action through Charter, and Guard consumes that approval once. Replays and single-principal attempts fail.
+
+Guard also supports optional recipient-scoped rolling limits. The aggregation key is the canonical recipient address stored in the spend, never an agent-provided group identifier. Global and recipient exposure are evaluated from the same request-time ledger and preserve unresolved semantic reservations.
+
+## 9. Custody and recovery
 
 The vault pays an exact recipient and exact amount once. A terminal refusal is never payable. No agent withdrawal exists. Treasury recovery is available only after the charter threshold approves the exact vault, destination, amount and recovery nonce.
 
-## 9. Deployment order
+## 10. Deployment order
 
 1. `StewardCharter`
 2. `EvidenceRegistry`
@@ -85,6 +93,6 @@ The vault pays an exact recipient and exact amount once. A terminal refusal is n
 
 This order avoids circular mutable configuration. The court accepts primary decisions only from guards that self-report the same charter, registry and court. The vault is immutable-bound to one guard and one court.
 
-## 10. No generated deployable copy
+## 11. No generated deployable copy
 
 There is no `contracts/build`, minifier, code generator, or bundled contract copy. `contracts/*.py` is the readable source and the exact deployment input. `contracts/SOURCE_MANIFEST.json` records SHA-256 and byte size for those exact files. CI regenerates the manifest in check mode and fails on drift.

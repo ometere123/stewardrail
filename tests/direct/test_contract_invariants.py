@@ -107,3 +107,6 @@ def test_consequential_guards_remain_present():
     assert "category must be 1..64 characters" in guard
     assert "terminal == ALLOW" in guard
     assert "amount_gte value must be a non-negative integer" in charter
+    assert "unsupported semantic consequence" in charter
+    assert "approve_unfreeze" in charter and "unfreeze_is_approved" in charter
+    assert "threshold approval has not authorized this unfreeze" in guard

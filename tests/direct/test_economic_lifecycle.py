@@ -7,19 +7,21 @@ A='0x'+'1'*40;B='0x'+'2'*40;AGENT='0x'+'3'*40;ISSUER='0x'+'4'*40;PAYEE='0x'+'5'*
 CHARTER='0x'+'a'*40;REGISTRY='0x'+'b'*40;COURT='0x'+'c'*40;GUARD='0x'+'d'*40;VAULT='0x'+'e'*40
 URI='https://issuer.example/invoice/1'
 
-def mandate(tight=False):
+def mandate(tight=False, consequence="refuse", recipient_limit=None):
     rolling_amount = 1000 if tight else 5000
+    deterministic={'max_per_spend':1000,'rolling_limit':{'amount':rolling_amount,'seconds':86400},'category_allowlist':['ops'],'recipient_denylist':[]}
+    if recipient_limit is not None: deterministic['recipient_rolling']={'amount':recipient_limit,'seconds':86400}
     return {
-      'name':'Shared Treasury','deterministic':{'max_per_spend':1000,'rolling_limit':{'amount':rolling_amount,'seconds':86400},'category_allowlist':['ops'],'recipient_denylist':[]},
-      'semantic_rules':[{'id':'purpose','question':'Does the authenticated evidence show this spend serves the shared mandate?','when':{'type':'amount_gte','value':100},'evidence_roles':['invoice']}],
+      'name':'Shared Treasury','deterministic':deterministic,
+      'semantic_rules':[{'id':'purpose','question':'Does the authenticated evidence show this spend serves the shared mandate?','when':{'type':'amount_gte','value':100},'evidence_roles':['invoice'],'consequence':consequence}],
       'issuers':[{'address':ISSUER,'role':'invoice','origins':['https://issuer.example']}],
       'appeal':{'window_seconds':100,'bond':0},
     }
 
-def setup_stack(tight=False):
+def setup_stack(tight=False, consequence="refuse"):
     rt=Runtime(); rt.sender=A
     mods={n:load(str(ROOT/'contracts'/f'{n}.py'),rt) for n in ['steward_charter','evidence_registry','steward_court','steward_guard','steward_vault']}
-    m=json.dumps(mandate(tight))
+    m=json.dumps(mandate(tight, consequence))
     deploy(rt,mods['steward_charter'],'StewardCharter',CHARTER,json.dumps([A,B]),2,AGENT,m,sender=A)
     deploy(rt,mods['evidence_registry'],'EvidenceRegistry',REGISTRY,sender=A)
     deploy(rt,mods['steward_court'],'StewardCourt',COURT,CHARTER,REGISTRY,sender=A)
@@ -147,3 +149,45 @@ def test_terminal_reconciliation_redelivers_idempotently():
     rt.call(COURT,'reconcile_terminal',GUARD,0,VAULT,sender=A); rt.flush_finalized()
     second=json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal']
     assert first==second
+
+def test_freeze_requires_threshold_unfreeze_and_replay_fails():
+    rt=setup_stack(consequence="freeze"); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'breach'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
+    rt.now += 101; rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    status=json.loads(rt.call(GUARD,'enforcement_status',sender=A)); assert status['agent_frozen'] is True
+    with pytest.raises(Exception, match='frozen'):
+        rt.call(GUARD,'request_spend',PAYEE,1,'ops',sender=AGENT)
+    with pytest.raises(Exception, match='threshold approval'):
+        rt.call(GUARD,'unfreeze',sender=A)
+    epoch=status['freeze_epoch']; nonce=status['unfreeze_nonce']
+    rt.call(CHARTER,'approve_unfreeze',GUARD,epoch,nonce,sender=A)
+    with pytest.raises(Exception, match='threshold approval'):
+        rt.call(GUARD,'unfreeze',sender=A)
+    rt.call(CHARTER,'approve_unfreeze',GUARD,epoch,nonce,sender=B)
+    rt.call(GUARD,'unfreeze',sender=A)
+    with pytest.raises(Exception, match='threshold approval'):
+        rt.call(GUARD,'unfreeze',sender=A)
+
+def test_observe_consequence_records_observed_breach_without_refusal():
+    rt=setup_stack(consequence="observe"); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'observed mismatch'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
+    spend=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert spend['state']=='allow'
+    assert spend['enforcement']=='observe'
+    assert 'observed breach' in spend['reason']
+
+def test_charter_rejects_unknown_enforcement_consequence():
+    rt=setup_stack()
+    with pytest.raises(Exception, match='unsupported semantic consequence'):
+        rt.call(CHARTER,'approve_mandate',json.dumps(mandate(consequence='owner_override')),sender=A)
+
+def test_recipient_rolling_limit_blocks_split_spend():
+    rt=setup_stack()
+    proposal=json.dumps(mandate(recipient_limit=500))
+    rt.call(CHARTER,'approve_mandate',proposal,sender=A); rt.call(CHARTER,'approve_mandate',proposal,sender=B)
+    for _ in range(2): rt.call(GUARD,'request_spend',PAYEE,199,'ops',sender=AGENT)
+    rt.call(GUARD,'request_spend',PAYEE,199,'ops',sender=AGENT)
+    third=json.loads(rt.call(GUARD,'get_spend',2,sender=A))
+    assert third['state']=='refuse' and 'recipient rolling' in third['reason']

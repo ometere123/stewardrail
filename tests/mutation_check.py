@@ -38,6 +38,8 @@ MUTANTS = [
     ("court-appeal-role-gate", "steward_court.py", 'raise gl.vm.UserError("[EXPECTED] appeal cannot produce ALLOW without authenticated roles: " + ",".join(missing))', "return"),
     ("charter-trigger-type", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] amount_gte value must be a non-negative integer")', "return"),
     ("guard-usage-policy", "steward_guard.py", 'if str(item.get("usage", "single_use")) != expected_usage:', 'if False:'),
+    ("charter-consequence-validation", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] unsupported semantic consequence")', "return"),
+    ("guard-unfreeze-threshold", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] threshold approval has not authorized this unfreeze")', "return"),
 ]
 
 

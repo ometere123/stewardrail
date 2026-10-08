@@ -54,6 +54,9 @@ class StewardCharter(gl.Contract):
     recovery_approvals: TreeMap[str, u256]
     recovery_approved_by: TreeMap[str, u256]
     recovery_ready: TreeMap[str, u256]
+    unfreeze_approvals: TreeMap[str, u256]
+    unfreeze_approved_by: TreeMap[str, u256]
+    unfreeze_ready: TreeMap[str, u256]
 
     def __init__(self, principals_json: str, threshold: int, agent: str, initial_mandate_json: str):
         principals = _json_value(principals_json)
@@ -109,6 +112,10 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] rolling_limit must be an object")
         if isinstance(rolling.get("seconds"), bool) or not isinstance(rolling.get("seconds"), int) or isinstance(rolling.get("amount"), bool) or not isinstance(rolling.get("amount"), int) or int(rolling.get("seconds", 0)) <= 0 or int(rolling.get("amount", 0)) <= 0:
             raise gl.vm.UserError("[EXPECTED] rolling_limit needs positive seconds and amount")
+        recipient_rolling = deterministic.get("recipient_rolling")
+        if recipient_rolling is not None:
+            if not isinstance(recipient_rolling, dict) or isinstance(recipient_rolling.get("seconds"), bool) or not isinstance(recipient_rolling.get("seconds"), int) or isinstance(recipient_rolling.get("amount"), bool) or not isinstance(recipient_rolling.get("amount"), int) or int(recipient_rolling.get("seconds", 0)) <= 0 or int(recipient_rolling.get("amount", 0)) <= 0:
+                raise gl.vm.UserError("[EXPECTED] recipient_rolling needs positive seconds and amount")
 
         rules = m["semantic_rules"]
         if not isinstance(rules, list) or len(rules) < 1 or len(rules) > 16:
@@ -144,6 +151,9 @@ class StewardCharter(gl.Contract):
                     raise gl.vm.UserError("[EXPECTED] invalid evidence role")
                 if role_name not in required_roles:
                     required_roles.append(role_name)
+            consequence = str(rule.get("consequence", "refuse")).strip().lower()
+            if consequence not in ("observe", "refuse", "freeze", "revoke", "clawback"):
+                raise gl.vm.UserError("[EXPECTED] unsupported semantic consequence")
 
         issuers = m["issuers"]
         if not isinstance(issuers, list) or len(issuers) < 1 or len(issuers) > 32:
@@ -220,6 +230,26 @@ class StewardCharter(gl.Contract):
     def recovery_is_approved(self, vault: str, to: str, amount: int, nonce: int) -> bool:
         action = _action_hash("vault-recovery", str(vault), str(to), int(amount), int(nonce))
         return int(self.recovery_ready.get(action, u256(0))) == 1
+
+    @gl.public.write
+    def approve_unfreeze(self, guard: str, freeze_epoch: int, nonce: int) -> None:
+        caller = self._require_principal()
+        if int(freeze_epoch) < 0 or int(nonce) < 0:
+            raise gl.vm.UserError("[EXPECTED] freeze epoch and nonce must be non-negative")
+        action = _action_hash("guard-unfreeze-" + str(int(freeze_epoch)), str(guard), str(guard), 0, int(nonce))
+        key = action + "|" + caller
+        if int(self.unfreeze_approved_by.get(key, u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] principal already approved this unfreeze")
+        self.unfreeze_approved_by[key] = u256(1)
+        count = int(self.unfreeze_approvals.get(action, u256(0))) + 1
+        self.unfreeze_approvals[action] = u256(count)
+        if count >= int(self.threshold):
+            self.unfreeze_ready[action] = u256(1)
+
+    @gl.public.view
+    def unfreeze_is_approved(self, guard: str, freeze_epoch: int, nonce: int) -> bool:
+        action = _action_hash("guard-unfreeze-" + str(int(freeze_epoch)), str(guard), str(guard), 0, int(nonce))
+        return int(self.unfreeze_ready.get(action, u256(0))) == 1
 
     @gl.public.view
     def current(self) -> str:

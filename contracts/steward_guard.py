@@ -79,6 +79,11 @@ class StewardGuard(gl.Contract):
     terminal_reason: TreeMap[u256, str]
     terminal_fingerprint: TreeMap[u256, str]
     terminal_evidence: TreeMap[str, str]
+    enforcement: TreeMap[u256, str]
+    agent_frozen: u256
+    freeze_epoch: u256
+    unfreeze_nonce: u256
+    freeze_reason: str
 
     def __init__(self, charter: str, registry: str, court: str):
         self.charter = Address(str(charter))
@@ -92,6 +97,10 @@ class StewardGuard(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] court is bound to another evidence registry")
         self.agent = Address(str(info["agent"]))
         self.spend_count = u256(0)
+        self.agent_frozen = u256(0)
+        self.freeze_epoch = u256(0)
+        self.unfreeze_nonce = u256(0)
+        self.freeze_reason = ""
 
     def _now(self) -> int:
         return int(datetime.datetime.now().timestamp())
@@ -125,6 +134,22 @@ class StewardGuard(gl.Contract):
             i += 1
         return total
 
+    def _recipient_total(self, now: int, seconds: int, recipient: str) -> int:
+        floor = int(now) - int(seconds)
+        total = 0
+        target = _addr(str(recipient))
+        i = 0
+        while i < int(self.spend_count):
+            key = u256(i)
+            if _addr(str(self.recipient[key])) == target:
+                at = int(self.requested_at[key])
+                terminal = str(self.terminal_state.get(key, ""))
+                semantic = self._is_semantic(key)
+                if floor < at <= int(now) and (terminal == ALLOW or (terminal == "" and (semantic or str(self.state[key]) != REFUSE))):
+                    total += int(self.amount[key])
+            i += 1
+        return total
+
     def _classify(self, mandate: dict, amount: int, recipient: str, category: str, now: int) -> dict:
         d = mandate["deterministic"]
         if int(amount) <= 0:
@@ -135,6 +160,11 @@ class StewardGuard(gl.Contract):
         exposure = self._rolling_total(now, int(rolling["seconds"])) + int(amount)
         if exposure > int(rolling["amount"]):
             return {"state": REFUSE, "rules": ["rolling_limit"], "reason": "rolling authorization exposure exceeded"}
+        recipient_rolling = d.get("recipient_rolling")
+        if isinstance(recipient_rolling, dict):
+            scoped = self._recipient_total(now, int(recipient_rolling["seconds"]), recipient) + int(amount)
+            if scoped > int(recipient_rolling["amount"]):
+                return {"state": REFUSE, "rules": ["recipient_rolling"], "reason": "recipient rolling authorization exposure exceeded"}
         categories = d.get("category_allowlist", [])
         if isinstance(categories, list) and len(categories) > 0 and str(category) not in [str(x) for x in categories]:
             return {"state": REFUSE, "rules": ["category_allowlist"], "reason": "category is not allowed"}
@@ -235,6 +265,8 @@ class StewardGuard(gl.Contract):
     def request_spend(self, recipient: str, amount: int, category: str) -> None:
         if gl.message.sender_address != self.agent:
             raise gl.vm.UserError("[EXPECTED] only the charter agent may request a spend")
+        if int(self.agent_frozen) == 1:
+            raise gl.vm.UserError("[EXPECTED] agent spending is frozen")
         if not isinstance(category, str) or len(category) == 0 or len(category) > 64:
             raise gl.vm.UserError("[EXPECTED] category must be 1..64 characters")
         if any((not (ch.isalnum() or ch in " _-")) for ch in category):
@@ -254,6 +286,7 @@ class StewardGuard(gl.Contract):
         self.requested_at[key] = u256(now)
         self.version[key] = u256(version)
         self.state[key] = str(decision["state"])
+        self.enforcement[key] = "allow" if decision["state"] == ALLOW else ("held" if decision["state"] == HELD else "refuse")
         self.fired_rules[key] = json.dumps(decision["rules"])
         self.reason[key] = str(decision["reason"])
         self.confidence[key] = u256(100 if decision["state"] != HELD else 0)
@@ -348,6 +381,18 @@ class StewardGuard(gl.Contract):
             return str(theirs["verdict"]) == str(mine["verdict"])
 
         agreed = _verdict(gl.vm.run_nondet(leader, validator, compare_user_errors=True))
+        observe_only = True
+        for rule in mandate.get("semantic_rules", []):
+            if str(rule.get("id", "")) in fired and str(rule.get("consequence", "refuse")).strip().lower() != "observe":
+                observe_only = False
+        if observe_only and str(agreed["verdict"]) == REFUSE:
+            agreed["verdict"] = ALLOW
+            agreed["reason"] = "observed breach: " + str(agreed["reason"])
+            self.enforcement[key] = "observe"
+        elif str(agreed["verdict"]) == REFUSE:
+            self.enforcement[key] = "refuse"
+        else:
+            self.enforcement[key] = "allow"
         self.state[key] = str(agreed["verdict"])
         self.reason[key] = str(agreed["reason"])
         self.confidence[key] = u256(int(agreed["confidence"]))
@@ -392,9 +437,15 @@ class StewardGuard(gl.Contract):
             return
         economic = str(semantic_decision)
         reason = "semantic terminal decision accepted"
+        mandate = self._mandate(int(self.version[key]))
+        fired = [str(x) for x in json.loads(self.fired_rules[key])]
+        severe = []
+        for rule in mandate.get("semantic_rules", []):
+            if str(rule.get("id", "")) in fired:
+                consequence = str(rule.get("consequence", "refuse")).strip().lower()
+                if consequence in ("freeze", "revoke", "clawback"):
+                    severe.append(consequence)
         if str(semantic_decision) == ALLOW:
-            mandate = self._mandate(int(self.version[key]))
-            fired = [str(x) for x in json.loads(self.fired_rules[key])]
             required = self._required_roles(mandate, fired)
             valid_roles = []
             for item in normalized:
@@ -423,6 +474,16 @@ class StewardGuard(gl.Contract):
                 if self._rolling_total(self._now(), int(mandate["deterministic"]["rolling_limit"]["seconds"])) > int(mandate["deterministic"]["rolling_limit"]["amount"]):
                     economic = REFUSE
                     reason = "terminal authorization exposure exceeds mandate"
+        if economic == REFUSE and severe:
+            highest = "clawback" if "clawback" in severe else ("revoke" if "revoke" in severe else "freeze")
+            if highest == "freeze":
+                self.agent_frozen = u256(1)
+                self.freeze_epoch = u256(int(self.freeze_epoch) + 1)
+                self.freeze_reason = "terminal semantic breach requires freeze"
+            elif highest in ("revoke", "clawback"):
+                self.agent_frozen = u256(1)
+                self.freeze_epoch = u256(int(self.freeze_epoch) + 1)
+                self.freeze_reason = "terminal semantic breach requires " + highest
         fingerprint = self._terminal_fingerprint(int(spend_id), str(semantic_decision), economic, str(vault), key, identities)
         self.terminal_semantic[key] = str(semantic_decision)
         self.terminal_state[key] = economic
@@ -454,10 +515,30 @@ class StewardGuard(gl.Contract):
             "terminal_semantic": str(self.terminal_semantic.get(key, "")),
             "terminal_economic": str(self.terminal_state.get(key, "")),
             "terminal_state": str(self.terminal_state.get(key, "")),
+            "enforcement": str(self.enforcement.get(key, "")),
             "terminal_reason": str(self.terminal_reason.get(key, "")),
             "terminal_evidence": json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")),
             "rules": json.loads(self.fired_rules[key]), "reason": str(self.reason[key]),
             "confidence": int(self.confidence[key]), "evidence": self._evidence_items(key),
+            "agent_frozen": int(self.agent_frozen) == 1,
+        })
+
+    @gl.public.write
+    def unfreeze(self) -> None:
+        approved = bool(self._charter().unfreeze_is_approved(_addr(gl.message.contract_address), int(self.freeze_epoch), int(self.unfreeze_nonce)))
+        if not approved:
+            raise gl.vm.UserError("[EXPECTED] threshold approval has not authorized this unfreeze")
+        self.agent_frozen = u256(0)
+        self.freeze_reason = ""
+        self.unfreeze_nonce = u256(int(self.unfreeze_nonce) + 1)
+
+    @gl.public.view
+    def enforcement_status(self) -> str:
+        return json.dumps({
+            "agent_frozen": int(self.agent_frozen) == 1,
+            "freeze_epoch": int(self.freeze_epoch),
+            "unfreeze_nonce": int(self.unfreeze_nonce),
+            "reason": str(self.freeze_reason),
         })
 
     @gl.public.view

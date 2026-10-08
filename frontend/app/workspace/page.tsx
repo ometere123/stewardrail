@@ -10,6 +10,7 @@ export default function Workspace(){return <>
     <Panel title="Deployment" className="wide"><div className="stats"><Stat label="NETWORK" value="61999" note="stable Studionet"/><Stat label="CONTRACTS" value="5" note="exact readable sources"/><Stat label="STATUS" value={deployed?"LIVE":"PRE-DEPLOY"}/></div><div className="divider"/><p className="mono">Guard: {DEPLOYMENTS.guard||"not deployed"}</p><p className="mono">Vault: {DEPLOYMENTS.vault||"not deployed"}</p></Panel>
     <Panel title="Actions"><div className="stack"><Link className="button" href="/charters/new">Create charter</Link><Link className="button secondary" href="/spends/new">Request spend</Link><Link className="button secondary" href="/evidence">Attest evidence</Link></div></Panel>
     <Panel title="Charter"><ReadJson address={DEPLOYMENTS.charter} method="current" /></Panel>
+    <Panel title="Agent enforcement"><ReadJson address={DEPLOYMENTS.guard} method="enforcement_status" /></Panel>
     <Panel title="Docket"><ReadJson address={DEPLOYMENTS.guard} method="docket" /></Panel>
     <Panel title="Vault"><ReadJson address={DEPLOYMENTS.vault} method="status" /></Panel>
   </div>

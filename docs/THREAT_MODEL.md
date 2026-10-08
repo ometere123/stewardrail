@@ -17,6 +17,10 @@
 | T13 | Wrong network signing | frontend checks chain id 61999 before every write; deployment preflight checks network | user can bypass repo tooling manually |
 | T14 | Frontend claims accepted tx succeeded | waits for decision/finalization and checks execution outcome | gateway/API incompatibility must be surfaced as unknown, never assumed success |
 | T15 | Readable/generated contract drift | no second deployable representation exists | deployment operator can still choose a different file outside repo; proof packet records hashes |
+| T16 | Observe rule silently blocks spending | consequence is frozen in the mandate and Guard records `enforcement=observe` while preserving the semantic case | observe-only policy does not provide economic protection by itself |
+| T17 | Severe semantic breach leaves the agent able to continue requesting | Guard freezes agent requests at terminal enforcement and exposes epoch/reason | a threshold must explicitly approve unfreeze |
+| T18 | One principal lifts a freeze or replays an unfreeze | Charter thresholds an exact guard/epoch/nonce action; Guard consumes nonce once | threshold principals can intentionally unfreeze by design |
+| T19 | Spend splitting evades a recipient limit | optional recipient rolling exposure derives its key from the canonical recipient address | limits must be configured in the frozen mandate |
 
 ## Evidence authenticity boundary
 
