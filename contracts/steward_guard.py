@@ -75,6 +75,9 @@ class StewardGuard(gl.Contract):
     evidence_count: TreeMap[u256, u256]
     evidence: TreeMap[str, str]
     terminal_state: TreeMap[u256, str]
+    terminal_semantic: TreeMap[u256, str]
+    terminal_reason: TreeMap[u256, str]
+    terminal_fingerprint: TreeMap[u256, str]
     terminal_evidence: TreeMap[str, str]
 
     def __init__(self, charter: str, registry: str, court: str):
@@ -116,7 +119,8 @@ class StewardGuard(gl.Contract):
             key = u256(i)
             at = int(self.requested_at[key])
             terminal = str(self.terminal_state.get(key, ""))
-            if floor < at <= int(now) and (terminal == ALLOW or (terminal == "" and self.state[key] != REFUSE)):
+            semantic = self._is_semantic(key)
+            if floor < at <= int(now) and (terminal == ALLOW or (terminal == "" and (semantic or self.state[key] != REFUSE))):
                 total += int(self.amount[key])
             i += 1
         return total
@@ -168,6 +172,9 @@ class StewardGuard(gl.Contract):
         policy = self._issuer_policy(mandate, issuer, role)
         if policy is None or not _is_sha256(digest):
             return False
+        expected_usage = "reusable" if str(policy.get("usage", "single_use")) == "reusable" else "single_use"
+        if str(item.get("usage", "single_use")) != expected_usage:
+            return False
         origin = _origin(uri)
         allowed = [str(x).lower().rstrip("/") for x in policy.get("origins", [])]
         if origin == "" or origin not in allowed:
@@ -183,6 +190,18 @@ class StewardGuard(gl.Contract):
                         out.append(str(role))
         return out
 
+    def _is_semantic(self, key) -> bool:
+        mandate = self._mandate(int(self.version[key]))
+        fired = [str(x) for x in json.loads(self.fired_rules[key])]
+        semantic_ids = [str(rule["id"]) for rule in mandate.get("semantic_rules", [])]
+        return any(rule_id in semantic_ids for rule_id in fired)
+
+    def _vault_info(self, vault: str) -> dict:
+        info = json.loads(str(gl.get_contract_at(Address(str(vault))).view().info()))
+        if _addr(info.get("guard", "")) != _addr(gl.message.contract_address) or _addr(info.get("court", "")) != _addr(self.court) or _addr(info.get("charter", "")) != _addr(self.charter):
+            raise gl.vm.UserError("[EXPECTED] vault binding mismatch")
+        return info
+
     def _evidence_items(self, key) -> list:
         out = []
         i = 0
@@ -190,6 +209,13 @@ class StewardGuard(gl.Contract):
             out.append(json.loads(self.evidence[str(int(key)) + "|" + str(i)]))
             i += 1
         return out
+
+    def _terminal_fingerprint(self, spend_id: int, semantic: str, economic: str, vault: str, key, identities: list) -> str:
+        return hashlib.sha256(json.dumps({
+            "spend_id": int(spend_id), "semantic": str(semantic), "economic": str(economic),
+            "vault": _addr(str(vault)), "amount": int(self.amount[key]),
+            "recipient": str(self.recipient[key]), "evidence": identities,
+        }, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
     def _send_primary(self, spend_id: int, decision: str, reason: str, confidence: int) -> None:
         key = self._require_spend(spend_id)
@@ -328,39 +354,88 @@ class StewardGuard(gl.Contract):
         self._send_primary(int(spend_id), str(agreed["verdict"]), str(agreed["reason"]), int(agreed["confidence"]))
 
     @gl.public.write
-    def record_terminal_effective(self, spend_id: int, decision: str, evidence_json: str) -> None:
+    def apply_terminal_decision(self, spend_id: int, semantic_decision: str, evidence_json: str, vault: str) -> None:
         if gl.message.sender_address != self.court:
-            raise gl.vm.UserError("[EXPECTED] only the bound court may record terminal accounting")
+            raise gl.vm.UserError("[EXPECTED] only the bound court may apply terminal decisions")
         key = self._require_spend(spend_id)
-        if str(decision) not in (ALLOW, REFUSE):
-            raise gl.vm.UserError("[EXPECTED] invalid terminal accounting decision")
-        existing = str(self.terminal_state.get(key, ""))
-        if existing != "" and existing != str(decision):
-            raise gl.vm.UserError("[EXPECTED] conflicting terminal accounting decision")
-        if existing == str(decision):
-            return
+        if str(semantic_decision) not in (ALLOW, REFUSE):
+            raise gl.vm.UserError("[EXPECTED] invalid semantic terminal decision")
+        self._vault_info(str(vault))
+        vault_target = gl.get_contract_at(Address(str(vault)))
         try:
             items = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
         except Exception as exc:
             raise gl.vm.UserError("[EXPECTED] terminal evidence must be valid JSON") from exc
         if not isinstance(items, list) or len(items) > 12:
             raise gl.vm.UserError("[EXPECTED] terminal evidence list is invalid")
-        identities = []
+        normalized = []
         for item in items:
-            if str(item.get("usage", "single_use")) == "reusable":
-                continue
-            token = "|".join([_addr(str(item.get("issuer", ""))), str(item.get("role", "")), str(item.get("uri", "")), str(item.get("digest", "")).lower()])
-            if token not in identities:
-                identities.append(token)
-        if str(decision) == ALLOW:
-            for token in identities:
-                previous = self.terminal_evidence.get(token, "")
-                if previous != "" and previous != str(int(spend_id)):
-                    raise gl.vm.UserError("[EXPECTED] single-use evidence already consumed")
-            for token in identities:
-                self.terminal_evidence[token] = str(int(spend_id))
-        self.terminal_state[key] = str(decision)
+            if not isinstance(item, dict):
+                raise gl.vm.UserError("[EXPECTED] terminal evidence item must be an object")
+            normalized.append({
+                "issuer": _addr(str(item.get("issuer", ""))),
+                "role": str(item.get("role", "")),
+                "uri": str(item.get("uri", "")),
+                "digest": str(item.get("digest", "")).lower(),
+                "usage": str(item.get("usage", "single_use")),
+            })
+        normalized.sort(key=lambda item: "|".join([item["issuer"], item["role"], item["uri"], item["digest"]]))
+        identities = ["|".join([item["issuer"], item["role"], item["uri"], item["digest"]]) for item in normalized]
+        existing = str(self.terminal_fingerprint.get(key, ""))
+        if existing != "":
+            stored_economic = str(self.terminal_state.get(key, ""))
+            if self._terminal_fingerprint(int(spend_id), str(semantic_decision), stored_economic, str(vault), key, identities) != existing:
+                raise gl.vm.UserError("[EXPECTED] conflicting terminal authorization payload")
+            vault_target.emit(on="finalized").record_terminal(
+                _addr(gl.message.contract_address), int(spend_id), stored_economic, int(self.amount[key]), str(self.recipient[key])
+            )
+            return
+        economic = str(semantic_decision)
+        reason = "semantic terminal decision accepted"
+        if str(semantic_decision) == ALLOW:
+            mandate = self._mandate(int(self.version[key]))
+            fired = [str(x) for x in json.loads(self.fired_rules[key])]
+            required = self._required_roles(mandate, fired)
+            valid_roles = []
+            for item in normalized:
+                if self._valid_evidence(key, mandate, item) and str(item["role"]) not in valid_roles:
+                    valid_roles.append(str(item["role"]))
+            missing = [role for role in required if role not in valid_roles]
+            if missing:
+                economic = REFUSE
+                reason = "required authenticated evidence invalid at terminal authorization: " + ",".join(missing)
+            else:
+                for item in normalized:
+                    if item["usage"] not in ("single_use", "reusable"):
+                        economic = REFUSE
+                        reason = "invalid evidence usage policy"
+                        break
+                if economic == ALLOW:
+                    for token in identities:
+                        if normalized[identities.index(token)]["usage"] == "reusable":
+                            continue
+                        previous = self.terminal_evidence.get(token, "")
+                        if previous != "" and previous != str(int(spend_id)):
+                            economic = REFUSE
+                            reason = "single-use evidence already consumed"
+                            break
+            if economic == ALLOW:
+                if self._rolling_total(self._now(), int(mandate["deterministic"]["rolling_limit"]["seconds"])) > int(mandate["deterministic"]["rolling_limit"]["amount"]):
+                    economic = REFUSE
+                    reason = "terminal authorization exposure exceeds mandate"
+        fingerprint = self._terminal_fingerprint(int(spend_id), str(semantic_decision), economic, str(vault), key, identities)
+        self.terminal_semantic[key] = str(semantic_decision)
+        self.terminal_state[key] = economic
+        self.terminal_reason[key] = reason
+        self.terminal_fingerprint[key] = fingerprint
         self.terminal_evidence[str(int(spend_id))] = json.dumps(identities)
+        if economic == ALLOW:
+            for token in identities:
+                if normalized[identities.index(token)]["usage"] != "reusable":
+                    self.terminal_evidence[token] = str(int(spend_id))
+        vault_target.emit(on="finalized").record_terminal(
+            _addr(gl.message.contract_address), int(spend_id), economic, int(self.amount[key]), str(self.recipient[key])
+        )
 
     @gl.public.view
     def preview_spend(self, recipient: str, amount: int, category: str) -> str:
@@ -376,7 +451,11 @@ class StewardGuard(gl.Contract):
             "id": int(spend_id), "amount": int(self.amount[key]), "recipient": str(self.recipient[key]),
             "category": str(self.category[key]), "requested_at": int(self.requested_at[key]),
             "version": int(self.version[key]), "state": str(self.state[key]),
+            "terminal_semantic": str(self.terminal_semantic.get(key, "")),
+            "terminal_economic": str(self.terminal_state.get(key, "")),
             "terminal_state": str(self.terminal_state.get(key, "")),
+            "terminal_reason": str(self.terminal_reason.get(key, "")),
+            "terminal_evidence": json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")),
             "rules": json.loads(self.fired_rules[key]), "reason": str(self.reason[key]),
             "confidence": int(self.confidence[key]), "evidence": self._evidence_items(key),
         })

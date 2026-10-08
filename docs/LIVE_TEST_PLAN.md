@@ -1,6 +1,6 @@
 # Studionet 61999 live proof plan
 
-A repository can target 5/5/5, but the final submission should not claim it until this packet exists from a fresh deployment.
+The final submission should not claim completion until this packet exists from a fresh deployment.
 
 ## Network gate
 

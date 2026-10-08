@@ -59,8 +59,8 @@ class StewardVault(gl.Contract):
 
     @gl.public.write
     def record_terminal(self, guard: str, spend_id: int, decision: str, amount: int, recipient: str) -> None:
-        if gl.message.sender_address != self.court:
-            raise gl.vm.UserError("[EXPECTED] only the bound court may record terminal decisions")
+        if gl.message.sender_address != self.guard:
+            raise gl.vm.UserError("[EXPECTED] only the bound guard may record terminal economic decisions")
         if _addr(guard) != _addr(self.guard) or str(decision) not in (ALLOW, REFUSE) or int(amount) <= 0:
             raise gl.vm.UserError("[EXPECTED] invalid terminal decision")
         key = u256(int(spend_id))

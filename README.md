@@ -60,7 +60,7 @@ This creates three independent trust layers:
 | `steward_court.py` | one explicit application-level appeal with reversal semantics | pay funds; rewrite original record |
 | `steward_vault.py` | hold GEN and pay only terminal effective ALLOW decisions | adjudicate; bypass appeal/finality windows |
 
-## 5/5/5 review targets
+## Design goals
 
 ### GenLayer fit
 
@@ -154,7 +154,7 @@ npm run build
 
 ## Live proof required before submission
 
-Do not claim 5/5/5 from repository structure alone. Before submission, run and preserve a fresh Studionet lifecycle proving:
+Repository structure alone is not live evidence. Before submission, run and preserve a fresh Studionet lifecycle proving:
 
 1. two of three principals activate a mandate;
 2. an authorized issuer attests an evidence digest;

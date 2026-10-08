@@ -12,6 +12,45 @@ function successfulReceipt(receipt: any, expectedStatus: "ACCEPTED" | "FINALIZED
     && receipt?.txExecutionResultName === "FINISHED_WITH_RETURN";
 }
 
+async function settleTriggered(client: any, parentHash: string, base: TxRecord, onProgress: (tx: TxRecord) => void): Promise<TxRecord> {
+  const seen = new Set<string>();
+  const children = [...(base.children ?? [])];
+  const visit = async (hash: string, depth: number): Promise<boolean> => {
+    if (depth > 4 || seen.has(hash)) return true;
+    seen.add(hash);
+    let decided: any;
+    try {
+      decided = await client.waitForDecision({ hash });
+    } catch (error: any) {
+      children.push({ hash, phase: "failed", error: String(error?.message ?? error) });
+      return false;
+    }
+    const child = { hash, phase: "decided" as const, status: decided?.statusName, execution: decided?.txExecutionResultName };
+    const index = children.findIndex((item) => item.hash === hash);
+    if (index >= 0) children[index] = child; else children.push(child);
+    onProgress({ ...base, phase: "finalized", children });
+    const final = await client.waitForFinalization({ hash });
+    const ok = successfulReceipt(final, "FINALIZED");
+    const finalChild = { hash, phase: ok ? "finalized" as const : "failed" as const, status: final?.statusName, execution: final?.txExecutionResultName, error: ok ? undefined : `Child execution failed: ${final?.statusName} / ${final?.txExecutionResultName}` };
+    const finalIndex = children.findIndex((item) => item.hash === hash);
+    if (finalIndex >= 0) children[finalIndex] = finalChild; else children.push(finalChild);
+    onProgress({ ...base, phase: ok ? "finalized" : "failed", children, error: ok ? base.error : finalChild.error });
+    if (!ok) return false;
+    let nested: string[] = [];
+    try { nested = await client.getTriggeredTransactionIds({ hash }); } catch { nested = []; }
+    let all = true;
+    for (const nestedHash of nested) all = (await visit(String(nestedHash), depth + 1)) && all;
+    return all;
+  };
+  let roots: string[] = [];
+  try { roots = await client.getTriggeredTransactionIds({ hash: parentHash }); } catch { roots = []; }
+  let all = true;
+  for (const hash of roots) all = (await visit(String(hash), 1)) && all;
+  const final: TxRecord = { ...base, phase: all ? "finalized" : "failed", children, error: all ? base.error : "A triggered transaction failed; retry reconciliation from the recorded parent." };
+  onProgress(final);
+  return final;
+}
+
 export async function readContract(address: string, functionName: string, args: unknown[] = []) {
   if (!address) throw new Error("Contract address is not configured yet.");
   return readClient.readContract({ address, functionName, args });
@@ -62,6 +101,8 @@ export async function writeContract(params: {
   };
   params.onProgress(record);
   if (!finalOk) throw new Error(record.error);
+  const settled = await settleTriggered(client, hash, record, params.onProgress);
+  if (settled.phase === "failed") throw new Error(settled.error);
   return finalized;
 }
 
@@ -75,5 +116,7 @@ export async function resumeFinalization(hash: string, previous: TxRecord, onPro
   };
   onProgress(next);
   if (!ok) throw new Error(next.error);
+  const settled = await settleTriggered(readClient, hash, next, onProgress);
+  if (settled.phase === "failed") throw new Error(settled.error);
   return finalized;
 }

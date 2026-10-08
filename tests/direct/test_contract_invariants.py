@@ -42,14 +42,14 @@ def test_guard_nondeterminism_is_only_for_semantic_adjudication():
 def test_court_has_real_reversal_and_finalized_terminal_delivery():
     src = text("steward_court.py")
     assert "record[\"effective\"] = str(result[\"verdict\"])" in src
-    assert 'emit(on="finalized").record_terminal' in src
+    assert 'emit(on="finalized").apply_terminal_decision' in src
     assert "close_unappealed" in src
     assert "only a principal, agent, or spend recipient may appeal" in src
 
 
 def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
     src = text("steward_vault.py")
-    assert "only the bound court may record terminal decisions" in src
+    assert "only the bound guard may record terminal economic decisions" in src
     assert "spend already paid" in src
     assert "terminal decision refuses payment" in src
     assert "recovery_is_approved" in src
@@ -84,20 +84,26 @@ def test_consequential_guards_remain_present():
     assert "if policy is None:" in court
     assert "if _origin(uri) not in allowed:" in court
     assert "if not bool(registry.status_at" in court
-    assert 'target.emit(on="finalized").record_terminal' in court
-    assert 'emit(on="finalized").record_terminal_effective' in court
+    assert 'emit(on="finalized").apply_terminal_decision' in court
     assert "appeal cannot produce ALLOW without authenticated roles" in court
     assert "raise gl.vm.UserError(\"[EXPECTED] conflicting primary decision\")" in court
-    assert "if gl.message.sender_address != self.court:" in vault
+    assert "if gl.message.sender_address != self.guard:" in vault
     assert "raise gl.vm.UserError(\"[EXPECTED] conflicting terminal decision\")" in vault
     assert 'if str(record["decision"]) != ALLOW:' in vault
     assert "if int(self.paid.get(key, u256(0))) == 1:" in vault
     assert "if not approved:" in vault
     guard = text("steward_guard.py")
-    assert "record_terminal_effective" in guard
+    assert "apply_terminal_decision" in guard
     assert "if gl.message.sender_address != self.court:" in guard
-    assert 'raise gl.vm.UserError("[EXPECTED] conflicting terminal accounting decision")' in guard
+    assert 'raise gl.vm.UserError("[EXPECTED] conflicting terminal authorization payload")' in guard
     assert "single-use evidence already consumed" in guard
+    assert "if previous != \"\" and previous != str(int(spend_id)):" in guard
+    assert "terminal authorization exposure exceeds mandate" in guard
+    assert guard.count('vault_target.emit(on="finalized").record_terminal') == 2
+    assert 'info.get("guard", "")) != _addr(gl.message.contract_address)' in guard
+    assert 'raise gl.vm.UserError("[EXPECTED] vault binding mismatch")' in guard
+    assert 'str(item.get("usage", "single_use")) != expected_usage' in guard
+    assert 'semantic or self.state[key] != REFUSE' in guard
     assert "category must be 1..64 characters" in guard
     assert "terminal == ALLOW" in guard
     assert "amount_gte value must be a non-negative integer" in charter

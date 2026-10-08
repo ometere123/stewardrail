@@ -13,4 +13,5 @@ if (!text.includes("61999")) throw new Error("61999 hard gate missing");
 if (!text.includes(".ethereum") || !text.includes("eth_requestaccounts")) throw new Error("injected wallet path missing");
 if (!text.includes("accountschanged") || !text.includes("chainchanged")) throw new Error("wallet event handling missing");
 if (!text.includes("localstorage") || !text.includes("resumefinalization")) throw new Error("transaction refresh recovery missing");
+if (!text.includes("gettriggeredtransactionids") || !text.includes("children")) throw new Error("nested triggered transaction tracking missing");
 console.log("frontend static test: PASS");

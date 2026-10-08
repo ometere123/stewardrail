@@ -131,13 +131,9 @@ class StewardCourt(gl.Contract):
 
     def _terminal_emit(self, vault: str, guard: str, spend_id: int, record: dict) -> None:
         self._validate_vault(str(vault), str(guard))
-        target = gl.get_contract_at(Address(str(vault)))
-        target.emit(on="finalized").record_terminal(
-            str(guard), int(spend_id), str(record["effective"]), int(record["amount"]), str(record["recipient"])
-        )
         terminal_evidence = record.get("appeal_evidence", record.get("primary_evidence", []))
-        gl.get_contract_at(Address(str(guard))).emit(on="finalized").record_terminal_effective(
-            int(spend_id), str(record["effective"]), json.dumps(terminal_evidence)
+        gl.get_contract_at(Address(str(guard))).emit(on="finalized").apply_terminal_decision(
+            int(spend_id), str(record["effective"]), json.dumps(terminal_evidence), str(vault)
         )
 
     @gl.public.write
@@ -195,7 +191,6 @@ class StewardCourt(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] appeal evidence must be valid JSON") from exc
         if not isinstance(added, list) or len(added) > 6:
             raise gl.vm.UserError("[EXPECTED] appeal evidence must be a list of at most six items")
-        appeal_at = self._now()
         requested_at = int(spend.get("requested_at", 0))
         for item in added:
             evidence.append(self._validate_appeal_item(mandate, item, requested_at))

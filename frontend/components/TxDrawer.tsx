@@ -14,6 +14,7 @@ export function TxDrawer() {
     <p>{tx.action}</p>
     {tx.hash && <a target="_blank" rel="noreferrer" href={`${NETWORK.explorer}/tx/${tx.hash}`}>{tx.hash.slice(0,18)}…</a>}
     {tx.status && <small>{tx.status} · {tx.execution}</small>}
+    {tx.children && tx.children.length > 0 && <div className="childTxs"><small>Triggered transactions</small>{tx.children.map((child) => <div className="row between" key={child.hash}><a target="_blank" rel="noreferrer" href={`${NETWORK.explorer}/tx/${child.hash}`}>{child.hash.slice(0,14)}…</a><span className={`status ${child.phase}`}>{child.phase}</span></div>)}</div>}
     {tx.hash && (tx.phase === "submitted" || tx.phase === "decided") && <button className="button secondary" onClick={() => resumeFinalization(tx.hash!,tx,setTx).catch(e=>setResumeError(String(e?.message??e)))}>Resume finalization</button>}
     {resumeError && <p className="error">{resumeError}</p>}
     {tx.error && <p className="error">{tx.error}</p>}

@@ -6,10 +6,11 @@ StewardRail is not a monitoring dashboard. The value-moving path is:
 
 ```text
 agent -> StewardGuard -> finalized primary -> StewardCourt
-      -> app appeal or expiry -> finalized terminal -> StewardVault -> recipient
+      -> app appeal or expiry -> finalized semantic terminal -> StewardGuard
+      -> finalized economic authorization -> StewardVault -> recipient
 ```
 
-The vault has no method that asks the agent or any one principal whether a spend should be paid. A payment is possible only after the court sends the exact terminal decision to the vault from a **GenLayer finalized message**.
+The vault has no method that asks the agent or any one principal whether a spend should be paid. Court never authorizes custody directly. A payment is possible only after Guard completes deterministic terminal checks and sends the exact economic decision to Vault from a **GenLayer finalized message**.
 
 ## 2. Why the governance model matters
 
@@ -62,11 +63,11 @@ The application appeal is intentionally not just a challenge flag. The appeal pa
 - primary `refuse` -> appeal `allow` becomes payable;
 - same-direction results affirm.
 
-One application appeal is allowed. The appeal transaction itself sends the effective terminal result to the vault only through `emit(on="finalized")`. An unappealed case is closed by `close_unappealed`, which uses the same finalized delivery.
+One application appeal is allowed. The appeal transaction sends the effective semantic result only to Guard through `emit(on="finalized")`. Guard validates historical evidence, replay policy, exposure, and Vault bindings before emitting the economic result to Vault through a second `emit(on="finalized")`. An unappealed case is closed by `close_unappealed`, which uses the same two-stage delivery. Reconciliation re-emits the stored Court result through Guard without changing it.
 
 ## 7. Protocol finality invariant
 
-The vault does **not** infer finality from timestamps or from an `ACCEPTED` receipt. It only accepts `record_terminal` from the bound court. The court only invokes that method through GenLayer's finalized internal-message path. Consequently, a primary or appeal state that is still protocol-appealable cannot become a vault terminal record.
+The vault does **not** infer finality from timestamps or from an `ACCEPTED` receipt. It only accepts `record_terminal` from the bound Guard, and verifies the Guard/Court/Charter binding. Court cannot call Vault directly. Consequently, a primary or appeal state that is still protocol-appealable cannot become a vault terminal record, and a Guard deterministic downgrade becomes an explicit terminal refusal rather than a stuck child transaction.
 
 The frontend also reads accounting state with `LATEST_FINAL` where supported and reports consensus status and execution result separately.
 

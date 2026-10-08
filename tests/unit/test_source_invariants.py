@@ -48,8 +48,9 @@ def test_contract_cross_calls_stay_outside_nondet_closures():
         s=text(n)
         for marker in ['def leader()', 'def validator(']:
             start=s.index(marker)
-            end=s.find('\n        raw = gl.vm.run_nondet', start)
-            if end==-1: end=s.find('\n        result =',start)
+            end=s.find('\n    @gl.public.write', start)
+            if end == -1:
+                end = len(s)
             assert 'gl.get_contract_at' not in s[start:end]
 
 

@@ -7,18 +7,19 @@ A='0x'+'1'*40;B='0x'+'2'*40;AGENT='0x'+'3'*40;ISSUER='0x'+'4'*40;PAYEE='0x'+'5'*
 CHARTER='0x'+'a'*40;REGISTRY='0x'+'b'*40;COURT='0x'+'c'*40;GUARD='0x'+'d'*40;VAULT='0x'+'e'*40
 URI='https://issuer.example/invoice/1'
 
-def mandate():
+def mandate(tight=False):
+    rolling_amount = 1000 if tight else 5000
     return {
-      'name':'Shared Treasury','deterministic':{'max_per_spend':1000,'rolling_limit':{'amount':5000,'seconds':86400},'category_allowlist':['ops'],'recipient_denylist':[]},
+      'name':'Shared Treasury','deterministic':{'max_per_spend':1000,'rolling_limit':{'amount':rolling_amount,'seconds':86400},'category_allowlist':['ops'],'recipient_denylist':[]},
       'semantic_rules':[{'id':'purpose','question':'Does the authenticated evidence show this spend serves the shared mandate?','when':{'type':'amount_gte','value':100},'evidence_roles':['invoice']}],
       'issuers':[{'address':ISSUER,'role':'invoice','origins':['https://issuer.example']}],
       'appeal':{'window_seconds':100,'bond':0},
     }
 
-def setup_stack():
+def setup_stack(tight=False):
     rt=Runtime(); rt.sender=A
     mods={n:load(str(ROOT/'contracts'/f'{n}.py'),rt) for n in ['steward_charter','evidence_registry','steward_court','steward_guard','steward_vault']}
-    m=json.dumps(mandate())
+    m=json.dumps(mandate(tight))
     deploy(rt,mods['steward_charter'],'StewardCharter',CHARTER,json.dumps([A,B]),2,AGENT,m,sender=A)
     deploy(rt,mods['evidence_registry'],'EvidenceRegistry',REGISTRY,sender=A)
     deploy(rt,mods['steward_court'],'StewardCourt',COURT,CHARTER,REGISTRY,sender=A)
@@ -106,5 +107,43 @@ def test_terminal_allow_consumes_single_use_evidence():
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'reuse'}
     rt.call(GUARD,'adjudicate',1,sender=A);rt.flush_finalized()
     rt.now+=101
-    with pytest.raises(Exception,match='single-use evidence'):
-        rt.call(COURT,'close_unappealed',GUARD,1,VAULT,sender=A);rt.flush_finalized()
+    rt.call(COURT,'close_unappealed',GUARD,1,VAULT,sender=A);rt.flush_finalized()
+    spend=json.loads(rt.call(GUARD,'get_spend',1,sender=A))
+    assert spend['terminal_semantic']=='allow'
+    assert spend['terminal_economic']=='refuse'
+    assert 'single-use evidence already consumed' in spend['terminal_reason']
+    assert json.loads(rt.call(VAULT,'payment',1,sender=A))['terminal']['decision']=='refuse'
+    with pytest.raises(Exception,match='terminal decision refuses payment'):
+        rt.call(VAULT,'pay',1,sender=A)
+
+def test_direct_court_to_vault_bypass_is_rejected():
+    rt=setup_stack()
+    with pytest.raises(Exception,match='only the bound guard'):
+        rt.call(VAULT,'record_terminal',GUARD,0,'allow',200,PAYEE,sender=COURT)
+    with pytest.raises(Exception,match='only the bound guard'):
+        rt.call(VAULT,'record_terminal',GUARD,0,'allow',200,PAYEE,sender=A)
+
+def test_semantic_refuse_reserves_capacity_until_terminal_release():
+    rt=setup_stack(tight=True); digest=attest(rt)
+    rt.call(GUARD,'request_spend',PAYEE,600,'ops',sender=AGENT)
+    rt.call(GUARD,'attach_evidence',0,ISSUER,'invoice',URI,digest,sender=AGENT)
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'not satisfied'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
+    rt.call(GUARD,'request_spend',PAYEE,600,'ops',sender=AGENT)
+    second=json.loads(rt.call(GUARD,'get_spend',1,sender=A))
+    assert second['state']=='refuse' and 'rolling authorization exposure' in second['reason']
+    rt.now+=101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.call(GUARD,'request_spend',PAYEE,600,'ops',sender=AGENT)
+    released=json.loads(rt.call(GUARD,'get_spend',2,sender=A))
+    assert released['state']=='held'
+
+def test_terminal_reconciliation_redelivers_idempotently():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now+=101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    first=json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal']
+    rt.call(COURT,'reconcile_terminal',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    second=json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal']
+    assert first==second
