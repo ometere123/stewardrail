@@ -28,7 +28,9 @@
     "guard": {"hash": "0x92a0645d03710be9d7ee8e07ef844eaae63fa7916eeca2c2b8a818d2520a08f6", "status": "FINALIZED", "execution": "SUCCESS"},
     "vault": {"hash": "0x5dbfadfe5d5da2cc2029474b71e9aeb4e00e2231930ecd18c46dddf17e706066", "status": "FINALIZED", "execution": "SUCCESS"},
     "bondBinding": {"hash": "0x67e11fcfb4aa10658782ff02f072202fc2a6bd3672b25b8309e20b0c5dc8f9fa", "status": "FINALIZED", "execution": "SUCCESS"},
-    "charterBondApprovalA": {"hash": "0x1a7fc69fcd032b6d997c46615967b9ec5820e6907741fd17ccedb473139eb47e", "status": "FINALIZED", "execution": "SUCCESS"},
-    "charterBondApprovalB": {"hash": "0x47dd7fc450e6bcbdb9c1846b706eebcbfb3d99756b701dd99909cdfa00702a8d", "status": "FINALIZED", "execution": "SUCCESS"}
+    "charterMandateApprovalA": {"hash": "0x1a7fc69fcd032b6d997c46615967b9ec5820e6907741fd17ccedb473139eb47e", "status": "FINALIZED", "execution": "SUCCESS"},
+    "charterMandateApprovalB": {"hash": "0x47dd7fc450e6bcbdb9c1846b706eebcbfb3d99756b701dd99909cdfa00702a8d", "status": "FINALIZED", "execution": "SUCCESS"},
+    "charterBondBindingApprovalA": {"hash": "0x034e6770efa15ce6bf2611fad9752489310c718c88d3f924c2a4b666445f4eac", "status": "FINALIZED", "execution": "SUCCESS"},
+    "charterBondBindingApprovalB": {"hash": "0x9d4f780e3a47f53f5f77487b4b53c482bb51f4753da9dc1b0c942659c9b14f90", "status": "FINALIZED", "execution": "SUCCESS"}
   }
 }

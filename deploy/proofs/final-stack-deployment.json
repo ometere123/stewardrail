@@ -50,6 +50,6 @@
     }
   ],
   "limitations": [
-    "This packet records deployment, threshold mandate activation, funding, standing deposit and a held spend request. It does not claim a completed semantic adjudication, payout, bonded challenge settlement or recipient transfer on this stack."
+    "This packet is limited to deployment, threshold mandate activation, funding, standing deposit and a held spend request. Additional observed economic lifecycle results for this same stack are recorded in deploy/proofs/economic-lifecycle.json."
   ]
 }

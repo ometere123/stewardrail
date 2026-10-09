@@ -13,5 +13,5 @@
   },
   "binding": {"tx": "0x67e11fcfb4aa10658782ff02f072202fc2a6bd3672b25b8309e20b0c5dc8f9fa", "status": "FINALIZED", "execution": "SUCCESS"},
   "all_deployments": {"status": "FINALIZED", "execution": "SUCCESS"},
-  "note": "This packet records deployment and threshold binding. Economic lifecycle scenarios remain to be executed and are not claimed here."
+  "note": "This packet records deployment and threshold binding. Observed economic lifecycle scenarios for the same stack are recorded separately in deploy/proofs/economic-lifecycle.json."
 }
