@@ -82,6 +82,10 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")' in text("steward_vault.py")
     assert 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")' in text("steward_charter.py")
     assert 'floor = int(policy["bond_floor"])' in src
+    assert 'secured = value if available >= value else 0' in src
+    assert 'def release_expired_exposure' in src
+    assert 'standing exposure challenge window is still open' in src
+    assert 'if deadline <= 0 or int(datetime.datetime.now().timestamp()) < deadline:' in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound court may apply challenge results")' in text("steward_guard.py")
 
 
@@ -136,6 +140,7 @@ def test_consequential_guards_remain_present():
     assert 'emit(on="finalized").record_terminal' in guard
     assert 'emit(on="accepted").record_terminal' not in guard
     assert "collateral_lock_state" in guard
+    assert 'stored_economic == ALLOW and bond_vault != "" and lock_state != "confirmed"' in guard
     assert 'info.get("guard", "")) != _addr(gl.message.contract_address)' in guard
     assert 'raise gl.vm.UserError("[EXPECTED] vault binding mismatch")' in guard
     assert 'str(item.get("usage", "single_use")) != expected_usage' in guard

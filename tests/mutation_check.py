@@ -61,6 +61,9 @@ MUTANTS = [
     ("charter-challenge-schema", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")', "return"),
     ("bond-quote-floor", "steward_bond_vault.py", 'floor = int(policy["bond_floor"])', 'floor = 0'),
     ("bond-challenge-limit", "steward_bond_vault.py", 'if attempts >= max_attempts:', 'if False:'),
+    ("bond-lock-full-coverage", "steward_bond_vault.py", 'secured = value if available >= value else 0', 'secured = min(value, available)'),
+    ("bond-lock-expiry-gate", "steward_bond_vault.py", 'if deadline <= 0 or int(datetime.datetime.now().timestamp()) < deadline:', 'if False:'),
+    ("guard-lock-ack-gate", "steward_guard.py", 'stored_economic == ALLOW and bond_vault != "" and lock_state != "confirmed"', 'False'),
 ]
 
 
