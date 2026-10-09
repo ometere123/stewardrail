@@ -150,9 +150,30 @@ class StewardCourt(gl.Contract):
         self._validate_vault(str(vault), str(guard))
         if len(str(cause).strip()) == 0 or int(response_deadline) <= self._now():
             raise gl.vm.UserError("[EXPECTED] challenge case deadline is invalid")
+        vault_info = json.loads(str(gl.get_contract_at(Address(str(vault))).view().info()))
+        if _addr(vault_info.get("bond_vault", "")) != sender:
+            raise gl.vm.UserError("[EXPECTED] vault does not identify the canonical collateral vault")
+        bond_info = json.loads(str(gl.get_contract_at(Address(str(sender))).view().info()))
+        if (_addr(bond_info.get("charter", "")) != _addr(self.charter)
+                or _addr(bond_info.get("court", "")) != _addr(gl.message.contract_address)
+                or _addr(bond_info.get("guard", "")) != _addr(guard)
+                or _addr(bond_info.get("vault", "")) != _addr(vault)):
+            raise gl.vm.UserError("[EXPECTED] collateral vault binding does not match this court case")
+        challenge = json.loads(str(gl.get_contract_at(Address(str(sender))).view().challenge(int(challenge_id))))
+        if (str(challenge.get("state", "")) != OPEN
+                or int(challenge.get("spend_id", -1)) != int(spend_id)
+                or str(challenge.get("cause", "")) != str(cause)
+                or int(challenge.get("deadline", 0)) != int(response_deadline)):
+            raise gl.vm.UserError("[EXPECTED] collateral challenge identity mismatch")
         key = self._challenge_key(str(guard), int(challenge_id))
         if self.challenge_records.get(key, "") != "":
-            return
+            existing = json.loads(self.challenge_records[key])
+            if (int(existing.get("spend_id", -1)) == int(spend_id)
+                    and _addr(existing.get("vault", "")) == _addr(vault)
+                    and str(existing.get("cause", "")) == str(cause)
+                    and int(existing.get("response_deadline", 0)) == int(response_deadline)):
+                return
+            raise gl.vm.UserError("[EXPECTED] conflicting challenge registration")
         context = json.loads(str(gl.get_contract_at(Address(str(guard))).view().appeal_context(int(spend_id))))
         mandate = context["mandate"]
         challenge_policy = mandate.get("challenge", {})

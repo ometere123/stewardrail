@@ -55,10 +55,12 @@ MUTANTS = [
     ("court-challenge-finalized-guard", "steward_court.py", 'guard_target.emit(on="finalized").apply_challenge_result', 'guard_target.emit(on="accepted").apply_challenge_result'),
     ("guard-challenge-court-binding", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] only the bound court may apply challenge results")', 'return'),
     ("vault-challenge-guard-binding", "steward_vault.py", 'raise gl.vm.UserError("[EXPECTED] only the bound guard may apply challenge outcomes")', 'return'),
+    ("vault-challenge-indexed", "steward_vault.py", 'key = u256(int(challenge_id))\n        incoming = json.dumps({"challenge_id": int(challenge_id), "upheld": bool(upheld)}, sort_keys=True)', 'key = u256(int(spend_id))\n        incoming = json.dumps({"challenge_id": int(challenge_id), "upheld": bool(upheld)}, sort_keys=True)'),
     ("vault-open-challenge-block", "steward_vault.py", 'raise gl.vm.UserError("[EXPECTED] an open challenge blocks payment")', "return"),
     ("vault-upheld-challenge-block", "steward_vault.py", 'raise gl.vm.UserError("[EXPECTED] upheld challenge blocks payment")', "return"),
     ("charter-challenge-schema", "steward_charter.py", 'raise gl.vm.UserError("[EXPECTED] challenge policy bounds are invalid")', "return"),
     ("bond-quote-floor", "steward_bond_vault.py", 'floor = int(policy["bond_floor"])', 'floor = 0'),
+    ("bond-challenge-limit", "steward_bond_vault.py", 'if attempts >= max_attempts:', 'if False:'),
 ]
 
 

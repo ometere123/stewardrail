@@ -35,6 +35,7 @@ class StewardVault(gl.Contract):
     terminal: TreeMap[u256, str]
     paid: TreeMap[u256, u256]
     challenge_outcome: TreeMap[u256, str]
+    latest_challenge: TreeMap[u256, u256]
 
     def __init__(self, charter: str, guard: str, court: str, bond_vault: str):
         self.charter = Address(str(charter))
@@ -97,12 +98,16 @@ class StewardVault(gl.Contract):
         info = json.loads(str(gl.get_contract_at(self.bond_vault).view().info()))
         if _addr(info.get("guard", "")) != _addr(self.guard) or _addr(info.get("vault", "")) != _addr(gl.message.contract_address):
             raise gl.vm.UserError("[EXPECTED] challenge collateral is not bound to this vault")
-        key = u256(int(spend_id))
+        challenge = json.loads(str(gl.get_contract_at(self.bond_vault).view().challenge(int(challenge_id))))
+        if int(challenge.get("spend_id", -1)) != int(spend_id):
+            raise gl.vm.UserError("[EXPECTED] challenge identity does not match spend")
+        key = u256(int(challenge_id))
         incoming = json.dumps({"challenge_id": int(challenge_id), "upheld": bool(upheld)}, sort_keys=True)
         existing = self.challenge_outcome.get(key, "")
         if existing != "" and existing != incoming:
             raise gl.vm.UserError("[EXPECTED] conflicting challenge outcome")
         self.challenge_outcome[key] = incoming
+        self.latest_challenge[u256(int(spend_id))] = u256(int(challenge_id))
         gl.get_contract_at(self.bond_vault).emit(on="finalized").settle(int(challenge_id), bool(upheld))
 
     @gl.public.write
@@ -147,11 +152,29 @@ class StewardVault(gl.Contract):
     def payment(self, spend_id: int) -> str:
         key = u256(int(spend_id))
         raw = self.terminal.get(key, "")
+        challenge_id = int(self.latest_challenge.get(key, u256(0)))
         return json.dumps({
             "spend_id": int(spend_id), "terminal": None if raw == "" else json.loads(raw),
             "paid": int(self.paid.get(key, u256(0))) == 1,
-            "challenge": None if self.challenge_outcome.get(key, "") == "" else json.loads(self.challenge_outcome[key]),
+            "challenge_id": challenge_id,
+            "challenge": None if self.challenge_outcome.get(u256(challenge_id), "") == "" else json.loads(self.challenge_outcome[u256(challenge_id)]),
         })
+
+    @gl.public.view
+    def challenge_outcome_for(self, challenge_id: int) -> str:
+        raw = self.challenge_outcome.get(u256(int(challenge_id)), "")
+        return raw if raw != "" else "{}"
+
+    @gl.public.write.payable
+    def receive_challenge_bond(self, challenge_id: int) -> None:
+        if gl.message.sender_address != self.bond_vault:
+            raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may return a dismissed bond")
+        if int(gl.message.value) <= 0:
+            raise gl.vm.UserError("[EXPECTED] challenge bond must be positive")
+        if self.challenge_outcome.get(u256(int(challenge_id)), "") == "":
+            raise gl.vm.UserError("[EXPECTED] challenge outcome is not recorded")
+        self.treasury = u256(int(self.treasury) + int(gl.message.value))
+        self.funded = u256(int(self.funded) + int(gl.message.value))
 
     @gl.public.view
     def status(self) -> str:

@@ -44,6 +44,7 @@ class StewardBondVault(gl.Contract):
     upheld_by_spend: TreeMap[u256, u256]
     locked_by_spend: TreeMap[u256, u256]
     lock_deadline: TreeMap[u256, u256]
+    challenge_attempts_by_spend: TreeMap[u256, u256]
 
     def __init__(self, charter: str, agent: str):
         self.charter = Address(str(charter))
@@ -161,6 +162,13 @@ class StewardBondVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] challenge window has expired")
         if int(self.open_by_spend.get(u256(int(spend_id)), u256(0))) == 1:
             raise gl.vm.UserError("[EXPECTED] an open challenge already exists")
+        if int(self.upheld_by_spend.get(u256(int(spend_id)), u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] an upheld challenge already exhausted this spend")
+        context_policy = context["mandate"].get("challenge", {})
+        attempts = int(self.challenge_attempts_by_spend.get(u256(int(spend_id)), u256(0)))
+        max_attempts = int(context_policy.get("max_challenges", 2))
+        if attempts >= max_attempts:
+            raise gl.vm.UserError("[EXPECTED] challenge limit for this spend has been reached")
         challenge_id = int(self.challenge_count)
         bond = int(gl.message.value)
         expected = self.quote_bond(int(challenged_value), int(spend_id))
@@ -175,6 +183,7 @@ class StewardBondVault(gl.Contract):
         self.challenge_by_spend[u256(int(spend_id))] = u256(challenge_id)
         self.open_by_spend[u256(int(spend_id))] = u256(1)
         self.challenge_count = u256(challenge_id + 1)
+        self.challenge_attempts_by_spend[u256(int(spend_id))] = u256(attempts + 1)
         gl.get_contract_at(self.court).emit(on="finalized").open_challenge(
             _addr(self.guard), int(spend_id), challenge_id, _addr(self.vault), str(cause), int(self.challenge_deadline[u256(challenge_id)])
         )
@@ -225,7 +234,7 @@ class StewardBondVault(gl.Contract):
             self.challenge_settlement[key] = json.dumps({"result": "upheld", "restitution": recovered, "reward": bonus, "shortfall": amount - recovered}, sort_keys=True)
             self.upheld_by_spend[u256(spend_id)] = u256(1)
         else:
-            _Payee(self.vault).emit_transfer(value=u256(bond))
+            gl.get_contract_at(self.vault).emit(on="finalized").receive_challenge_bond(int(challenge_id), value=u256(bond))
             challenger_key = str(self.challenge_challenger[key])
             self.challenger_losses[challenger_key] = u256(int(self.challenger_losses.get(challenger_key, u256(0))) + 1)
             self.challenger_loss_at[challenger_key] = u256(int(datetime.datetime.now().timestamp()))
@@ -254,7 +263,7 @@ class StewardBondVault(gl.Contract):
     @gl.public.view
     def challenge(self, challenge_id: int) -> str:
         key = u256(int(challenge_id))
-        return json.dumps({"id": int(challenge_id), "state": str(self.challenge_state.get(key, "")), "spend_id": int(self.challenge_spend.get(key, u256(0))), "bond": int(self.challenge_bond.get(key, u256(0))), "challenger": str(self.challenge_challenger.get(key, "")), "settlement": self.challenge_settlement.get(key, "")})
+        return json.dumps({"id": int(challenge_id), "state": str(self.challenge_state.get(key, "")), "spend_id": int(self.challenge_spend.get(key, u256(0))), "bond": int(self.challenge_bond.get(key, u256(0))), "challenger": str(self.challenge_challenger.get(key, "")), "cause": str(self.challenge_cause.get(key, "")), "deadline": int(self.challenge_deadline.get(key, u256(0))), "settlement": self.challenge_settlement.get(key, "")})
 
     @gl.public.view
     def info(self) -> str:

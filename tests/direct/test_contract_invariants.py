@@ -55,11 +55,13 @@ def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
     assert "recovery_is_approved" in src
     assert "emit_transfer" in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound guard may apply challenge outcomes")' in src
+    assert 'key = u256(int(challenge_id))\n        incoming = json.dumps({"challenge_id": int(challenge_id)' in src
 
 
 def test_bond_vault_is_narrow_and_guard_bound():
     src = text("steward_bond_vault.py")
     assert "only the bound vault may settle challenges" in src
+    assert "if attempts >= max_attempts:" in src
     assert "only the configured agent may withdraw standing collateral" in src
     assert "quote_bond" in src and "open_challenge" in src and "settle" in src
     assert "gl.nondet" not in src

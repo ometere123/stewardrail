@@ -339,3 +339,42 @@ def test_standing_lock_is_obligation_specific_and_blocks_withdrawal_until_settle
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
+
+def test_sequential_challenges_keep_independent_outcomes_and_settle_once_each():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[AGENT]=2000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.balances[CHALLENGER]=1000; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'first challenge',sender=CHALLENGER,value=quote); rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'first dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    quote2=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'second challenge',sender=CHALLENGER,value=quote2); rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'second upheld'}
+    rt.call(COURT,'resolve_challenge',GUARD,1,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',1,sender=A))['state']=='settled'
+    first=json.loads(rt.call(VAULT,'challenge_outcome_for',0,sender=A)); second=json.loads(rt.call(VAULT,'challenge_outcome_for',1,sender=A))
+    assert first['challenge_id']==0 and first['upheld'] is False
+    assert second['challenge_id']==1 and second['upheld'] is True
+    assert json.loads(rt.call(VAULT,'payment',0,sender=A))['challenge_id']==1
+    with pytest.raises(Exception,match='revoked'):
+        rt.call(VAULT,'pay',0,sender=A)
+
+def test_challenge_attempt_limit_is_frozen_and_bounded():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[AGENT]=2000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.balances[CHALLENGER]=1000
+    for challenge_id in (0,1):
+        quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+        rt.call(BOND,'open_challenge',0,200,'bounded attempt '+str(challenge_id),sender=CHALLENGER,value=quote); rt.flush_finalized(); rt.now += 61
+        rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+        rt.call(COURT,'resolve_challenge',GUARD,challenge_id,BOND,sender=CHALLENGER); rt.flush_finalized()
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    with pytest.raises(Exception,match='challenge limit'):
+        rt.call(BOND,'open_challenge',0,200,'third attempt',sender=CHALLENGER,value=quote)
