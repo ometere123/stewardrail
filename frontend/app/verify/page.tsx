@@ -1,3 +1,22 @@
 import { DEPLOYMENTS, NETWORK } from "@/lib/deployments";
 import { Panel } from "@/components/Panel";
-export default function Verify(){return <><div className="routeTag">/verify</div><h1 className="sectionTitle">Verify the canonical deployment</h1><p className="sectionIntro">Compare the live network, contract bindings and published source manifest with the exact readable contract files.</p><div className="grid"><Panel title="Network"><p><span className="pill good">LOCKED</span></p><p>Chain {NETWORK.chainId}</p><p className="mono">{NETWORK.rpc}</p><p className="mono">{NETWORK.explorer}</p></Panel><Panel title="Addresses" className="wide"><pre className="json">{JSON.stringify(DEPLOYMENTS,null,2)}</pre></Panel><Panel title="Source identity" className="full"><p>Readable <code>contracts/*.py</code> files are the deployment inputs. Their SHA-256 values are recorded in <code>contracts/SOURCE_MANIFEST.json</code>.</p></Panel></div></>}
+import { VerifyBindings } from "@/components/VerifyBindings";
+
+export default function Verify() {
+  return <>
+    <div className="routeTag">/verify</div>
+    <h1 className="sectionTitle">Verify the canonical deployment</h1>
+    <p className="sectionIntro">Compare the live network, contract bindings and published source manifest with the exact readable contract files.</p>
+    <div className="grid">
+      <Panel title="Network">
+        <p><span className="pill good">LOCKED</span></p>
+        <p>Chain {NETWORK.chainId}</p>
+        <p className="mono">{NETWORK.rpc}</p>
+        <p className="mono">{NETWORK.explorer}</p>
+      </Panel>
+      <Panel title="Addresses" className="wide"><pre className="json">{JSON.stringify(DEPLOYMENTS, null, 2)}</pre></Panel>
+      <Panel title="Live binding reads" className="full"><VerifyBindings /></Panel>
+      <Panel title="Source identity" className="full"><p>Readable <code>contracts/*.py</code> files are the deployment inputs. Their SHA-256 values are recorded in <code>contracts/SOURCE_MANIFEST.json</code>.</p></Panel>
+    </div>
+  </>;
+}

@@ -47,7 +47,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const p = provider();
     if (!p) return;
     refresh().catch(() => undefined);
-    const accountsChanged = (accounts: string[]) => setAddress(accounts?.[0] ?? "");
+    const accountsChanged = (accounts: string[]) => {
+      // An explicit app-level disconnect must not be undone by the wallet's
+      // automatic accountsChanged notification. The next explicit Connect
+      // action clears this local preference.
+      if (localStorage.getItem("stewardrail.wallet.disconnected") === "1") {
+        setAddress("");
+        return;
+      }
+      setAddress(accounts?.[0] ?? "");
+    };
     const chainChanged = (chain: string) => setChainId(parseChain(chain));
     p.on?.("accountsChanged", accountsChanged);
     p.on?.("chainChanged", chainChanged);
