@@ -1,0 +1,97 @@
+{
+  "scenario": "canonical-stack-deployment-and-bindings",
+  "timestamp": "2026-10-09T05:58:00Z",
+  "source_commit": "d326703c9d3aa2a7adf2154caad0eb38affaf3da",
+  "network": "studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "actors": {
+    "principal_a": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "principal_b": "0xa7eeae0e93793e3146cb14b0700251b8b0ebadfb",
+    "agent": "0x21892bba93381d94037fb4aab01cafbdf4453b56",
+    "evidence_vendor": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "evidence_delivery": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
+  },
+  "contracts": {
+    "StewardCharter": {
+      "address": "0x731f9a5b82d8E3D9E2F663ba6D282C92363941d5",
+      "deployment_tx": "0x1e3250c6715a44ea348c2aaeab7765b7ff6550d98df08ddcf5ec6765b733e743",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "source_sha256": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d"
+    },
+    "EvidenceRegistry": {
+      "address": "0x51Ff147982edf6E762d6B0a5FF158FBD5Ecc8ac4",
+      "deployment_tx": "0x5b0b9a53cda80569d4a2268d9ef129c3e795b0c259fdf57eef07976f4e1ac024",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "source_sha256": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd"
+    },
+    "StewardCourt": {
+      "address": "0x6E1d52F2E853A493eB6f3F5287F7160fF43E1F87",
+      "deployment_tx": "0xb23d34c69409a018392cb813bef897917ed583dcb43987e417cf6599647525d2",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "source_sha256": "f31b6d1a41e84afea3befa67636b8ff8eb1eda20389d5ef901f30c1abfea9419"
+    },
+    "StewardBondVault": {
+      "address": "0xEC2BDB9B10C07e556FaE3222183F4513572A507f",
+      "deployment_tx": "0xe7b0345db97fb7e58928dcec58ac17a395e7d86866f1e0b28e1648beb1822185",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "source_sha256": "d26237311e6cc45ff59cdd31ed36dec1c6139dcc00bd909bbd8ca4070500f41b"
+    },
+    "StewardGuard": {
+      "address": "0x240d459827CD38623CF831Abc204893319c449DB",
+      "deployment_tx": "0x998312a837c24badd9f56daa168819c1de378c03a5ce781d374ca03688bcf73a",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "source_sha256": "08addf00871db99bc8127d4d7abeeccdf6011547374319562db571b7dfc17f19"
+    },
+    "StewardVault": {
+      "address": "0x9776118Fb084Ada5e7094e82f3A8B31C7841Bf0E",
+      "deployment_tx": "0x49ef10907735c627c82596130f6512d6a8a7fb3972441dc188d3c24ded3e465d",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "source_sha256": "05b8b7c699c3d472cc23971a5c68c1562515a30dbfa29f7cfb06188c5c2705f9"
+    }
+  },
+  "governance": {
+    "mandate_version": 1,
+    "mandate_approval_a": {
+      "tx": "0x18efe2ee61b365112b21eef6008d1ed73bbc5166b27b3d1aeb03ca51cc272787",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "mandate_approval_b": {
+      "tx": "0xd90e8fe39e9f55ca81cdb7a20b399ec37bac9d16beec7f31594b88b51d2cce3b",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "bond_binding_approval_b": {
+      "tx": "0xc592029f95770fffbdf5e05671d74b8a8ba09e487bb4b0fd66687c4ec2276718",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "bond_binding": {
+      "tx": "0x20b03433dd59e6f2edba1f8987c7a3b300d0a5455b830fb3723eca5a55c24e8a",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "readback": {
+      "charter_version": 1,
+      "bond_vault_binding": true,
+      "vault_binding": {
+        "charter": "0x731f9a5b82d8e3d9e2f663ba6d282c92363941d5",
+        "guard": "0x240d459827cd38623cf831abc204893319c449db",
+        "court": "0x6e1d52f2e853a493eb6f3f5287f7160ff43e1f87",
+        "bond_vault": "0xec2bdb9b10c07e556fae3222183f4513572a507f"
+      }
+    }
+  },
+  "unproven": [
+    "No fresh economic spend, evidence, challenge, payout, recovery, or browser lifecycle is claimed by this deployment packet.",
+    "The principal-A collateral-binding approval hash was not captured by the CLI session; the finalized binding readback is recorded instead of inventing a hash."
+  ]
+}

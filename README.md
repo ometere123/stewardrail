@@ -180,33 +180,31 @@ The scripts in `deploy/` are written to produce a machine-readable packet rather
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0xE23ef764506853a2EcAc515AbC173169864ca3B8](https://explorer-studio.genlayer.com/address/0xE23ef764506853a2EcAc515AbC173169864ca3B8) |
-| EvidenceRegistry | [0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6](https://explorer-studio.genlayer.com/address/0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6) |
-| StewardCourt | [0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b](https://explorer-studio.genlayer.com/address/0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b) |
-| StewardBondVault | [0xD372725231B0d7B669fe13Fc7cea7A7692329119](https://explorer-studio.genlayer.com/address/0xD372725231B0d7B669fe13Fc7cea7A7692329119) |
-| StewardGuard | [0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb](https://explorer-studio.genlayer.com/address/0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb) |
-| StewardVault | [0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8](https://explorer-studio.genlayer.com/address/0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8) |
+| StewardCharter | [0x731f9a5b82d8E3D9E2F663ba6D282C92363941d5](https://explorer-studio.genlayer.com/address/0x731f9a5b82d8E3D9E2F663ba6D282C92363941d5) |
+| EvidenceRegistry | [0x51Ff147982edf6E762d6B0a5FF158FBD5Ecc8ac4](https://explorer-studio.genlayer.com/address/0x51Ff147982edf6E762d6B0a5FF158FBD5Ecc8ac4) |
+| StewardCourt | [0x6E1d52F2E853A493eB6f3F5287F7160fF43E1F87](https://explorer-studio.genlayer.com/address/0x6E1d52F2E853A493eB6f3F5287F7160fF43E1F87) |
+| StewardBondVault | [0xEC2BDB9B10C07e556FaE3222183F4513572A507f](https://explorer-studio.genlayer.com/address/0xEC2BDB9B10C07e556FaE3222183F4513572A507f) |
+| StewardGuard | [0x240d459827CD38623CF831Abc204893319c449DB](https://explorer-studio.genlayer.com/address/0x240d459827CD38623CF831Abc204893319c449DB) |
+| StewardVault | [0x9776118Fb084Ada5e7094e82f3A8B31C7841Bf0E](https://explorer-studio.genlayer.com/address/0x9776118Fb084Ada5e7094e82f3A8B31C7841Bf0E) |
 
 Network: Studionet · Chain ID 61999 · RPC `https://studio.genlayer.com/api` · CLI `0.39.1`.
 
-Deployment transactions and source hashes are recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). The expanded deployment record is [`deploy/proofs/expanded-deployment.json`](deploy/proofs/expanded-deployment.json).
+Deployment transactions and source hashes are recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). The canonical deployment packet is [`deploy/proofs/canonical-deployment-2026-10-09.json`](deploy/proofs/canonical-deployment-2026-10-09.json).
 
 The six deployed source hashes are:
 
 ```text
 steward_charter.py  726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 evidence_registry.py f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-steward_court.py    9235374966fdc5dcfa28e1c3245594322d93f732f6c0b5a13be997da82005073
-steward_bond_vault.py 2da0823857d2771540f6ed5e55bebaf68a6edae7fdb9705a6b0b74c0922d4419
+steward_court.py    f31b6d1a41e84afea3befa67636b8ff8eb1eda20389d5ef901f30c1abfea9419
+steward_bond_vault.py d26237311e6cc45ff59cdd31ed36dec1c6139dcc00bd909bbd8ca4070500f41b
 steward_guard.py    08addf00871db99bc8127d4d7abeeccdf6011547374319562db571b7dfc17f19
-steward_vault.py    60ffad2fd37fa86b0b62b768acc5e28ef3dec15dc23d4c518196104e68396bbc
+steward_vault.py    05b8b7c699c3d472cc23971a5c68c1562515a30dbfa29f7cfb06188c5c2705f9
 ```
 
 ## Observed live scenarios
 
-The canonical machine-readable records are [`deploy/proofs/final-stack-deployment.json`](deploy/proofs/final-stack-deployment.json) and [`deploy/proofs/economic-lifecycle.json`](deploy/proofs/economic-lifecycle.json). They record six finalized deployments, two-principal mandate activation, 5 GEN Vault funding, 1 GEN agent standing, a sealed semantic refusal for missing authenticated roles, a deterministic ALLOW through Court → Guard → Vault, a 0.5 GEN finalized payout, and duplicate-payout rejection.
-
-The packet explicitly separates observed results from unobserved scenarios. It does not claim an authenticated vendor attestation, application reversal, bonded-challenge settlement, threshold recovery, or an independently measured recipient balance delta on this deployment.
+The canonical deployment packet records six fresh finalized deployments, two-principal mandate activation, and threshold-approved BondVault binding for the source commit shown above. Economic lifecycle packets from earlier deployments remain historical and are not evidence for these addresses. Fresh spend, evidence, challenge, payout, recovery, and recipient-balance scenarios are not claimed until new finalized transactions are recorded for this stack.
 
 ## Verification
 
@@ -225,7 +223,7 @@ npm run typecheck
 npm run build
 ```
 
-The current local results are 62 Python tests passed with 7 skipped, 6 official Direct Mode tests passed with 1 skipped by the runner's multi-contract limitation, 46 of 46 source mutants killed, all six contract lint checks passed, source-manifest and preflight checks passed, and the frontend test, typecheck, and production build passed.
+The current local results are 64 Python tests passed with 7 skipped, 6 official Direct Mode tests passed with 1 skipped by the runner's multi-contract limitation, 48 of 48 source mutants killed, all six contract lint checks passed, source-manifest and preflight checks passed, and the frontend test, typecheck, and production build passed.
 
 ## License
 
