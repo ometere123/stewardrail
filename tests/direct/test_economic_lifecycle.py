@@ -382,6 +382,19 @@ def test_standing_lock_is_obligation_specific_and_blocks_withdrawal_until_settle
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
 
+def test_unchallenged_lock_expires_permissionlessly_and_can_be_withdrawn():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
+    with pytest.raises(Exception, match='challenge window is still open'):
+        rt.call(BOND,'release_expired_exposure',0,sender=B)
+    rt.now += 1001
+    rt.call(BOND,'release_expired_exposure',0,sender=B)
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
+    rt.call(BOND,'withdraw_standing',AGENT,200,sender=AGENT)
+
 def test_sequential_challenges_keep_independent_outcomes_and_settle_once_each():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}

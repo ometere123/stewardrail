@@ -142,6 +142,26 @@ class StewardBondVault(gl.Contract):
         self.locked = u256(int(self.locked) - value)
         self.locked_by_spend[key] = u256(0)
 
+    @gl.public.write
+    def release_expired_exposure(self, spend_id: int) -> None:
+        """Permissionless release after the frozen challenge window has ended."""
+        key = u256(int(spend_id))
+        value = int(self.locked_by_spend.get(key, u256(0)))
+        if value <= 0:
+            return
+        deadline = int(self.lock_deadline.get(key, u256(0)))
+        if deadline <= 0 or int(datetime.datetime.now().timestamp()) < deadline:
+            raise gl.vm.UserError("[EXPECTED] standing exposure challenge window is still open")
+        if int(self.open_by_spend.get(key, u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] open challenge still secures this exposure")
+        if int(self.upheld_by_spend.get(key, u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] upheld challenge still secures this exposure")
+        spend = json.loads(str(gl.get_contract_at(self.guard).view().get_spend(int(spend_id))))
+        if str(spend.get("terminal_economic", "")) not in ("allow", "refuse"):
+            raise gl.vm.UserError("[EXPECTED] terminal economic outcome is not settled")
+        self.locked = u256(int(self.locked) - value)
+        self.locked_by_spend[key] = u256(0)
+
     def _issuer_policy(self, mandate: dict, issuer: str, role: str):
         for entry in mandate.get("issuers", []):
             if _addr(entry.get("address", "")) == _addr(issuer) and str(entry.get("role", "")) == str(role):
