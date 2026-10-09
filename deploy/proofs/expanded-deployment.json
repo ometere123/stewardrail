@@ -1,5 +1,6 @@
 {
-  "scenario": "expanded-stack-deployment",
+  "scenario": "historical-superseded-expanded-stack-deployment",
+  "status": "historical-superseded",
   "source_commit": "2a70fe793ba390fb5f69807f4ab800183130b31f",
   "network": "studionet",
   "chain_id": 61999,

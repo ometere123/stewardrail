@@ -1,5 +1,6 @@
 {
-  "scenario": "final-source-five-contract-deployment",
+  "scenario": "historical-superseded-five-contract-deployment",
+  "status": "historical-superseded",
   "commit": "25f3794215f1fe53b5ddce613fac02d75f808adf",
   "network": "studionet",
   "chain_id": 61999,

@@ -1,4 +1,6 @@
 {
+  "scenario": "historical-superseded-live-final-hardening",
+  "status": "historical-superseded",
   "commit": "702209b9dcc9118c896f0d846cd869ae0189e26e",
   "network": "studionet",
   "chain_id": 61999,

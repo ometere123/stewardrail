@@ -1,4 +1,6 @@
 {
+  "scenario": "historical-superseded-live-scenarios",
+  "status": "historical-superseded",
   "network": "studionet",
   "chain_id": 61999,
   "scenarios": [

@@ -1,5 +1,6 @@
 {
-  "scenario": "final-stack-deployment-and-binding",
+  "scenario": "historical-superseded-stack-deployment-and-binding",
+  "status": "historical-superseded",
   "timestamp": "2026-10-09",
   "source_commit": "2a70fe793ba390fb5f69807f4ab800183130b31f",
   "network": "studionet",
