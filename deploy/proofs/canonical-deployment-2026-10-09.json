@@ -90,8 +90,45 @@
       }
     }
   },
+  "observations": [
+    {
+      "id": "deterministic-refusal-per-spend-cap",
+      "parent_tx": "0x63cb96220f3746cc09b85d296c01ebe3bc86028e24b3c7495603cc1edb0d294c",
+      "parent_status": "FINALIZED",
+      "parent_execution": "SUCCESS",
+      "child_transactions": [
+        {
+          "hash": "0x6a0907893901724587fb76e8407273405a5776b3b5da41fbca8b38a213fff62d",
+          "contract": "StewardCourt",
+          "status": "FINALIZED",
+          "execution": "SUCCESS",
+          "result": "record_primary(spend_id=0, decision=refuse, reason=per-spend cap exceeded, confidence=100)"
+        }
+      ],
+      "before": {
+        "mandate_version": 1,
+        "deterministic_max_per_spend": 5000000000000000000,
+        "requested_amount": 6000000000000000000,
+        "recipient": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+        "category": "creative"
+      },
+      "after": {
+        "spend_id": 0,
+        "state": "refuse",
+        "reason": "per-spend cap exceeded",
+        "confidence": 100,
+        "vault_authorization_observed": false
+      },
+      "expected_invariant": "A request above the frozen per-spend cap is refused deterministically and cannot enter semantic HELD or authorize payment.",
+      "observed_invariant": "The finalized Guard request emitted only a finalized successful Court primary-refusal child; no Guard-to-Vault authorization or payout child was observed.",
+      "explorer_urls": [
+        "https://explorer-studio.genlayer.com/tx/0x63cb96220f3746cc09b85d296c01ebe3bc86028e24b3c7495603cc1edb0d294c",
+        "https://explorer-studio.genlayer.com/tx/0x6a0907893901724587fb76e8407273405a5776b3b5da41fbca8b38a213fff62d"
+      ]
+    }
+  ],
   "unproven": [
-    "No fresh economic spend, evidence, challenge, payout, recovery, or browser lifecycle is claimed by this deployment packet.",
+    "Fresh semantic ALLOW/REFUSE reversals, authenticated evidence, challenge settlement, payout, recovery, and browser wallet lifecycle remain unproven for this deployment. The deterministic refusal observation above is the only fresh spend lifecycle recorded.",
     "The principal-A collateral-binding approval hash was not captured by the CLI session; the finalized binding readback is recorded instead of inventing a hash."
   ]
 }

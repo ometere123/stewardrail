@@ -48,6 +48,30 @@
       "bond_vault": "0xec2bdb9b10c07e556fae3222183f4513572a507f"
     }
   },
+  "observations": [
+    {
+      "id": "deterministic-refusal-per-spend-cap",
+      "parentTx": "0x63cb96220f3746cc09b85d296c01ebe3bc86028e24b3c7495603cc1edb0d294c",
+      "parentStatus": "FINALIZED",
+      "parentExecution": "SUCCESS",
+      "childTxs": [
+        {
+          "hash": "0x6a0907893901724587fb76e8407273405a5776b3b5da41fbca8b38a213fff62d",
+          "contract": "StewardCourt",
+          "status": "FINALIZED",
+          "execution": "SUCCESS",
+          "result": "record_primary(spend_id=0, decision=refuse, reason=per-spend cap exceeded, confidence=100)"
+        }
+      ],
+      "requestAmount": "6000000000000000000",
+      "configuredPerSpendCap": "5000000000000000000",
+      "result": "deterministic refusal; no Vault authorization observed",
+      "explorerUrls": [
+        "https://explorer-studio.genlayer.com/tx/0x63cb96220f3746cc09b85d296c01ebe3bc86028e24b3c7495603cc1edb0d294c",
+        "https://explorer-studio.genlayer.com/tx/0x6a0907893901724587fb76e8407273405a5776b3b5da41fbca8b38a213fff62d"
+      ]
+    }
+  ],
   "deployedAt": "2026-10-09T05:58:00Z",
   "notes": [
     "All six deployment transactions were independently read back as FINALIZED with successful leader execution.",
