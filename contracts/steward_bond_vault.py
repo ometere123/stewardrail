@@ -112,9 +112,7 @@ class StewardBondVault(gl.Contract):
         existing = int(self.locked_by_spend.get(key, u256(0)))
         existing_deadline = int(self.lock_deadline.get(key, u256(0)))
         if existing_deadline > 0:
-            if existing != value and existing != 0:
-                raise gl.vm.UserError("[EXPECTED] conflicting standing exposure lock")
-            if existing == 0 and int(self.locked_by_spend.get(key, u256(0))) != 0:
+            if existing != value:
                 raise gl.vm.UserError("[EXPECTED] conflicting standing exposure lock")
             if existing_deadline != int(deadline):
                 raise gl.vm.UserError("[EXPECTED] conflicting standing exposure lock")

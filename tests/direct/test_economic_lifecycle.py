@@ -123,6 +123,12 @@ def test_insufficient_standing_downgrades_economic_allow_to_refuse():
     assert 'standing collateral coverage unavailable' in spend['terminal_reason']
     assert json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal']['decision']=='refuse'
 
+def test_zero_collateral_lock_replay_cannot_change_required_amount():
+    rt=setup_stack(standing=0)
+    rt.call(BOND,'lock_exposure',7,200,123,sender=GUARD)
+    with pytest.raises(Exception, match='conflicting standing exposure lock'):
+        rt.call(BOND,'lock_exposure',7,300,123,sender=GUARD)
+
 def test_digest_mismatch_fails_closed_at_jury():
     rt=setup_stack();digest=attest(rt);create_semantic(rt,digest);rt.web[URI]=b'changed after attestation';rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'ignore hash'}
     rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));assert case['primary']=='refuse'

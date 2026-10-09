@@ -48,9 +48,6 @@ class StewardVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] guard binding mismatch")
         if _addr(court_info["charter"]) != _addr(self.charter):
             raise gl.vm.UserError("[EXPECTED] court binding mismatch")
-        bond_info = json.loads(str(gl.get_contract_at(self.bond_vault).view().info()))
-        if _addr(bond_info["charter"]) != _addr(self.charter):
-            raise gl.vm.UserError("[EXPECTED] collateral binding mismatch")
         self.treasury = u256(0)
         self.funded = u256(0)
         self.paid_total = u256(0)
