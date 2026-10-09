@@ -176,35 +176,24 @@ Repository structure alone is not live evidence. A canonical Studionet deploymen
 
 The scripts in `deploy/` are written to produce a machine-readable packet rather than relying on screenshots.
 
-## Canonical deployment
+## Deployment status
 
-| Contract | Studionet address |
-| --- | --- |
-| StewardCharter | [0x731f9a5b82d8E3D9E2F663ba6D282C92363941d5](https://explorer-studio.genlayer.com/address/0x731f9a5b82d8E3D9E2F663ba6D282C92363941d5) |
-| EvidenceRegistry | [0x51Ff147982edf6E762d6B0a5FF158FBD5Ecc8ac4](https://explorer-studio.genlayer.com/address/0x51Ff147982edf6E762d6B0a5FF158FBD5Ecc8ac4) |
-| StewardCourt | [0x6E1d52F2E853A493eB6f3F5287F7160fF43E1F87](https://explorer-studio.genlayer.com/address/0x6E1d52F2E853A493eB6f3F5287F7160fF43E1F87) |
-| StewardBondVault | [0xEC2BDB9B10C07e556FaE3222183F4513572A507f](https://explorer-studio.genlayer.com/address/0xEC2BDB9B10C07e556FaE3222183F4513572A507f) |
-| StewardGuard | [0x240d459827CD38623CF831Abc204893319c449DB](https://explorer-studio.genlayer.com/address/0x240d459827CD38623CF831Abc204893319c449DB) |
-| StewardVault | [0x9776118Fb084Ada5e7094e82f3A8B31C7841Bf0E](https://explorer-studio.genlayer.com/address/0x9776118Fb084Ada5e7094e82f3A8B31C7841Bf0E) |
+The previously indexed Studionet stack is retained as historical evidence only. It
+was deployed from an earlier contract source generation and is superseded by the
+current Court → Guard → Vault and collateral changes. This checkout deliberately
+does not present those addresses as current.
 
-Network: Studionet · Chain ID 61999 · RPC `https://studio.genlayer.com/api` · CLI `0.39.1`.
+A fresh six-contract deployment is required before this source generation can be
+called canonical. Until that deployment is finalized and independently read back,
+there are no current contract addresses or live economic scenarios to list here.
+The network lock remains Studionet, chain `61999`, RPC
+`https://studio.genlayer.com/api`, with repository-local CLI `0.39.1`.
 
-Deployment transactions and source hashes are recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). The canonical deployment packet is [`deploy/proofs/canonical-deployment-2026-10-09.json`](deploy/proofs/canonical-deployment-2026-10-09.json).
-
-The six deployed source hashes are:
-
-```text
-steward_charter.py  726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
-evidence_registry.py f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-steward_court.py    f31b6d1a41e84afea3befa67636b8ff8eb1eda20389d5ef901f30c1abfea9419
-steward_bond_vault.py d26237311e6cc45ff59cdd31ed36dec1c6139dcc00bd909bbd8ca4070500f41b
-steward_guard.py    08addf00871db99bc8127d4d7abeeccdf6011547374319562db571b7dfc17f19
-steward_vault.py    05b8b7c699c3d472cc23971a5c68c1562515a30dbfa29f7cfb06188c5c2705f9
-```
-
-## Observed live scenarios
-
-The canonical deployment packet records six fresh finalized deployments, two-principal mandate activation, and threshold-approved BondVault binding for the source commit shown above. Economic lifecycle packets from earlier deployments remain historical and are not evidence for these addresses. Fresh spend, evidence, challenge, payout, recovery, and recipient-balance scenarios are not claimed until new finalized transactions are recorded for this stack.
+The exact source hashes for the current checkout are maintained in
+[`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). Deployment
+records in [`deploy/deployments.json`](deploy/deployments.json) and packets under
+[`deploy/proofs/`](deploy/proofs/) are labeled historical until they refer to the
+fresh deployment of these exact files.
 
 ## Verification
 
@@ -223,7 +212,7 @@ npm run typecheck
 npm run build
 ```
 
-The current local results are 64 Python tests passed with 7 skipped, 6 official Direct Mode tests passed with 1 skipped by the runner's multi-contract limitation, 48 of 48 source mutants killed, all six contract lint checks passed, source-manifest and preflight checks passed, and the frontend test, typecheck, and production build passed.
+The current local results are 68 Python tests passed with 7 skipped, 6 official Direct Mode tests passed with 1 skipped by the runner's multi-contract limitation, 51 of 51 source mutants killed, all six contract lint checks passed, source-manifest and preflight checks passed, and the frontend test, typecheck, and production build passed. These are local verification results; they do not replace fresh live deployment or economic proof.
 
 ## License
 

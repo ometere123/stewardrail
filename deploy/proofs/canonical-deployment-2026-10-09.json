@@ -1,5 +1,6 @@
 {
-  "scenario": "canonical-stack-deployment-and-bindings",
+  "scenario": "historical-superseded-stack-deployment-and-bindings",
+  "status": "historical-superseded",
   "timestamp": "2026-10-09T05:58:00Z",
   "source_commit": "d326703c9d3aa2a7adf2154caad0eb38affaf3da",
   "network": "studionet",
@@ -130,5 +131,6 @@
   "unproven": [
     "Fresh semantic ALLOW/REFUSE reversals, authenticated evidence, challenge settlement, payout, recovery, and browser wallet lifecycle remain unproven for this deployment. The deterministic refusal observation above is the only fresh spend lifecycle recorded.",
     "The principal-A collateral-binding approval hash was not captured by the CLI session; the finalized binding readback is recorded instead of inventing a hash."
-  ]
+  ],
+  "note": "This packet is retained for auditability only. Later source changes supersede this stack; it is not the current deployment or economic proof."
 }

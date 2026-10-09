@@ -1,13 +1,11 @@
 # Live proof index
 
-The current Studionet deployment and its finalized deployment/binding rows are
-indexed in [`LIVE_EVIDENCE.md`](LIVE_EVIDENCE.md). The six deployment
-transactions are FINALIZED with successful leader execution, and the current
-packet includes threshold mandate activation and threshold-approved BondVault
-binding readbacks.
+The packets under `deploy/proofs/` include historical Studionet observations and
+are labeled by source generation. The previously indexed six-contract deployment
+is superseded by the current collateral and custody changes.
 
-The economic appeal reversals, fresh evidence lifecycle, challenge settlement,
-Vault payout and recovery remain unobserved for this source generation. Earlier
-lifecycle packets are retained as historical evidence and are not used as proof
-for the current addresses. No payout or reversal is claimed without a finalized
-transaction and successful execution readback for this deployment.
+No current economic proof is declared until a fresh six-contract deployment has
+been finalized from the exact files in `contracts/`, followed by independent
+readbacks for the evidence, appeal, challenge, custody, payout and recovery
+scenarios. In particular, no payout or reversal is inferred from an ACCEPTED
+transaction or from an earlier deployment.

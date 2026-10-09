@@ -1,6 +1,7 @@
 {
   "network": "studionet",
   "chainId": 61999,
+  "status": "historical-superseded",
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
   "sourceCommit": "d326703c9d3aa2a7adf2154caad0eb38affaf3da",
@@ -76,6 +77,7 @@
   "notes": [
     "All six deployment transactions were independently read back as FINALIZED with successful leader execution.",
     "The principal-A collateral-binding approval was observed through the finalized threshold binding readback; its hash was not captured by the CLI session and is intentionally not fabricated here.",
-    "Economic lifecycle scenarios not represented by this deployment record remain unproven until fresh transaction evidence is recorded."
+    "Economic lifecycle scenarios not represented by this deployment record remain unproven until fresh transaction evidence is recorded for a new stack.",
+    "This record is historical and must not be used as the current frontend or release address source. The current source hashes are in contracts/SOURCE_MANIFEST.json."
   ]
 }
