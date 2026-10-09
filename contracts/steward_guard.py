@@ -82,6 +82,11 @@ class StewardGuard(gl.Contract):
     terminal_fingerprint: TreeMap[u256, str]
     terminal_at: TreeMap[u256, u256]
     terminal_evidence: TreeMap[str, str]
+    terminal_evidence_reserved: TreeMap[str, str]
+    collateral_lock_state: TreeMap[u256, str]
+    collateral_lock_required: TreeMap[u256, u256]
+    collateral_lock_deadline: TreeMap[u256, u256]
+    collateral_lock_vault: TreeMap[u256, str]
     enforcement: TreeMap[u256, str]
     agent_frozen: u256
     freeze_epoch: u256
@@ -251,6 +256,47 @@ class StewardGuard(gl.Contract):
             "vault": _addr(str(vault)), "amount": int(self.amount[key]),
             "recipient": str(self.recipient[key]), "evidence": identities,
         }, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+    def _reserve_single_use(self, identities: list, normalized: list, spend_id: int) -> None:
+        for item in normalized:
+            if str(item.get("usage", "single_use")) == "reusable":
+                continue
+            token = "|".join([str(item["issuer"]), str(item["role"]), str(item["uri"]), str(item["digest"])])
+            consumed = str(self.terminal_evidence.get(token, ""))
+            reserved = str(self.terminal_evidence_reserved.get(token, ""))
+            if (consumed not in ("", str(int(spend_id)))
+                    or reserved not in ("", str(int(spend_id)))):
+                raise gl.vm.UserError("[EXPECTED] single-use evidence already reserved or consumed")
+            self.terminal_evidence_reserved[token] = str(int(spend_id))
+
+    def _finalize_single_use(self, identities: list, normalized: list, spend_id: int) -> None:
+        for item in normalized:
+            if str(item.get("usage", "single_use")) == "reusable":
+                continue
+            token = "|".join([str(item["issuer"]), str(item["role"]), str(item["uri"]), str(item["digest"])])
+            reserved = str(self.terminal_evidence_reserved.get(token, ""))
+            if reserved not in ("", str(int(spend_id))):
+                raise gl.vm.UserError("[EXPECTED] single-use evidence reservation conflict")
+            self.terminal_evidence_reserved[token] = ""
+            self.terminal_evidence[token] = str(int(spend_id))
+
+    def _release_single_use_reservation(self, identities: list, normalized: list, spend_id: int) -> None:
+        for item in normalized:
+            if str(item.get("usage", "single_use")) == "reusable":
+                continue
+            token = "|".join([str(item["issuer"]), str(item["role"]), str(item["uri"]), str(item["digest"])])
+            if str(self.terminal_evidence_reserved.get(token, "")) == str(int(spend_id)):
+                self.terminal_evidence_reserved[token] = ""
+
+    def _release_reserved_identity_strings(self, identities: list, spend_id: int) -> None:
+        for token in identities:
+            if str(self.terminal_evidence_reserved.get(str(token), "")) == str(int(spend_id)):
+                self.terminal_evidence_reserved[str(token)] = ""
+
+    def _emit_vault_terminal(self, vault: str, spend_id: int, economic: str) -> None:
+        gl.get_contract_at(Address(str(vault))).emit(on="finalized").record_terminal(
+            _addr(gl.message.contract_address), int(spend_id), str(economic), int(self.amount[u256(int(spend_id))]), str(self.recipient[u256(int(spend_id))])
+        )
 
     def _send_primary(self, spend_id: int, decision: str, reason: str, confidence: int) -> None:
         key = self._require_spend(spend_id)
@@ -462,9 +508,14 @@ class StewardGuard(gl.Contract):
             stored_economic = str(self.terminal_state.get(key, ""))
             if self._terminal_fingerprint(int(spend_id), str(semantic_decision), stored_economic, str(vault), key, identities) != existing:
                 raise gl.vm.UserError("[EXPECTED] conflicting terminal authorization payload")
-            vault_target.emit(on="finalized").record_terminal(
-                _addr(gl.message.contract_address), int(spend_id), stored_economic, int(self.amount[key]), str(self.recipient[key])
-            )
+            lock_state = str(self.collateral_lock_state.get(key, ""))
+            bond_vault = str(self.collateral_lock_vault.get(key, ""))
+            if stored_economic == ALLOW and bond_vault != "" and lock_state != "confirmed":
+                gl.get_contract_at(Address(str(bond_vault))).emit(on="finalized").lock_exposure(
+                    int(spend_id), int(self.collateral_lock_required[key]), int(self.collateral_lock_deadline[key])
+                )
+            else:
+                self._emit_vault_terminal(str(vault), int(spend_id), stored_economic)
             return
         economic = str(semantic_decision)
         reason = "semantic terminal decision accepted"
@@ -497,7 +548,9 @@ class StewardGuard(gl.Contract):
                         if normalized[identities.index(token)]["usage"] == "reusable":
                             continue
                         previous = self.terminal_evidence.get(token, "")
-                        if previous != "" and previous != str(int(spend_id)):
+                        reserved = self.terminal_evidence_reserved.get(token, "")
+                        if ((previous != "" and previous != str(int(spend_id)))
+                                or (reserved != "" and reserved != str(int(spend_id)))):
                             economic = REFUSE
                             reason = "single-use evidence already consumed"
                             break
@@ -527,25 +580,73 @@ class StewardGuard(gl.Contract):
         self.terminal_semantic[key] = str(semantic_decision)
         self.terminal_state[key] = economic
         self.terminal_reason[key] = reason
-        self.terminal_fingerprint[key] = fingerprint
         self.terminal_at[key] = u256(self._now())
         self.terminal_evidence[str(int(spend_id))] = json.dumps(identities)
         vault_info = self._vault_info(str(vault))
         bond_vault = str(vault_info.get("bond_vault", ""))
+        normalized_for_usage = normalized
+        if economic == ALLOW:
+            self._reserve_single_use(identities, normalized_for_usage, int(spend_id))
         if bond_vault != "":
             mandate_challenge = mandate.get("challenge", {})
             lock_deadline = int(self.terminal_at[key]) + int(mandate_challenge.get("window_seconds", 0))
             if economic == ALLOW and lock_deadline > int(self.terminal_at[key]):
+                self.collateral_lock_state[key] = "pending"
+                self.collateral_lock_required[key] = u256(int(self.amount[key]))
+                self.collateral_lock_deadline[key] = u256(lock_deadline)
+                self.collateral_lock_vault[key] = _addr(str(vault))
                 gl.get_contract_at(Address(str(bond_vault))).emit(on="finalized").lock_exposure(
                     int(spend_id), int(self.amount[key]), lock_deadline
                 )
-        if economic == ALLOW:
-            for token in identities:
-                if normalized[identities.index(token)]["usage"] != "reusable":
-                    self.terminal_evidence[token] = str(int(spend_id))
-        vault_target.emit(on="finalized").record_terminal(
-            _addr(gl.message.contract_address), int(spend_id), economic, int(self.amount[key]), str(self.recipient[key])
-        )
+            else:
+                if economic == ALLOW:
+                    self._finalize_single_use(identities, normalized_for_usage, int(spend_id))
+                self.collateral_lock_state[key] = "not_required"
+                self._emit_vault_terminal(str(vault), int(spend_id), economic)
+        else:
+            if economic == ALLOW:
+                self._finalize_single_use(identities, normalized_for_usage, int(spend_id))
+            self.collateral_lock_state[key] = "not_required"
+            self._emit_vault_terminal(str(vault), int(spend_id), economic)
+        self.terminal_fingerprint[key] = self._terminal_fingerprint(int(spend_id), str(semantic_decision), economic, str(vault), key, identities)
+
+    @gl.public.write
+    def confirm_exposure_lock(self, spend_id: int, secured_amount: int, deadline: int, vault: str) -> None:
+        key = self._require_spend(spend_id)
+        vault_info = self._vault_info(str(vault))
+        bond_vault = _addr(vault_info.get("bond_vault", ""))
+        if bond_vault == "" or _addr(gl.message.sender_address) != bond_vault:
+            raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may confirm standing exposure")
+        if str(self.collateral_lock_state.get(key, "")) not in ("pending", "confirmed", "refused"):
+            raise gl.vm.UserError("[EXPECTED] no standing exposure lock is pending")
+        required = int(self.collateral_lock_required.get(key, u256(0)))
+        if int(deadline) != int(self.collateral_lock_deadline.get(key, u256(0))) or _addr(str(vault)) != _addr(str(self.collateral_lock_vault.get(key, ""))):
+            raise gl.vm.UserError("[EXPECTED] standing exposure confirmation does not match terminal payload")
+        actual = int(gl.get_contract_at(Address(str(bond_vault))).view().locked_amount(int(spend_id)))
+        if int(secured_amount) != actual:
+            raise gl.vm.UserError("[EXPECTED] standing exposure confirmation is not authoritative")
+        if int(secured_amount) >= required:
+            self.collateral_lock_state[key] = "confirmed"
+            items = []
+            for item in json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")):
+                items.append(item)
+            normalized = []
+            for item in items:
+                parts = str(item).split("|", 3)
+                normalized.append({"issuer": parts[0], "role": parts[1], "uri": parts[2], "digest": parts[3], "usage": "single_use"})
+            mandate = self._mandate(int(self.version[key]))
+            for item in normalized:
+                policy = self._issuer_policy(mandate, item["issuer"], item["role"])
+                item["usage"] = "reusable" if policy is not None and str(policy.get("usage", "single_use")) == "reusable" else "single_use"
+            self._finalize_single_use(items, normalized, int(spend_id))
+            self._emit_vault_terminal(str(vault), int(spend_id), ALLOW)
+            return
+        self.collateral_lock_state[key] = "refused"
+        self._release_reserved_identity_strings(json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")), int(spend_id))
+        self.terminal_state[key] = REFUSE
+        self.terminal_reason[key] = "standing collateral coverage unavailable"
+        self.terminal_fingerprint[key] = self._terminal_fingerprint(int(spend_id), str(self.terminal_semantic[key]), REFUSE, str(vault), key, json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")))
+        self._emit_vault_terminal(str(vault), int(spend_id), REFUSE)
 
     @gl.public.write
     def apply_challenge_result(self, challenge_id: int, spend_id: int, upheld: bool, bond_vault: str, vault: str) -> None:

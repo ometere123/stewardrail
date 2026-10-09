@@ -2,6 +2,7 @@
 from genlayer import *
 import datetime
 import json
+from urllib.parse import urlparse
 
 
 def _addr(value) -> str:
@@ -9,6 +10,14 @@ def _addr(value) -> str:
         return str(value.as_hex).lower()
     address = Address(str(value))
     return str(getattr(address, "as_hex", address)).lower()
+
+
+def _origin(uri: str) -> str:
+    parsed = urlparse(str(uri))
+    if parsed.scheme.lower() != "https" or parsed.hostname is None or parsed.username is not None or parsed.password is not None:
+        return ""
+    port = "" if parsed.port is None else ":" + str(parsed.port)
+    return "https://" + parsed.hostname.lower() + port
 
 
 @gl.evm.contract_interface
@@ -35,6 +44,7 @@ class StewardBondVault(gl.Contract):
     challenge_bond: TreeMap[u256, u256]
     challenge_challenger: TreeMap[u256, str]
     challenge_cause: TreeMap[u256, str]
+    challenge_evidence: TreeMap[u256, str]
     challenge_deadline: TreeMap[u256, u256]
     challenge_settlement: TreeMap[u256, str]
     challenger_losses: TreeMap[str, u256]
@@ -100,15 +110,28 @@ class StewardBondVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] invalid standing exposure lock")
         key = u256(int(spend_id))
         existing = int(self.locked_by_spend.get(key, u256(0)))
-        if existing > 0:
-            if existing != value or int(self.lock_deadline.get(key, u256(0))) != int(deadline):
+        existing_deadline = int(self.lock_deadline.get(key, u256(0)))
+        if existing_deadline > 0:
+            if existing != value and existing != 0:
                 raise gl.vm.UserError("[EXPECTED] conflicting standing exposure lock")
+            if existing == 0 and int(self.locked_by_spend.get(key, u256(0))) != 0:
+                raise gl.vm.UserError("[EXPECTED] conflicting standing exposure lock")
+            if existing_deadline != int(deadline):
+                raise gl.vm.UserError("[EXPECTED] conflicting standing exposure lock")
+            gl.get_contract_at(self.guard).emit(on="finalized").confirm_exposure_lock(
+                int(spend_id), existing, int(deadline), _addr(self.vault)
+            )
             return
         available = max(0, int(self.standing) - int(self.locked))
-        secured = min(value, available)
+        # A challengeable authorization is either fully backed or economically refused.
+        # Partial collateral must never create a partially payable obligation.
+        secured = value if available >= value else 0
         self.locked_by_spend[key] = u256(secured)
         self.lock_deadline[key] = u256(int(deadline))
         self.locked = u256(int(self.locked) + secured)
+        gl.get_contract_at(self.guard).emit(on="finalized").confirm_exposure_lock(
+            int(spend_id), secured, int(deadline), _addr(self.vault)
+        )
 
     @gl.public.write
     def release_exposure(self, spend_id: int) -> None:
@@ -120,6 +143,47 @@ class StewardBondVault(gl.Contract):
             return
         self.locked = u256(int(self.locked) - value)
         self.locked_by_spend[key] = u256(0)
+
+    def _issuer_policy(self, mandate: dict, issuer: str, role: str):
+        for entry in mandate.get("issuers", []):
+            if _addr(entry.get("address", "")) == _addr(issuer) and str(entry.get("role", "")) == str(role):
+                return entry
+        return None
+
+    def _validate_challenge_evidence(self, spend: dict, evidence_json: str) -> list:
+        try:
+            items = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
+        except Exception as exc:
+            raise gl.vm.UserError("[EXPECTED] challenge evidence must be valid JSON") from exc
+        if not isinstance(items, list) or len(items) == 0 or len(items) > 8:
+            raise gl.vm.UserError("[EXPECTED] challenge evidence must contain 1..8 items")
+        guard_info = json.loads(str(gl.get_contract_at(self.guard).view().info()))
+        registry = gl.get_contract_at(Address(str(guard_info["registry"]))).view()
+        context = json.loads(str(gl.get_contract_at(self.guard).view().appeal_context(int(spend["id"]))))
+        mandate = context["mandate"]
+        stamp = int(datetime.datetime.now().timestamp())
+        normalized = []
+        for item in items:
+            if not isinstance(item, dict):
+                raise gl.vm.UserError("[EXPECTED] challenge evidence item must be an object")
+            issuer = _addr(item.get("issuer", ""))
+            role = str(item.get("role", ""))
+            uri = str(item.get("uri", ""))
+            digest = str(item.get("digest", "")).lower()
+            if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+                raise gl.vm.UserError("[EXPECTED] challenge evidence digest must be sha256 hex")
+            policy = self._issuer_policy(mandate, issuer, role)
+            allowed = [str(x).lower().rstrip("/") for x in policy.get("origins", [])] if policy is not None else []
+            if policy is None or _origin(uri) not in allowed:
+                raise gl.vm.UserError("[EXPECTED] challenge evidence issuer, role, or origin is not authorized")
+            usage = "reusable" if str(policy.get("usage", "single_use")) == "reusable" else "single_use"
+            if str(item.get("usage", usage)) != usage:
+                raise gl.vm.UserError("[EXPECTED] challenge evidence usage does not match frozen issuer policy")
+            if not bool(registry.status_at(_addr(self.charter), issuer, role, uri, digest, stamp)):
+                raise gl.vm.UserError("[EXPECTED] challenge evidence is not historically attested")
+            normalized.append({"issuer": issuer, "role": role, "uri": uri, "digest": digest, "usage": usage})
+        normalized.sort(key=lambda item: "|".join([item["issuer"], item["role"], item["uri"], item["digest"]]))
+        return normalized
 
     @gl.public.view
     def quote_bond(self, challenged_value: int, spend_id: int = -1) -> int:
@@ -145,7 +209,7 @@ class StewardBondVault(gl.Contract):
         return (max(floor, fraction) * multiplier + 9999) // 10000
 
     @gl.public.write.payable
-    def open_challenge(self, spend_id: int, challenged_value: int, cause: str) -> None:
+    def open_challenge(self, spend_id: int, challenged_value: int, cause: str, evidence_json: str) -> None:
         if _addr(self.guard) == _addr("0x0000000000000000000000000000000000000000"):
             raise gl.vm.UserError("[EXPECTED] collateral bindings are not initialized")
         if gl.message.sender_address == self.agent:
@@ -153,6 +217,7 @@ class StewardBondVault(gl.Contract):
         if len(str(cause).strip()) == 0 or len(str(cause)) > 240:
             raise gl.vm.UserError("[EXPECTED] challenge cause is invalid")
         spend = json.loads(str(gl.get_contract_at(self.guard).view().get_spend(int(spend_id))))
+        spend["id"] = int(spend_id)
         if int(spend.get("amount", 0)) != int(challenged_value) or str(spend.get("terminal_economic", "")) != "allow":
             raise gl.vm.UserError("[EXPECTED] spend is not challengeable")
         context = json.loads(str(gl.get_contract_at(self.guard).view().appeal_context(int(spend_id))))
@@ -174,18 +239,20 @@ class StewardBondVault(gl.Contract):
         expected = self.quote_bond(int(challenged_value), int(spend_id))
         if bond != expected:
             raise gl.vm.UserError("[EXPECTED] challenge bond must equal the frozen quote")
+        evidence = self._validate_challenge_evidence(spend, evidence_json)
         self.challenge_state[u256(challenge_id)] = "open"
         self.challenge_spend[u256(challenge_id)] = u256(int(spend_id))
         self.challenge_bond[u256(challenge_id)] = u256(bond)
         self.challenge_challenger[u256(challenge_id)] = _addr(gl.message.sender_address)
         self.challenge_cause[u256(challenge_id)] = str(cause)[:240]
+        self.challenge_evidence[u256(challenge_id)] = json.dumps(evidence, sort_keys=True)
         self.challenge_deadline[u256(challenge_id)] = u256(int(datetime.datetime.now().timestamp()) + int(policy["response_window_seconds"]))
         self.challenge_by_spend[u256(int(spend_id))] = u256(challenge_id)
         self.open_by_spend[u256(int(spend_id))] = u256(1)
         self.challenge_count = u256(challenge_id + 1)
         self.challenge_attempts_by_spend[u256(int(spend_id))] = u256(attempts + 1)
         gl.get_contract_at(self.court).emit(on="finalized").open_challenge(
-            _addr(self.guard), int(spend_id), challenge_id, _addr(self.vault), str(cause), int(self.challenge_deadline[u256(challenge_id)])
+            _addr(self.guard), int(spend_id), challenge_id, _addr(self.vault), str(cause), int(self.challenge_deadline[u256(challenge_id)]), self.challenge_evidence[u256(challenge_id)]
         )
 
     @gl.public.write
@@ -195,7 +262,7 @@ class StewardBondVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] only open challenges can be reconciled")
         spend_id = int(self.challenge_spend[key])
         gl.get_contract_at(self.court).emit(on="finalized").open_challenge(
-            _addr(self.guard), spend_id, int(challenge_id), _addr(self.vault), str(self.challenge_cause[key]), int(self.challenge_deadline[key])
+            _addr(self.guard), spend_id, int(challenge_id), _addr(self.vault), str(self.challenge_cause[key]), int(self.challenge_deadline[key]), self.challenge_evidence.get(key, "[]")
         )
 
     @gl.public.write
@@ -257,13 +324,17 @@ class StewardBondVault(gl.Contract):
         return int(self.locked_by_spend.get(u256(int(spend_id)), u256(0))) > 0
 
     @gl.public.view
+    def locked_amount(self, spend_id: int) -> int:
+        return int(self.locked_by_spend.get(u256(int(spend_id)), u256(0)))
+
+    @gl.public.view
     def status(self) -> str:
         return json.dumps({"charter": _addr(self.charter), "agent": _addr(self.agent), "guard": _addr(self.guard), "court": _addr(self.court), "vault": _addr(self.vault), "standing": int(self.standing), "locked": int(self.locked), "challenge_count": int(self.challenge_count)})
 
     @gl.public.view
     def challenge(self, challenge_id: int) -> str:
         key = u256(int(challenge_id))
-        return json.dumps({"id": int(challenge_id), "state": str(self.challenge_state.get(key, "")), "spend_id": int(self.challenge_spend.get(key, u256(0))), "bond": int(self.challenge_bond.get(key, u256(0))), "challenger": str(self.challenge_challenger.get(key, "")), "cause": str(self.challenge_cause.get(key, "")), "deadline": int(self.challenge_deadline.get(key, u256(0))), "settlement": self.challenge_settlement.get(key, "")})
+        return json.dumps({"id": int(challenge_id), "state": str(self.challenge_state.get(key, "")), "spend_id": int(self.challenge_spend.get(key, u256(0))), "bond": int(self.challenge_bond.get(key, u256(0))), "challenger": str(self.challenge_challenger.get(key, "")), "cause": str(self.challenge_cause.get(key, "")), "evidence": json.loads(self.challenge_evidence.get(key, "[]")), "deadline": int(self.challenge_deadline.get(key, u256(0))), "settlement": self.challenge_settlement.get(key, "")})
 
     @gl.public.view
     def info(self) -> str:

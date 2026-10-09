@@ -45,6 +45,7 @@ def test_court_has_real_reversal_and_finalized_terminal_delivery():
     assert 'emit(on="finalized").apply_terminal_decision' in src
     assert "close_unappealed" in src
     assert "only a principal, agent, or spend recipient may appeal" in src
+    assert "record_terminal" not in src
 
 
 def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
@@ -68,8 +69,12 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'raise gl.vm.UserError("[EXPECTED] collateral binding lacks threshold approval")' in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the configured agent may withdraw standing collateral")' in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound vault may settle challenges")' in src
+    assert "def locked_amount" in src
+    assert 'emit(on="finalized").confirm_exposure_lock' in src
     assert 'emit(on="finalized").open_challenge' in src
     assert 'emit(on="finalized").open_challenge(\n            _addr(self.guard), int(spend_id)' in src
+    assert "_validate_challenge_evidence" in src
+    assert "challenge_evidence" in src
     assert 'open_by_spend' in src
     assert 'return int(self.open_by_spend.get(u256(int(spend_id)), u256(0))) == 1' in src
     assert 'int(self.challenge_deadline[u256(challenge_id)])' in src
@@ -123,9 +128,14 @@ def test_consequential_guards_remain_present():
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound court may apply terminal decisions")' in guard
     assert 'raise gl.vm.UserError("[EXPECTED] conflicting terminal authorization payload")' in guard
     assert "single-use evidence already consumed" in guard
-    assert "if previous != \"\" and previous != str(int(spend_id)):" in guard
+    assert "terminal_evidence_reserved" in guard
+    assert "reserved != \"\" and reserved != str(int(spend_id))" in guard
     assert "terminal authorization exposure exceeds mandate" in guard
-    assert guard.count('vault_target.emit(on="finalized").record_terminal') == 2
+    assert "confirm_exposure_lock" in guard
+    assert 'emit(on="finalized").lock_exposure' in guard
+    assert 'emit(on="finalized").record_terminal' in guard
+    assert 'emit(on="accepted").record_terminal' not in guard
+    assert "collateral_lock_state" in guard
     assert 'info.get("guard", "")) != _addr(gl.message.contract_address)' in guard
     assert 'raise gl.vm.UserError("[EXPECTED] vault binding mismatch")' in guard
     assert 'str(item.get("usage", "single_use")) != expected_usage' in guard

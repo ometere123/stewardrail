@@ -199,6 +199,6 @@ def test_bond_vault_standing_and_challenge_settlement_direct_mode(direct_vm, dir
     assert json.loads(bond.status())["standing"] == 500
     assert bond.quote_bond(200) == 10
     with direct_vm.prank(challenger):
-        bond.open_challenge(7, 200, "delivery dispute", value=10)
+        bond.open_challenge(7, 200, "delivery dispute", json.dumps([{"issuer": _address(issuer), "role": "invoice", "uri": "https://issuer.example/invoice/1", "digest": "0" * 64, "usage": "single_use"}]), value=10)
     with direct_vm.expect_revert("only the bound vault"):
         bond.settle(0, False)
