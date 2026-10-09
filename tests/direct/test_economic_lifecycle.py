@@ -327,7 +327,9 @@ def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     rt.flush_finalized(); rt.now += 61
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
-    rt.call(BOND,'settle',0,False,sender=VAULT)
+    # Settlement is delivered by the finalized Vault child. Reconciliation
+    # must replay that contract-message path rather than impersonating Vault.
+    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
 
 def test_upheld_prepayment_challenge_revokes_and_settles_through_all_contracts():
