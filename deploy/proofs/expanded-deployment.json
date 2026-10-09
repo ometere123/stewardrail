@@ -1,17 +1,17 @@
 {
   "scenario": "expanded-stack-deployment",
-  "source_commit": "2a5fec611de03adfd3f732559aff302c3cd2c1f6",
+  "source_commit": "2a70fe793ba390fb5f69807f4ab800183130b31f",
   "network": "studionet",
   "chain_id": 61999,
   "contracts": {
-    "charter": {"address": "0xd42FFa9Fb7fbecc151FFa38408B764c34471b225", "tx": "0xf018f779ba5c8ac6b9bc7a1d37fd1f055685a50c533f4cc995bcccd493537b61"},
-    "registry": {"address": "0x40E54913Ad12e70531De905415E4B9a5D44B8760", "tx": "0xbc48ec40dfadfa1d8c43549e771738ef6404e9f3f59a33589b56630eecd90267"},
-    "court": {"address": "0x0F2DA1BeA53833EAbBe6842DCB185DB50A0bF32f", "tx": "0x556f853d308ce95b03a07c427a12b3eddd2b73049183e0462fc5353772cb09d1"},
-    "bond_vault": {"address": "0x6781e714D2b11647EB225b74223F715a4F090ccf", "tx": "0xf3effe80481e60b9f6500618f33a04c33bb8bb08c832a41fd3622acf594b768d"},
-    "guard": {"address": "0x0257850837f4e4AEB978c851144D4744a8A46524", "tx": "0xe67e5ee34d6e30d3434c8d2af57cd96e3145f6d143b728943e9296f3563b1665"},
-    "vault": {"address": "0x936EfE417E0CCC020D425D9440a924d2994Bd9E1", "tx": "0x273281be78b65f0c65bf02964034cc2eb15bf33186842c9bf70108b3c8e3e73f"}
+    "charter": {"address": "0xE23ef764506853a2EcAc515AbC173169864ca3B8", "tx": "0x07b153e5b2ea173fd2a7e67a4d43d64a864159a8e9739d92cbef9b54db849e3b"},
+    "registry": {"address": "0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6", "tx": "0xc038ac0aa75fca89f2814d7cc068456258b39d725addd0a57c61d02f39b8a0a9"},
+    "court": {"address": "0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b", "tx": "0xdcfc8cee6a15643e6e502a58b3437f6fe729a006eab41eeefb3a1ed91f4d8eee"},
+    "bond_vault": {"address": "0xD372725231B0d7B669fe13Fc7cea7A7692329119", "tx": "0x9c07738a48746ad69ed61a184db334cd47908f37303adc80d54b828d2120906b"},
+    "guard": {"address": "0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb", "tx": "0x92a0645d03710be9d7ee8e07ef844eaae63fa7916eeca2c2b8a818d2520a08f6"},
+    "vault": {"address": "0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8", "tx": "0x5dbfadfe5d5da2cc2029474b71e9aeb4e00e2231930ecd18c46dddf17e706066"}
   },
-  "binding": {"tx": "0xd0cdf76aee7ef872af6c1b0cf0549f5cea34b4a7543b6906bf530074c62c61a1", "status": "FINALIZED", "execution": "SUCCESS"},
+  "binding": {"tx": "0x67e11fcfb4aa10658782ff02f072202fc2a6bd3672b25b8309e20b0c5dc8f9fa", "status": "FINALIZED", "execution": "SUCCESS"},
   "all_deployments": {"status": "FINALIZED", "execution": "SUCCESS"},
   "note": "This packet records deployment and threshold binding. Economic lifecycle scenarios remain to be executed and are not claimed here."
 }

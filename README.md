@@ -180,12 +180,12 @@ The scripts in `deploy/` are written to produce a machine-readable packet rather
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0xd42FFa9Fb7fbecc151FFa38408B764c34471b225](https://explorer-studio.genlayer.com/address/0xd42FFa9Fb7fbecc151FFa38408B764c34471b225) |
-| EvidenceRegistry | [0x40E54913Ad12e70531De905415E4B9a5D44B8760](https://explorer-studio.genlayer.com/address/0x40E54913Ad12e70531De905415E4B9a5D44B8760) |
-| StewardCourt | [0x0F2DA1BeA53833EAbBe6842DCB185DB50A0bF32f](https://explorer-studio.genlayer.com/address/0x0F2DA1BeA53833EAbBe6842DCB185DB50A0bF32f) |
-| StewardBondVault | [0x6781e714D2b11647EB225b74223F715a4F090ccf](https://explorer-studio.genlayer.com/address/0x6781e714D2b11647EB225b74223F715a4F090ccf) |
-| StewardGuard | [0x0257850837f4e4AEB978c851144D4744a8A46524](https://explorer-studio.genlayer.com/address/0x0257850837f4e4AEB978c851144D4744a8A46524) |
-| StewardVault | [0x936EfE417E0CCC020D425D9440a924d2994Bd9E1](https://explorer-studio.genlayer.com/address/0x936EfE417E0CCC020D425D9440a924d2994Bd9E1) |
+| StewardCharter | [0xE23ef764506853a2EcAc515AbC173169864ca3B8](https://explorer-studio.genlayer.com/address/0xE23ef764506853a2EcAc515AbC173169864ca3B8) |
+| EvidenceRegistry | [0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6](https://explorer-studio.genlayer.com/address/0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6) |
+| StewardCourt | [0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b](https://explorer-studio.genlayer.com/address/0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b) |
+| StewardBondVault | [0xD372725231B0d7B669fe13Fc7cea7A7692329119](https://explorer-studio.genlayer.com/address/0xD372725231B0d7B669fe13Fc7cea7A7692329119) |
+| StewardGuard | [0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb](https://explorer-studio.genlayer.com/address/0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb) |
+| StewardVault | [0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8](https://explorer-studio.genlayer.com/address/0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8) |
 
 Network: Studionet · Chain ID 61999 · RPC `https://studio.genlayer.com/api` · CLI `0.39.1`.
 
@@ -196,17 +196,17 @@ The six deployed source hashes are:
 ```text
 steward_charter.py  726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 evidence_registry.py f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-steward_court.py    30f6bf7284c6efab21d44db4d3d5fc44ccd932a8a8594db52a5c37a33c76d6a8
-steward_bond_vault.py 680b837bbf5258bc11caa3b4c799a0d91856044d200b116e260b68b3af3c22a9
-steward_guard.py    34673c66bdcc6bd037cbbdaafac1b2f121bd81a1d421051272292708f67e63ee
-steward_vault.py    685347698db01fa0dd282dee4e3b836fd792c3d4d20bb30757749975f7f656d6
+steward_court.py    9235374966fdc5dcfa28e1c3245594322d93f732f6c0b5a13be997da82005073
+steward_bond_vault.py 2da0823857d2771540f6ed5e55bebaf68a6edae7fdb9705a6b0b74c0922d4419
+steward_guard.py    08addf00871db99bc8127d4d7abeeccdf6011547374319562db571b7dfc17f19
+steward_vault.py    60ffad2fd37fa86b0b62b768acc5e28ef3dec15dc23d4c518196104e68396bbc
 ```
 
 ## Observed live scenarios
 
-The expanded deployment packet records six finalized deployments and threshold collateral binding. Economic lifecycle evidence remains separate and is only claimed when a corresponding proof row exists.
+The canonical machine-readable records are [`deploy/proofs/final-stack-deployment.json`](deploy/proofs/final-stack-deployment.json) and [`deploy/proofs/economic-lifecycle.json`](deploy/proofs/economic-lifecycle.json). They record six finalized deployments, two-principal mandate activation, 5 GEN Vault funding, 1 GEN agent standing, a sealed semantic refusal for missing authenticated roles, a deterministic ALLOW through Court → Guard → Vault, a 0.5 GEN finalized payout, and duplicate-payout rejection.
 
-Fresh funded payout, duplicate-payout rejection, and threshold-recovery transactions are not present in the packet and are intentionally not claimed here.
+The packet explicitly separates observed results from unobserved scenarios. It does not claim an authenticated vendor attestation, application reversal, bonded-challenge settlement, threshold recovery, or an independently measured recipient balance delta on this deployment.
 
 ## Verification
 
@@ -225,7 +225,7 @@ npm run typecheck
 npm run build
 ```
 
-The current local results are 47 Python tests passed with 6 skipped, 6 official Direct Mode tests passed, 25 of 25 source mutants killed, all five contract lint checks passed, and frontend test/typecheck/build passed.
+The current local results are 62 Python tests passed with 7 skipped, 6 official Direct Mode tests passed with 1 skipped by the runner's multi-contract limitation, 46 of 46 source mutants killed, all six contract lint checks passed, source-manifest and preflight checks passed, and the frontend test, typecheck, and production build passed.
 
 ## License
 

@@ -1,0 +1,50 @@
+{
+  "scenario": "final-stack-economic-observations",
+  "source_commit": "2a70fe793ba390fb5f69807f4ab800183130b31f",
+  "network": "studionet",
+  "chain_id": 61999,
+  "addresses": {
+    "charter": "0xE23ef764506853a2EcAc515AbC173169864ca3B8",
+    "registry": "0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6",
+    "court": "0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b",
+    "bond_vault": "0xD372725231B0d7B669fe13Fc7cea7A7692329119",
+    "guard": "0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb",
+    "vault": "0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8"
+  },
+  "observed": [
+    {
+      "id": "semantic-refuse-missing-roles",
+      "spend_id": 0,
+      "request_tx": "0xcda534d243cce9ccb82bd4d9bb7351ede6880e1a8bbba9a4479f3bfcd3be2b34",
+      "seal_tx": "0xfc220193cebc39499c0e1693e7bb6413e73af9f15e282f688e2ebac3235fce1b",
+      "adjudication_tx": "0xa49099422c745cc7b5c750581771078ccc761c26c4245dd11f1aedc9ce2d454d",
+      "execution": "FINALIZED; semantic execution ended REFUSE because vendor and delivery roles were absent",
+      "readback": {"state": "refuse", "reason": "missing authenticated evidence roles: vendor,delivery", "evidence_sealed": true}
+    },
+    {
+      "id": "deterministic-allow-court-guard-vault",
+      "spend_id": 2,
+      "mandate_version": 2,
+      "mandate_approval_transactions": ["0xd69ab6da34ebc8497e1e77135e99790003a6d26d4a55b04a673d37f96e419b4b", "0xdd918f225fddeaa26c2f01083603d7a134184c8aab77dbfe1c1b6013accf8b3f"],
+      "request_tx": "0x8228bcef1801324f70e2e4add54ea4a4d8d92e5ebac08543a2f6692803550beb",
+      "court_close_tx": "0x85e487174123fcefe2af5b4ddc2aebf98ee2eec621beb7f70c6e8cbb3654a123",
+      "terminal_readback": {"guard_semantic": "allow", "guard_economic": "allow", "amount": 500000000000000000, "terminal_at": 1791506052},
+      "vault_readback_before_payment": {"decision": "allow", "paid": false, "amount": 500000000000000000},
+      "payment_tx": "0x62f34d91622004690baca69849787cff4f7eb07ff455edbf8543af2ee7d305b9",
+      "payment_receipt": {"status": "FINALIZED", "execution": "SUCCESS", "outbound_value": 500000000000000000, "recipient": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
+      "vault_readback_after_payment": {"treasury": 4500000000000000000, "paid_total": 500000000000000000, "paid": true},
+      "duplicate_payment": {"attempt_tx": "0x865023f70fbb6778b94ba3be637bc2d401445abc022d0e454d0e48e4af401c2c", "result": "REJECTED: [EXPECTED] spend already paid"}
+    },
+    {
+      "id": "expired-post-payment-challenge",
+      "spend_id": 2,
+      "bond_quote": 25000000000000000,
+      "attempt_tx": "0xd01d442ae4e211eedaedafaf19f884d887cd03b0d3628fe5d2f5bd1869196c3e",
+      "result": "REJECTED after the frozen 30-second challenge window: [EXPECTED] challenge window has expired"
+    }
+  ],
+  "not_observed": [
+    "An authenticated vendor attestation was not executed because the preconfigured tester1 keystore is locked and no private key was exposed.",
+    "A live bonded challenge settlement, appeal reversal, and recipient balance delta were not claimed in this packet."
+  ]
+}

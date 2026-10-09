@@ -1,0 +1,55 @@
+{
+  "scenario": "final-stack-deployment-and-binding",
+  "timestamp": "2026-10-09",
+  "source_commit": "2a70fe793ba390fb5f69807f4ab800183130b31f",
+  "network": "studionet",
+  "chain_id": 61999,
+  "contracts": {
+    "StewardCharter": {"address": "0xE23ef764506853a2EcAc515AbC173169864ca3B8", "deployment_tx": "0x07b153e5b2ea173fd2a7e67a4d43d64a864159a8e9739d92cbef9b54db849e3b", "finalized": true, "execution": "SUCCESS"},
+    "EvidenceRegistry": {"address": "0x4D2F9d107b4a0A0656B1cCeb646D3a910f64fFB6", "deployment_tx": "0xc038ac0aa75fca89f2814d7cc068456258b39d725addd0a57c61d02f39b8a0a9", "finalized": true, "execution": "SUCCESS"},
+    "StewardCourt": {"address": "0x0f4e501b20Fa6d9605913E305FEF9c6f898fFF3b", "deployment_tx": "0xdcfc8cee6a15643e6e502a58b3437f6fe729a006eab41eeefb3a1ed91f4d8eee", "finalized": true, "execution": "SUCCESS"},
+    "StewardBondVault": {"address": "0xD372725231B0d7B669fe13Fc7cea7A7692329119", "deployment_tx": "0x9c07738a48746ad69ed61a184db334cd47908f37303adc80d54b828d2120906b", "finalized": true, "execution": "SUCCESS"},
+    "StewardGuard": {"address": "0x484AA355F256CC04FdD82FaE9E6e5835d0C78Bcb", "deployment_tx": "0x92a0645d03710be9d7ee8e07ef844eaae63fa7916eeca2c2b8a818d2520a08f6", "finalized": true, "execution": "SUCCESS"},
+    "StewardVault": {"address": "0x7C05c8192135ffC9e3b04dec6eF1B34002D2e5c8", "deployment_tx": "0x5dbfadfe5d5da2cc2029474b71e9aeb4e00e2231930ecd18c46dddf17e706066", "finalized": true, "execution": "SUCCESS"}
+  },
+  "bindings": {
+    "charter_approval_a": "0x1a7fc69fcd032b6d997c46615967b9ec5820e6907741fd17ccedb473139eb47e",
+    "charter_approval_b": "0x47dd7fc450e6bcbdb9c1846b706eebcbfb3d99756b701dd99909cdfa00702a8d",
+    "bond_vault_bind": "0x67e11fcfb4aa10658782ff02f072202fc2a6bd3672b25b8309e20b0c5dc8f9fa",
+    "all_finalized": true,
+    "all_execution_success": true
+  },
+  "actors": {
+    "principal_a": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "principal_b": "0xa7eeae0e93793e3146cb14b0700251b8b0ebadfb",
+    "agent": "0x21892bba93381d94037fb4aab01cafbdf4453b56"
+  },
+  "observations": [
+    {
+      "id": "mandate-activation",
+      "charter_version": 1,
+      "readback": "current_version=1",
+      "approval_transactions": ["0x1a7fc69fcd032b6d997c46615967b9ec5820e6907741fd17ccedb473139eb47e", "0x47dd7fc450e6bcbdb9c1846b706eebcbfb3d99756b701dd99909cdfa00702a8d"]
+    },
+    {
+      "id": "vault-funding",
+      "transaction": "0xfe3af1711dd3dfe83dba425026373836275ddaa5f695d1b6c403e3d2b5694fa",
+      "observed_readback": {"treasury": 5000000000000000000, "funded": 5000000000000000000, "paid_total": 0}
+    },
+    {
+      "id": "agent-standing",
+      "transaction": "0x1c2b1361bd2a2990b603f751c34fa42e136009323915f70da53d6f4be8c25231",
+      "observed_readback": {"standing": 1000000000000000000, "locked": 0, "challenge_count": 0}
+    },
+    {
+      "id": "held-spend-request",
+      "transaction": "0xcda534d243cce9ccb82bd4d9bb7351ede6880e1a8bbba9a4479f3bfcd3be2b34",
+      "execution": "SUCCESS",
+      "spend_id": 0,
+      "observed_readback": {"state": "held", "amount": 1000000000000000000, "version": 1, "evidence_sealed": false}
+    }
+  ],
+  "limitations": [
+    "This packet records deployment, threshold mandate activation, funding, standing deposit and a held spend request. It does not claim a completed semantic adjudication, payout, bonded challenge settlement or recipient transfer on this stack."
+  ]
+}
