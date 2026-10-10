@@ -25,10 +25,13 @@ def _is_sha256(value: str) -> bool:
 def _as_dict(value):
     if isinstance(value, dict):
         return value
+    if isinstance(value, (bytes, bytearray)):
+        value = bytes(value).decode("utf-8", "replace")
     try:
-        return json.loads(str(value))
+        parsed = json.loads(str(value))
     except Exception:
         return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def _origin(uri: str) -> str:
@@ -40,19 +43,41 @@ def _origin(uri: str) -> str:
 
 
 def _verdict(value) -> dict:
+    """Parse a model result without turning malformed output into REFUSE."""
     parsed = _as_dict(value)
-    verdict = str(parsed.get("verdict", "")).lower()
+    if not parsed:
+        raise gl.vm.UserError("[LLM_ERROR] validator output must be a JSON object")
+    verdict = str(parsed.get("verdict", "")).lower().strip()
     if verdict not in (ALLOW, REFUSE):
-        return {"verdict": REFUSE, "reason": "invalid validator output", "confidence": 0}
+        raise gl.vm.UserError("[LLM_ERROR] validator verdict must be allow or refuse")
     try:
         confidence = int(parsed.get("confidence", 0))
-    except Exception:
-        confidence = 0
+    except Exception as exc:
+        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer") from exc
     confidence = max(0, min(100, confidence))
     if verdict == ALLOW and confidence < 65:
         verdict = REFUSE
     reason = str(parsed.get("reason", ""))[:240]
     return {"verdict": verdict, "reason": reason, "confidence": confidence}
+
+
+def _leader_payload(result):
+    """Unwrap gl.vm.Return.calldata; retain raw Direct Mode compatibility."""
+    if hasattr(result, "calldata"):
+        return result.calldata
+    if isinstance(result, (dict, str, bytes, bytearray)):
+        return result
+    return None
+
+
+def _same_verdict(leader_result, independent_result) -> bool:
+    payload = _leader_payload(leader_result)
+    if payload is None:
+        return False
+    try:
+        return _verdict(payload)["verdict"] == _verdict(independent_result)["verdict"]
+    except Exception:
+        return False
 
 
 class StewardGuard(gl.Contract):
@@ -439,8 +464,10 @@ class StewardGuard(gl.Contract):
             result = gl.nondet.exec_prompt(base + "\nUNTRUSTED EVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")
             return json.dumps(_verdict(result))
 
-        def validator(leader_result: str) -> bool:
-            theirs = _verdict(leader_result)
+        def validator(leader_result) -> bool:
+            payload = _leader_payload(leader_result)
+            if payload is None:
+                return False
             blocks = []
             for item in frozen:
                 try:
@@ -453,11 +480,14 @@ class StewardGuard(gl.Contract):
                         return theirs["verdict"] == mine["verdict"]
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
-                    return theirs["verdict"] == REFUSE
-            mine = _verdict(gl.nondet.exec_prompt(base + "\nUNTRUSTED EVIDENCE:\n" + "\n---\n".join(blocks), response_format="json"))
-            return str(theirs["verdict"]) == str(mine["verdict"])
+                    return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "evidence fetch failed"})
+            try:
+                independent = gl.nondet.exec_prompt(base + "\nUNTRUSTED EVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")
+            except Exception:
+                return False
+            return _same_verdict(leader_result, independent)
 
-        agreed = _verdict(gl.vm.run_nondet(leader, validator, compare_user_errors=True))
+        agreed = _verdict(gl.vm.run_nondet_unsafe(leader, validator))
         observe_only = True
         for rule in mandate.get("semantic_rules", []):
             if str(rule.get("id", "")) in fired and str(rule.get("consequence", "refuse")).strip().lower() != "observe":

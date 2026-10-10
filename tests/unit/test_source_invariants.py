@@ -29,7 +29,10 @@ def test_jury_fetch_is_independent_in_leader_and_validator():
     for n in ['steward_guard.py','steward_court.py']:
         s=text(n)
         assert s.count('gl.nondet.web.get') >= 2
-        assert 'gl.vm.run_nondet' in s
+        assert 'gl.vm.run_nondet_unsafe' in s
+        assert 'def _leader_payload' in s
+        assert 'def _same_verdict' in s
+        assert 'def validator(leader_result: str)' not in s
 
 
 def test_no_principal_semantic_override():

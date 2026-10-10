@@ -32,24 +32,50 @@ def _address(value) -> Address:
 def _as_dict(value):
     if isinstance(value, dict):
         return value
+    if isinstance(value, (bytes, bytearray)):
+        value = bytes(value).decode("utf-8", "replace")
     try:
-        return json.loads(str(value))
+        parsed = json.loads(str(value))
     except Exception:
         return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def _verdict(value) -> dict:
+    """Parse a model result without turning malformed output into REFUSE."""
     parsed = _as_dict(value)
-    verdict = str(parsed.get("verdict", "")).lower()
+    if not parsed:
+        raise gl.vm.UserError("[LLM_ERROR] validator output must be a JSON object")
+    verdict = str(parsed.get("verdict", "")).lower().strip()
     if verdict not in (ALLOW, REFUSE):
-        verdict = REFUSE
+        raise gl.vm.UserError("[LLM_ERROR] validator verdict must be allow or refuse")
     try:
-        confidence = max(0, min(100, int(parsed.get("confidence", 0))))
-    except Exception:
-        confidence = 0
+        confidence = int(parsed.get("confidence", 0))
+    except Exception as exc:
+        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer") from exc
+    confidence = max(0, min(100, confidence))
     if verdict == ALLOW and confidence < 70:
         verdict = REFUSE
     return {"verdict": verdict, "confidence": confidence, "reason": str(parsed.get("reason", ""))[:240]}
+
+
+def _leader_payload(result):
+    """Unwrap gl.vm.Return.calldata; retain raw Direct Mode compatibility."""
+    if hasattr(result, "calldata"):
+        return result.calldata
+    if isinstance(result, (dict, str, bytes, bytearray)):
+        return result
+    return None
+
+
+def _same_verdict(leader_result, independent_result) -> bool:
+    payload = _leader_payload(leader_result)
+    if payload is None:
+        return False
+    try:
+        return _verdict(payload)["verdict"] == _verdict(independent_result)["verdict"]
+    except Exception:
+        return False
 
 
 
@@ -244,8 +270,10 @@ class StewardCourt(gl.Contract):
                 except Exception:
                     blocks.append("EVIDENCE_UNAVAILABLE")
             return json.dumps(_verdict(gl.nondet.exec_prompt(prompt + "\\nUNTRUSTED CHALLENGE EVIDENCE:\\n" + "\\n---\\n".join(blocks), response_format="json")))
-        def validator(leader_result: str) -> bool:
-            theirs = _verdict(leader_result)
+        def validator(leader_result) -> bool:
+            payload = _leader_payload(leader_result)
+            if payload is None:
+                return False
             blocks = []
             for item in challenge_evidence:
                 try:
@@ -259,9 +287,12 @@ class StewardCourt(gl.Contract):
                         blocks.append("ROLE=" + str(item["role"]) + " ISSUER=" + str(item["issuer"]) + "\\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
                     blocks.append("EVIDENCE_UNAVAILABLE")
-            mine = _verdict(gl.nondet.exec_prompt(prompt + "\\nUNTRUSTED CHALLENGE EVIDENCE:\\n" + "\\n---\\n".join(blocks), response_format="json"))
-            return str(theirs["verdict"]) == str(mine["verdict"])
-        result = _verdict(gl.vm.run_nondet(leader, validator, compare_user_errors=True))
+            try:
+                independent = gl.nondet.exec_prompt(prompt + "\\nUNTRUSTED CHALLENGE EVIDENCE:\\n" + "\\n---\\n".join(blocks), response_format="json")
+            except Exception:
+                return False
+            return _same_verdict(leader_result, independent)
+        result = _verdict(gl.vm.run_nondet_unsafe(leader, validator))
         record["status"] = TERMINAL
         record["upheld"] = str(result["verdict"]) == ALLOW
         record["reason"] = str(result["reason"])
@@ -424,8 +455,10 @@ class StewardCourt(gl.Contract):
                     return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence fetch failed"})
             return json.dumps(_verdict(gl.nondet.exec_prompt(prompt + "\nEVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")))
 
-        def validator(leader_result: str) -> bool:
-            theirs = _verdict(leader_result)
+        def validator(leader_result) -> bool:
+            payload = _leader_payload(leader_result)
+            if payload is None:
+                return False
             blocks = []
             for item in frozen:
                 try:
@@ -434,14 +467,17 @@ class StewardCourt(gl.Contract):
                     if isinstance(raw, str):
                         raw = raw.encode("utf-8")
                     if hashlib.sha256(raw).hexdigest().lower() != item["digest"]:
-                        return theirs["verdict"] == REFUSE
+                        return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence digest mismatch"})
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
-                    return theirs["verdict"] == REFUSE
-            mine = _verdict(gl.nondet.exec_prompt(prompt + "\nEVIDENCE:\n" + "\n---\n".join(blocks), response_format="json"))
-            return str(theirs["verdict"]) == str(mine["verdict"])
+                    return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence fetch failed"})
+            try:
+                independent = gl.nondet.exec_prompt(prompt + "\nEVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")
+            except Exception:
+                return False
+            return _same_verdict(leader_result, independent)
 
-        result = _verdict(gl.vm.run_nondet(leader, validator, compare_user_errors=True))
+        result = _verdict(gl.vm.run_nondet_unsafe(leader, validator))
         record["effective"] = str(result["verdict"])
         record["appeal_by"] = caller
         record["appeal_statement"] = str(statement)

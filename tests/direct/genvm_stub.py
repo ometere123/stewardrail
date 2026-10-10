@@ -109,6 +109,11 @@ class Runtime:
                 result=leader()
                 if not validator(result): raise Exception('validators disagreed')
                 return result
+            @staticmethod
+            def run_nondet_unsafe(leader,validator):
+                result=leader()
+                if not validator(result): raise Exception('validators disagreed')
+                return result
         class Emitter:
             def __init__(self,target,on,value=0): self.target=str(target).lower();self.on=on;self.value=int(value)
             def __getattr__(self,name):
