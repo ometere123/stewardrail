@@ -43,7 +43,9 @@
       "standing": "0x364338ae9d8c985daaab52e740622ff60b2827a69c2d551fb669ebd7ffcaf44d"
     },
     "request": "0x386e8fe66fabfacdf441fb5445b2366d66a93f6de42d37d7244b50c88b753bbe",
-    "evidence": ["0xd957dab4f2a454f88cd6905b543f83acf030555a890d6f7be81f55345749721f", "0xe3370c28dc6ce315fb89de91053642b1d19afc02b46ae359b2960979534c488c"],
+    "evidence": ["0xd957dab4f2a454f88cd6905b543f83acf030555a890d6f7be81f55345749721f"],
+    "deliveryEvidenceReadback": "attached role confirmed by live spend readback; successful attachment hash was not captured",
+    "duplicateEvidenceRetry": {"hash": "0xe3370c28dc6ce315fb89de91053642b1d19afc02b46ae359b2960979534c488c", "status": "FINALIZED", "execution": "ERROR", "reason": "[EXPECTED] duplicate evidence identity"},
     "seal": "0xea21dc673528934079eab2ff4efddf062ce131915f6bd513d158675a77738fd1",
     "adjudicate": "0x71e3821140804eaa3e0c68f7cbdf8fa90937e02a4d0ae409399ec792d10dd4b8",
     "court": "0x5665b6ab0eaad0e7589c3194730926e06e276c25dc8ef6317d637bdd21432213",
