@@ -151,14 +151,14 @@ class StewardCourt(gl.Contract):
         )
 
     @gl.public.write
-    def open_challenge(self, guard: str, spend_id: int, challenge_id: int, vault: str, cause: str, response_deadline: int, evidence_json: str) -> None:
+    def open_challenge(self, guard: str, spend_id: int, challenge_id: int, vault: str, cause: str, response_deadline: int, evidence_cutoff: int, evidence_json: str) -> None:
         sender = _addr(gl.message.sender_address)
         bond_info = json.loads(str(gl.get_contract_at(Address(str(sender))).view().info()))
         if _addr(bond_info.get("court", "")) != _addr(gl.message.contract_address):
             raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may open a challenge case")
         self._validate_guard(str(guard))
         self._validate_vault(str(vault), str(guard))
-        if len(str(cause).strip()) == 0 or int(response_deadline) <= 0:
+        if len(str(cause).strip()) == 0 or int(response_deadline) <= 0 or int(evidence_cutoff) <= 0 or int(evidence_cutoff) > int(response_deadline):
             raise gl.vm.UserError("[EXPECTED] challenge case deadline is invalid")
         vault_info = json.loads(str(gl.get_contract_at(Address(str(vault))).view().info()))
         if _addr(vault_info.get("bond_vault", "")) != sender:
@@ -182,7 +182,7 @@ class StewardCourt(gl.Contract):
         context = json.loads(str(gl.get_contract_at(_address(guard)).view().appeal_context(int(spend_id))))
         validated_evidence = []
         for item in challenge_evidence:
-            validated_evidence.append(self._validate_appeal_item(context["mandate"], item, self._now()))
+            validated_evidence.append(self._validate_appeal_item(context["mandate"], item, int(evidence_cutoff)))
         if json.dumps(validated_evidence, sort_keys=True) != json.dumps(challenge.get("evidence", []), sort_keys=True):
             raise gl.vm.UserError("[EXPECTED] challenge evidence registration mismatch")
         key = self._challenge_key(guard, int(challenge_id))
@@ -200,10 +200,11 @@ class StewardCourt(gl.Contract):
             "guard": _addr(guard), "vault": _addr(vault), "bond_vault": sender,
             "spend_id": int(spend_id), "challenge_id": int(challenge_id), "cause": str(cause)[:240],
             "challenge_evidence": validated_evidence,
-            "opened_at": self._now(), "response_deadline": int(response_deadline),
+            "opened_at": int(evidence_cutoff), "evidence_cutoff": int(evidence_cutoff), "response_deadline": int(response_deadline),
             "adjudication_deadline": int(response_deadline) + int(challenge_policy.get("response_window_seconds", 1)),
             "status": OPEN, "upheld": False,
         })
+        gl.get_contract_at(Address(str(sender))).emit(on="finalized").ack_challenge(int(challenge_id))
 
     @gl.public.write
     def resolve_challenge(self, guard: str, challenge_id: int, bond_vault: str) -> None:

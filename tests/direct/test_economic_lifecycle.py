@@ -309,6 +309,7 @@ def test_bonded_challenge_quote_open_blocks_payment_and_dismissal_settles():
     rt.balances[CHALLENGER]=100; rt.call(BOND,'open_challenge',0,200,'missing delivery',challenge_evidence(digest),sender=CHALLENGER,value=quote)
     with pytest.raises(Exception,match='open challenge blocks payment'): rt.call(VAULT,'pay',0,sender=A)
     rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['registered'] is True
     rt.now += 61
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'challenge dismissed'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
@@ -331,6 +332,23 @@ def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     # must replay that contract-message path rather than impersonating Vault.
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+
+def test_unregistered_challenge_expires_permissionlessly_and_releases_payment_hold():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.balances[CHALLENGER]=100
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'registration outage',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    # Leave the finalized Court registration child queued to model delivery loss.
+    rt.now += 61
+    rt.call(BOND,'expire_unregistered_challenge',0,sender=B)
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
+    rt.call(VAULT,'pay',0,sender=A)
+    assert rt.balances[PAYEE] >= 200
 
 def test_upheld_prepayment_challenge_revokes_and_settles_through_all_contracts():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)

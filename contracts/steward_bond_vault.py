@@ -46,6 +46,8 @@ class StewardBondVault(gl.Contract):
     challenge_cause: TreeMap[u256, str]
     challenge_evidence: TreeMap[u256, str]
     challenge_deadline: TreeMap[u256, u256]
+    challenge_registration_deadline: TreeMap[u256, u256]
+    challenge_registered: TreeMap[u256, u256]
     challenge_settlement: TreeMap[u256, str]
     challenger_losses: TreeMap[str, u256]
     challenger_loss_at: TreeMap[str, u256]
@@ -265,13 +267,27 @@ class StewardBondVault(gl.Contract):
         self.challenge_cause[u256(challenge_id)] = str(cause)[:240]
         self.challenge_evidence[u256(challenge_id)] = json.dumps(evidence, sort_keys=True)
         self.challenge_deadline[u256(challenge_id)] = u256(int(datetime.datetime.now().timestamp()) + int(policy["response_window_seconds"]))
+        self.challenge_registration_deadline[u256(challenge_id)] = u256(int(datetime.datetime.now().timestamp()) + int(policy["response_window_seconds"]))
+        self.challenge_registered[u256(challenge_id)] = u256(0)
         self.challenge_by_spend[u256(int(spend_id))] = u256(challenge_id)
         self.open_by_spend[u256(int(spend_id))] = u256(1)
         self.challenge_count = u256(challenge_id + 1)
         self.challenge_attempts_by_spend[u256(int(spend_id))] = u256(attempts + 1)
         gl.get_contract_at(self.court).emit(on="finalized").open_challenge(
-            _addr(self.guard), int(spend_id), challenge_id, _addr(self.vault), str(cause), int(self.challenge_deadline[u256(challenge_id)]), self.challenge_evidence[u256(challenge_id)]
+            _addr(self.guard), int(spend_id), challenge_id, _addr(self.vault), str(cause), int(self.challenge_deadline[u256(challenge_id)]), int(self.challenge_registration_deadline[u256(challenge_id)]), self.challenge_evidence[u256(challenge_id)]
         )
+
+    @gl.public.write
+    def ack_challenge(self, challenge_id: int) -> None:
+        """Record that the canonical Court has accepted the challenge case."""
+        if gl.message.sender_address != self.court:
+            raise gl.vm.UserError("[EXPECTED] only the bound court may acknowledge challenge registration")
+        key = u256(int(challenge_id))
+        if str(self.challenge_state.get(key, "")) != "open":
+            raise gl.vm.UserError("[EXPECTED] challenge is not open")
+        if int(self.challenge_registered.get(key, u256(0))) == 1:
+            return
+        self.challenge_registered[key] = u256(1)
 
     @gl.public.write
     def reconcile_open_challenge(self, challenge_id: int) -> None:
@@ -280,8 +296,28 @@ class StewardBondVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] only open challenges can be reconciled")
         spend_id = int(self.challenge_spend[key])
         gl.get_contract_at(self.court).emit(on="finalized").open_challenge(
-            _addr(self.guard), spend_id, int(challenge_id), _addr(self.vault), str(self.challenge_cause[key]), int(self.challenge_deadline[key]), self.challenge_evidence.get(key, "[]")
+            _addr(self.guard), spend_id, int(challenge_id), _addr(self.vault), str(self.challenge_cause[key]), int(self.challenge_deadline[key]), int(self.challenge_registration_deadline.get(key, u256(0))), self.challenge_evidence.get(key, "[]")
         )
+
+    @gl.public.write
+    def expire_unregistered_challenge(self, challenge_id: int) -> None:
+        """Release a challenge hold if its Court registration never finalized."""
+        key = u256(int(challenge_id))
+        if str(self.challenge_state.get(key, "")) != "open":
+            raise gl.vm.UserError("[EXPECTED] challenge is not open")
+        if int(self.challenge_registered.get(key, u256(0))) == 1:
+            raise gl.vm.UserError("[EXPECTED] challenge registration is already acknowledged")
+        deadline = int(self.challenge_registration_deadline.get(key, u256(0)))
+        if deadline <= 0 or int(datetime.datetime.now().timestamp()) < deadline:
+            raise gl.vm.UserError("[EXPECTED] challenge registration window is still open")
+        spend_id = int(self.challenge_spend[key])
+        self.open_by_spend[u256(spend_id)] = u256(0)
+        bond = int(self.challenge_bond[key])
+        challenger = Address(str(self.challenge_challenger[key]))
+        self.challenge_settlement[key] = json.dumps({"result": "registration_expired", "restitution": 0, "reward": 0, "shortfall": 0}, sort_keys=True)
+        self.challenge_state[key] = "settled"
+        if bond > 0:
+            _Payee(challenger).emit_transfer(value=u256(bond))
 
     @gl.public.write
     def settle(self, challenge_id: int, upheld: bool) -> None:
@@ -293,6 +329,8 @@ class StewardBondVault(gl.Contract):
             return
         if state != "open":
             raise gl.vm.UserError("[EXPECTED] challenge is not open")
+        if int(self.challenge_registered.get(key, u256(0))) != 1:
+            raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")
         bond = int(self.challenge_bond[key])
         challenger = Address(str(self.challenge_challenger[key]))
         spend_id = int(self.challenge_spend[key])
@@ -352,7 +390,7 @@ class StewardBondVault(gl.Contract):
     @gl.public.view
     def challenge(self, challenge_id: int) -> str:
         key = u256(int(challenge_id))
-        return json.dumps({"id": int(challenge_id), "state": str(self.challenge_state.get(key, "")), "spend_id": int(self.challenge_spend.get(key, u256(0))), "bond": int(self.challenge_bond.get(key, u256(0))), "challenger": str(self.challenge_challenger.get(key, "")), "cause": str(self.challenge_cause.get(key, "")), "evidence": json.loads(self.challenge_evidence.get(key, "[]")), "deadline": int(self.challenge_deadline.get(key, u256(0))), "settlement": self.challenge_settlement.get(key, "")})
+        return json.dumps({"id": int(challenge_id), "state": str(self.challenge_state.get(key, "")), "spend_id": int(self.challenge_spend.get(key, u256(0))), "bond": int(self.challenge_bond.get(key, u256(0))), "challenger": str(self.challenge_challenger.get(key, "")), "cause": str(self.challenge_cause.get(key, "")), "evidence": json.loads(self.challenge_evidence.get(key, "[]")), "deadline": int(self.challenge_deadline.get(key, u256(0))), "registration_deadline": int(self.challenge_registration_deadline.get(key, u256(0))), "registered": int(self.challenge_registered.get(key, u256(0))) == 1, "settlement": self.challenge_settlement.get(key, "")})
 
     @gl.public.view
     def info(self) -> str:

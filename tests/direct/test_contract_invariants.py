@@ -73,6 +73,11 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'emit(on="finalized").confirm_exposure_lock' in src
     assert 'emit(on="finalized").open_challenge' in src
     assert 'emit(on="finalized").open_challenge(\n            _addr(self.guard), int(spend_id)' in src
+    assert 'emit(on="finalized").ack_challenge' in text("steward_court.py")
+    assert 'def expire_unregistered_challenge' in src
+    assert 'challenge registration window is still open' in src
+    assert 'only the bound court may acknowledge challenge registration' in src
+    assert 'if gl.message.sender_address != self.court:' in src
     assert "_validate_challenge_evidence" in src
     assert "challenge_evidence" in src
     assert 'open_by_spend' in src
