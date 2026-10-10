@@ -1,6 +1,6 @@
 {
   "packet": "stewardrail-final-economic-lifecycle",
-  "status": "observed",
+  "status": "historical-superseded",
   "observedAt": "2026-10-10",
   "sourceCommit": "90f7c97c1674406e3b4b217e732452ee08167368",
   "network": "Studionet",
@@ -90,5 +90,6 @@
     "Rolling and revocation logic is exact but still scans lifetime maps; bounded indexed rolling accounting is not demonstrated by this source generation.",
     "Direct EOA bond refunds and rewards are not claimed as independently delivery-confirmed in this packet."
   ],
-  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/",
+  "supersededBy": "final-source-stack-2026-10-10.json"
 }

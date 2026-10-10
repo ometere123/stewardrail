@@ -1,0 +1,73 @@
+{
+  "packet": "stewardrail-final-source-stack",
+  "status": "deployment_and_adversarial_verification",
+  "observedAt": "2026-10-10",
+  "sourceCommit": "57fc43cd1c0438e4aaf071822b546509473d8c26",
+  "network": "Studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "addresses": {
+    "charter": "0x5DAF7d7351115a28f279e6f0610d362d40c1f0c6",
+    "registry": "0x87D7bD3d6038FFB69fD39b20950E392650C37107",
+    "court": "0xb29AD5AcAF20B2187e2B4E50A71450b6F95f2fB6",
+    "bondVault": "0x26b7714E00279cA83Dc78466bE25798e54d05675",
+    "guard": "0xeA838677a8C0c3A955722846be490FDc90583AD8",
+    "vault": "0xFF6FcE9432bC416130de3C26b5b0f507880aFd00"
+  },
+  "sourceSha256": {
+    "contracts/steward_charter.py": "d4d13884ff29ad695ebe655ad66c033d3c3006c7308ab76d0f23eb2b1a4820c1",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31",
+    "contracts/steward_bond_vault.py": "bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3c1da75fe16c342df6",
+    "contracts/steward_guard.py": "70a585ca15e64d38aaeb0b820f7c60a205bc4bdb832ab49b7fee5482e7de0378",
+    "contracts/steward_vault.py": "e4c4a442435ce81a03afecb9c9c3546c50e5ff1f80599dbebcf23d75b4b67c03"
+  },
+  "deploymentTransactions": {
+    "charter": "0xa841f9b433d3740c473cfd8f2cd6f859cae9dd2af86b81be2f23ab97cbad46c9",
+    "registry": "0x5f6d385964fe955a077c2e588cc51fcd470d1e87f2a0fa26458c8bff62886bdc",
+    "court": "0x3628c683c8ae1cad4b289f808d3b6aa62d7eda5c988be07d82f60dffb1f54aaf",
+    "bondVault": "0xdae9593b54c74dec3a56af011e5e2a19dfa9983b51019da3556a7653a142a714",
+    "guard": "0x4550bcfa6914b797bce125823b69fb48780009f3d401fd0493ee5387b5da476e",
+    "vault": "0x01397ac35caba7f3419886bd762f468f7f20c3b2a47a15072925cefed796cfb0"
+  },
+  "governanceAndBinding": {
+    "bondApprovalA": "0x898c132e89ccd81ce42b62136fb5374815852111f89f82f4996032802a11dbc2",
+    "bondApprovalB": "0x002509aa44cd6c69b5eadfbe34be3b6bc812949c4e893be1623c0032a6a38441",
+    "bondBind": "0x1c31ae0f3189841a8ff0b27ce3836620bf329b21588afa1ecca9029296824abb",
+    "mandateApprovalA": "0x946d7d45f248e8dc69badda23fbf03396d6236f75d76e1efc332473635381414",
+    "mandateApprovalB": "0x4be49d2b8e387f1b86c7e972e02ba1815f386885bbe3dd5094789a70276afbdc"
+  },
+  "readbacks": {
+    "charter": {"version": 1, "threshold": 2, "mandateDigest": "fe3431f2ace8c5317079321cbdf09bc03e7a199c123611c4a2e3f681f0f95d0f", "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
+    "courtBindings": {"charter": "0x5daf7d7351115a28f279e6f0610d362d40c1f0c6", "registry": "0x87d7bd3d6038ffb69fd39b20950e392650c37107"},
+    "bondVaultBindings": {"charter": "0x5daf7d7351115a28f279e6f0610d362d40c1f0c6", "guard": "0xea838677a8c0c3a955722846be490fdc90583ad8", "court": "0xb29ad5acaf20b2187e2b4e50a71450b6f95f2fb6", "vault": "0xff6fce9432bc416130de3c26b5b0f507880afd00"},
+    "guardBindings": {"charter": "0x5daf7d7351115a28f279e6f0610d362d40c1f0c6", "registry": "0x87d7bd3d6038ffb69fd39b20950e392650c37107", "court": "0xb29ad5acaf20b2187e2b4e50a71450b6f95f2fb6", "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
+    "vaultBindings": {"charter": "0x5daf7d7351115a28f279e6f0610d362d40c1f0c6", "guard": "0xea838677a8c0c3a955722846be490fdc90583ad8", "court": "0xb29ad5acaf20b2187e2b4e50a71450b6f95f2fb6", "bondVault": "0x26b7714e00279ca83dc78466be25798e54d05675"}
+  },
+  "localVerification": {
+    "python": "91 passed, 7 skipped (official Direct Mode run separately)",
+    "mutation": "69/69 killed",
+    "directMode": "6 passed, 1 skipped by genlayer-test 0.29.2 second-contract limitation",
+    "genvmLint": "all six contracts passed",
+    "sourceManifest": "PASS",
+    "preflight": "PASS",
+    "networkCheck": "PASS (61999)",
+    "registrationReconciliationTests": "passed",
+    "lateResultAfterRegistrationExpiry": "rejected in adversarial tests",
+    "challengeEvidenceDigestMismatch": "terminal REFUSE in adversarial tests",
+    "challengeEvidenceUnavailable": "terminal REFUSE in adversarial tests"
+  },
+  "liveStatus": {
+    "freshDeployment": "observed and finalized with successful execution for all six contracts",
+    "currentStackFundedEconomicLifecycle": "not repeated after the indexed-exposure source freeze",
+    "forcedInternalChildLoss": "not safely inducible on Studionet",
+    "recipientBalanceDelta": "not claimed for this source generation"
+  },
+  "limitations": [
+    "A forced live internal-child loss is not safely inducible on the active network; deterministic retry/expiry tests cover the recovery rules.",
+    "Active rolling exposure queries use bounded indexes; docket and eligible-revocation readbacks remain historical-map scans.",
+    "The prior economic lifecycle packet is historical and is not evidence for this current address set."
+  ],
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
+}
