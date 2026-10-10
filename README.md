@@ -62,16 +62,16 @@ Irreversible authority messages use `on="finalized"`. Court emits only to Guard.
 
 ## Canonical Studionet deployment
 
-The current six-contract stack is recorded in [`deploy/deployments.json`](deploy/deployments.json). The fresh semantic evidence packet is [`deploy/proofs/validator-correction-fresh-stack-2026-10-10.json`](deploy/proofs/validator-correction-fresh-stack-2026-10-10.json).
+The current six-contract stack is recorded in [`deploy/deployments.json`](deploy/deployments.json). Deployment and binding observations are recorded in [`deploy/proofs/fresh-final-source-stack-2026-10-10.json`](deploy/proofs/fresh-final-source-stack-2026-10-10.json).
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0x442F…C1aa](https://explorer-studio.genlayer.com/address/0x442F7d7d3ad82944110504560B731DC6b6aaC1aa) |
-| EvidenceRegistry | [0x634C…Fa89](https://explorer-studio.genlayer.com/address/0x634Cc7b736167984adD0D0efF68d5aA351afFa89) |
-| StewardCourt | [0x9D4f…b7AD](https://explorer-studio.genlayer.com/address/0x9D4fe9Ab3da9d6054944eE68985C7B60e31db7AD) |
-| StewardBondVault | [0x4BD6…a380](https://explorer-studio.genlayer.com/address/0x4BD6531119BbbDFAD565e59fC11BBCb08fFCa380) |
-| StewardGuard | [0xfc1A…a600](https://explorer-studio.genlayer.com/address/0xfc1A9F98957333e602d8f1f71987Cd039543a600) |
-| StewardVault | [0x7C61…eA4A](https://explorer-studio.genlayer.com/address/0x7C61c83cD880838D8Aa148370Ac734aAb85deA4A) |
+| StewardCharter | [0x3328…1FEA](https://explorer-studio.genlayer.com/address/0x3328380853E2a8e5B59d1aD2563B636d1081FFEA) |
+| EvidenceRegistry | [0x36D7…D8119](https://explorer-studio.genlayer.com/address/0x36D72f04c46e30F125F9fdf859E2DB1B227D8119) |
+| StewardCourt | [0xCD60…07f8](https://explorer-studio.genlayer.com/address/0xCD60E455a52b12b9e6e93e3171f99843e2f207f8) |
+| StewardBondVault | [0x5A62…FB8D](https://explorer-studio.genlayer.com/address/0x5A62cDaebA51A9e7e4FEE90BB4120A2451beFB8D) |
+| StewardGuard | [0x9053…7809](https://explorer-studio.genlayer.com/address/0x90539546a6F954E2D5B91c7FE2a5eF21BAAf7809) |
+| StewardVault | [0x9C4f…6cEe](https://explorer-studio.genlayer.com/address/0x9C4f1105644e345D12a8921a2D8c04e044b86cEe) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
@@ -84,9 +84,9 @@ The current packet records only observations from the corrected source stack:
 | Threshold mandate activation | Two distinct principal approvals activated mandate version 1. |
 | BondVault binding | Two principal approvals were followed by finalized binding to the deployed Guard and Vault. |
 | Authenticated evidence | Separate vendor and delivery issuers attested the exact URI and digest for each semantic case. |
-| Semantic REFUSE | Spend 0 reached `MAJORITY_AGREE` and `FINALIZED`; Guard and Court read back `refuse`, with a finalized Court child. |
-| Semantic ALLOW | Spend 1 reached `MAJORITY_AGREE` and `FINALIZED`; Guard and Court read back `allow`, with a finalized Court child. |
-| Ambiguous/undetermined behavior | Earlier historical attempts with validator disagreement remain labeled historical and were not treated as acceptance. |
+| Semantic REFUSE | A corrected-source semantic case is being re-run against the current stack; see the current proof packet before treating it as canonical evidence. |
+| Semantic ALLOW | A corrected-source semantic case is being re-run against the current stack; see the current proof packet before treating it as canonical evidence. |
+| Ambiguous/undetermined behavior | Historical attempts with validator disagreement remain labeled historical and were not treated as acceptance. |
 
 The packet records leader execution and protocol consensus separately. Validator entries canceled after quorum are not silently relabeled as successful execution.
 
@@ -97,8 +97,8 @@ The six readable contract files are the exact files used for tests, lint, mutati
 ```text
 contracts/steward_charter.py     726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-contracts/steward_court.py       7b264012c84f78fc76fe1aea2f68cd302de669677bbf8c66e84bbafdf358131a
-contracts/steward_guard.py       3922a08083d2fc8dfb9daaab25e3e17c9ecaf813c83207a9c7f40431c93bc601
+contracts/steward_court.py       7a910177bd663ebafdcb6ea6468715fe7bf591f8da791e5f4a04af3cea943cd1
+contracts/steward_guard.py       18294b400a0b8a4294a3d0d85737fc0038e239f2439ed723df4993d02af7d60f
 contracts/steward_vault.py       2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088
 contracts/steward_bond_vault.py  1cc62373f3be8d918cfa97fff6ebf61df0b02c80440a30ca9189d17d905dc0a4
 ```
