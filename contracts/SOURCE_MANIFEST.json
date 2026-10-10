@@ -1,28 +1,34 @@
 {
   "schema": 1,
-  "policy": "These exact readable files are the deployment inputs; no generated/minified deployable form exists.",
+  "policy": "These exact readable files are the deployment inputs; the manifest uses the recorded per-file line-ending bytes for cross-platform verification; no generated/minified deployable form exists.",
   "contracts": {
     "steward_charter.py": {
+      "lineEnding": "lf",
       "sha256": "d4d13884ff29ad695ebe655ad66c033d3c3006c7308ab76d0f23eb2b1a4820c1",
       "bytes": 17594
     },
     "evidence_registry.py": {
+      "lineEnding": "lf",
       "sha256": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
       "bytes": 3708
     },
     "steward_court.py": {
+      "lineEnding": "lf",
       "sha256": "c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31",
       "bytes": 39395
     },
     "steward_guard.py": {
+      "lineEnding": "lf",
       "sha256": "70a585ca15e64d38aaeb0b820f7c60a205bc4bdb832ab49b7fee5482e7de0378",
       "bytes": 45340
     },
     "steward_vault.py": {
+      "lineEnding": "lf",
       "sha256": "9b22e192fe84d6e3a9f6a6de81dc15997006d935cb1fa8a5b72c50ea6b933e95",
       "bytes": 12223
     },
     "steward_bond_vault.py": {
+      "lineEnding": "crlf",
       "sha256": "4e4e2acb19b30e71fcc506d47928788fb0b233ce2ed5fb42a43992c8e1adc798",
       "bytes": 33104
     }

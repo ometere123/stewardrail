@@ -1,2 +1,3 @@
-contracts/*.py text eol=crlf
+contracts/*.py text eol=lf
+contracts/steward_bond_vault.py text eol=crlf
 scripts/*.py text eol=lf
