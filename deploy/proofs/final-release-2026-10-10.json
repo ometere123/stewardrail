@@ -21,6 +21,19 @@
     "StewardGuard": {"address": "0x9ac1fD1E160cDA8A0933eE1F82e5AF0aEC3fFf98", "deploymentTx": "0x5fa26129f65d0739551b2bd444c8729af6b8902802550489028d235099490cd4", "finality": "FINALIZED", "execution": "SUCCESS"},
     "StewardVault": {"address": "0x1243c24242541E90D5db9A3da95D4E3e60aA9526", "deploymentTx": "0xadd7ff7975ed3e4190b1e8017c6d1bc8939931691e2dea6e76775c613ce27e8b", "finality": "FINALIZED", "execution": "SUCCESS"}
   },
+  "deployedCodeVerification": {
+    "rpcMethod": "gen_getContractCode",
+    "observedAt": "2026-10-10",
+    "result": "all six returned source bytes and SHA-256 values matching contracts/SOURCE_MANIFEST.json",
+    "contracts": {
+      "steward_charter.py": {"address": "0x3c7aA092b9Db5869423aEEfAD11B5e1DCa0aC9B3", "bytes": 17594, "sha256": "d4d13884ff29ad695ebe655ad66c033d3c3006c7308ab76d0f23eb2b1a4820c1"},
+      "evidence_registry.py": {"address": "0xe62A4f3586F2a14553104Ffd09f37683DDb16A38", "bytes": 3708, "sha256": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd"},
+      "steward_court.py": {"address": "0x1DCFCAe371ed2664632728356e8FD3247315D8f9", "bytes": 39395, "sha256": "c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31"},
+      "steward_guard.py": {"address": "0x9ac1fD1E160cDA8A0933eE1F82e5AF0aEC3fFf98", "bytes": 45340, "sha256": "70a585ca15e64d38aaeb0b820f7c60a205bc4bdb832ab49b7fee5482e7de0378"},
+      "steward_vault.py": {"address": "0x1243c24242541E90D5db9A3da95D4E3e60aA9526", "bytes": 12223, "sha256": "9b22e192fe84d6e3a9f6a6de81dc15997006d935cb1fa8a5b72c50ea6b933e95"},
+      "steward_bond_vault.py": {"address": "0x5efAf65ebcAC0512daE2659c2180F70288986C05", "bytes": 33104, "sha256": "4e4e2acb19b30e71fcc506d47928788fb0b233ce2ed5fb42a43992c8e1adc798"}
+    }
+  },
   "governance": {
     "threshold": "2 of 2",
     "mandateVersion": 3,
