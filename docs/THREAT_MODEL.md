@@ -10,7 +10,7 @@
 | T6 | Leader lies about semantic result | validators independently re-fetch and re-answer | committee majority can still be wrong |
 | T7 | Single principal overrides jury | no per-spend override method exists | threshold governance can approve future policy, not historical result |
 | T8 | Appeal is cosmetic | appeal effective verdict directly replaces primary in terminal message | one application appeal only |
-| T9 | ALLOW paid before reversal/finality | court-to-vault terminal message executes only on finalized parent | correctness depends on GenLayer finalized-message semantics |
+| T9 | ALLOW paid before reversal/finality | Court → Guard → Vault terminal messages execute only after each upstream transaction finalizes | correctness depends on GenLayer finalized-message semantics |
 | T10 | Duplicate finalized messages | court and vault terminal records are idempotent and conflict-rejecting | conflicting protocol bug would fail closed |
 | T11 | Duplicate payout | vault `paid` flag set before transfer | recipient contract behavior is outside StewardRail |
 | T12 | Treasury recovery bypass | exact threshold-approved recovery tuple + monotonic nonce | principals controlling threshold can recover funds by design |

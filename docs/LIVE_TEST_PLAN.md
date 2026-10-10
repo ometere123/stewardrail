@@ -4,22 +4,22 @@ The canonical deployment record should not claim completion until this packet ex
 
 ## Network gate
 
-- `npx genlayer@0.39.1 network set studionet`
-- `npx genlayer@0.39.1 network info`
+- `npm exec -- genlayer network set studionet`
+- `npm exec -- genlayer network info`
 - independently confirm RPC `https://studio.genlayer.com/api`
 - independently confirm chain id `61999` / `0xF22F`
 - abort if any command resolves to a chain other than 61999
 
 ## Required lifecycle
 
-1. Deploy the five exact source files in `contracts/` and record source SHA-256 plus deployment transaction.
+1. Deploy the six exact source files in `contracts/` and record source SHA-256 plus deployment transaction.
 2. Two of three principals approve the exact same initial mandate and activate version 1.
 3. An authorized issuer wallet attests an evidence URI+digest.
 4. Agent requests a deterministic refusal and prove no nondeterministic adjudication call was needed.
 5. Agent requests a semantic spend, attaches role-complete authenticated evidence, and adjudicates.
 6. Prove leader/validators re-fetch digest-bound evidence and the primary decision reaches court only after the guard adjudication transaction is FINALIZED.
 7. **ALLOW -> appeal -> REFUSE:** appeal within the window, prove vault has no terminal allow before appeal finalization, then prove terminal refusal blocks `pay`.
-8. Fresh case: **REFUSE -> appeal -> ALLOW:** prove reversal, wait for the appeal transaction to FINALIZE, prove the finalized court message creates a vault terminal allow, then pay exactly once.
+8. Fresh case: **REFUSE -> appeal -> ALLOW:** prove reversal, wait for the appeal transaction to FINALIZE, prove finalized Court → Guard → Vault delivery creates the terminal allow, then pay exactly once.
 9. Unappealed ALLOW: wait for application window, call `close_unappealed`, wait for FINALIZED, then pay.
 10. Threshold recovery: one approval fails, threshold approvals succeed, exact nonce prevents replay.
 

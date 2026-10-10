@@ -11,7 +11,7 @@ export default function Home() {
     <div className="grid" style={{marginTop:16}}>
       <Panel eyebrow="Not just hashing" title="Issuer authenticity"><p>The mandate names authoritative issuer wallets and HTTPS origins. A digest is accepted only if the authorized wallet attested it before the spend.</p></Panel>
       <Panel eyebrow="Not cosmetic" title="Real reversal"><p>ALLOW can become REFUSE. REFUSE can become ALLOW. The appeal result becomes the effective decision delivered to custody.</p></Panel>
-      <Panel eyebrow="Not accepted-only" title="Finality before money"><p>The court sends terminal authorization to the vault through a finalized GenLayer message. The vault has no timestamp shortcut.</p></Panel>
+      <Panel eyebrow="Not accepted-only" title="Finality before money"><p>Court sends the finalized semantic result to Guard. Guard applies the economic checks, then sends a finalized authorization to Vault. The vault has no timestamp shortcut.</p></Panel>
     </div>
   </>;
 }
