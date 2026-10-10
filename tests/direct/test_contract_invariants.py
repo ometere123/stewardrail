@@ -110,8 +110,13 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'keep_lock_for_retry = (not bool(upheld)) and self._future_challenge_permitted(spend_id)' in src
     assert '"future_challenges_remaining": keep_lock_for_retry' in src
     assert 'if release_lock and locked_for_spend > 0:' in src
-    assert 'receive_reimbursement(int(challenge_id), recovered)' in src
+    assert 'receive_reimbursement(int(challenge_id), int(amount))' in src
     assert 'receive_challenge_bond(int(challenge_id))' in src
+    assert 'def reconcile_settlement_delivery' in src
+    assert 'settlement_delivery' in src
+    assert 'in ("pending", "retry_pending")' in src
+    assert 'challenge_bond_credit' in text("steward_vault.py")
+    assert 'reimbursement_credit' in text("steward_vault.py")
     assert 'if result == "dismissed":' in src
 
 

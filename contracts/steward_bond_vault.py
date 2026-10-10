@@ -59,6 +59,7 @@ class StewardBondVault(gl.Contract):
     challenge_attempts_by_spend: TreeMap[u256, u256]
     challenge_window_end_by_spend: TreeMap[u256, u256]
     challenge_max_attempts_by_spend: TreeMap[u256, u256]
+    settlement_delivery: TreeMap[u256, str]
 
     def __init__(self, charter: str, agent: str):
         self.charter = Address(str(charter))
@@ -72,6 +73,7 @@ class StewardBondVault(gl.Contract):
         self.standing = u256(0)
         self.locked = u256(0)
         self.challenge_count = u256(0)
+        self.settlement_delivery = TreeMap()
 
     @gl.public.write
     def bind(self, guard: str, vault: str) -> None:
@@ -388,11 +390,11 @@ class StewardBondVault(gl.Contract):
                 settled = json.loads(settlement)
                 result = str(settled.get("result", ""))
                 if result == "dismissed":
-                    gl.get_contract_at(self.vault).emit(value=u256(int(self.challenge_bond[key])), on="finalized").receive_challenge_bond(int(challenge_id))
+                    self._queue_vault_delivery(key, int(challenge_id), "bond", int(self.challenge_bond[key]))
                 elif result == "upheld":
                     restitution = int(settled.get("restitution", 0))
                     if restitution > 0:
-                        gl.get_contract_at(self.vault).emit(value=u256(restitution), on="finalized").receive_reimbursement(int(challenge_id), restitution)
+                        self._queue_vault_delivery(key, int(challenge_id), "reimbursement", restitution)
             return
         if state != "open":
             raise gl.vm.UserError("[EXPECTED] challenge is not open")
@@ -413,8 +415,6 @@ class StewardBondVault(gl.Contract):
             if _addr(self.vault) == _addr("0x0000000000000000000000000000000000000000"):
                 raise gl.vm.UserError("[EXPECTED] vault binding is not initialized")
             self.standing = u256(int(self.standing) - recovered - bonus)
-            if recovered > 0:
-                gl.get_contract_at(self.vault).emit(value=u256(recovered), on="finalized").receive_reimbursement(int(challenge_id), recovered)
             if bond > 0:
                 _Payee(challenger).emit_transfer(value=u256(bond))
             if bonus > 0:
@@ -422,18 +422,81 @@ class StewardBondVault(gl.Contract):
             self.challenger_losses[str(self.challenge_challenger[key])] = u256(0)
             self.challenge_settlement[key] = json.dumps({"result": "upheld", "restitution": recovered, "reward": bonus, "shortfall": amount - recovered, "lock_released": True, "future_challenges_remaining": False}, sort_keys=True)
             self.upheld_by_spend[u256(spend_id)] = u256(1)
+            if recovered > 0:
+                self._queue_vault_delivery(key, int(challenge_id), "reimbursement", recovered)
         else:
-            gl.get_contract_at(self.vault).emit(value=u256(bond), on="finalized").receive_challenge_bond(int(challenge_id))
             challenger_key = str(self.challenge_challenger[key])
             self.challenger_losses[challenger_key] = u256(int(self.challenger_losses.get(challenger_key, u256(0))) + 1)
             self.challenger_loss_at[challenger_key] = u256(int(datetime.datetime.now().timestamp()))
             self.challenge_settlement[key] = json.dumps({"result": "dismissed", "restitution": 0, "reward": 0, "shortfall": 0, "lock_released": release_lock, "future_challenges_remaining": keep_lock_for_retry}, sort_keys=True)
             self.open_by_spend[u256(spend_id)] = u256(0)
+            self._queue_vault_delivery(key, int(challenge_id), "bond", bond)
         self.open_by_spend[u256(spend_id)] = u256(0)
         if release_lock and locked_for_spend > 0:
             self.locked = u256(int(self.locked) - locked_for_spend)
             self.locked_by_spend[u256(spend_id)] = u256(0)
         self.challenge_state[key] = "settled"
+
+    def _queue_vault_delivery(self, key, challenge_id: int, kind: str, amount: int) -> None:
+        """Emit at most one payable child until the Vault confirms its credit.
+
+        A finalized child can be delayed or lost.  The receiver readback lets a
+        later retry converge without sending a second value transfer after a
+        successful first delivery.  While a child is still pending we do not
+        guess its outcome or emit another transfer.
+        """
+        if int(amount) <= 0:
+            return
+        view = gl.get_contract_at(self.vault).view()
+        received = int(view.challenge_bond_credit(int(challenge_id))) if kind == "bond" else int(view.reimbursement_credit(int(challenge_id)))
+        if received != 0:
+            if received != int(amount):
+                raise gl.vm.UserError("[EXPECTED] conflicting settled value already recorded by vault")
+            self.settlement_delivery[key] = "delivered"
+            return
+        if str(self.settlement_delivery.get(key, "")) in ("pending", "retry_pending"):
+            return
+        self.settlement_delivery[key] = "pending"
+        if kind == "bond":
+            gl.get_contract_at(self.vault).emit(value=u256(int(amount)), on="finalized").receive_challenge_bond(int(challenge_id))
+        else:
+            gl.get_contract_at(self.vault).emit(value=u256(int(amount)), on="finalized").receive_reimbursement(int(challenge_id), int(amount))
+
+    @gl.public.write
+    def reconcile_settlement_delivery(self, challenge_id: int) -> None:
+        """Retry only an uncredited settlement child after its failure/loss is known.
+
+        This action is deliberately separate from ``settle``: ordinary
+        reconciliation never treats an unresolved child as failed.  Callers
+        first inspect the Vault readback and the child receipt, then invoke this
+        permissionless recovery action for a missing delivery.
+        """
+        key = u256(int(challenge_id))
+        if str(self.challenge_state.get(key, "")) != "settled":
+            raise gl.vm.UserError("[EXPECTED] challenge is not settled")
+        settlement = self.challenge_settlement.get(key, "")
+        if settlement == "":
+            raise gl.vm.UserError("[EXPECTED] settlement record is missing")
+        settled = json.loads(settlement)
+        result = str(settled.get("result", ""))
+        # This explicit recovery entrypoint is the only operation allowed to
+        # reopen a pending delivery.  Ordinary settle/reconciliation leaves a
+        # pending child alone so concurrent retries cannot queue duplicate GEN.
+        if str(self.settlement_delivery.get(key, "")) == "retry_pending":
+            return
+        self.settlement_delivery[key] = ""
+        if result == "dismissed":
+            self._queue_vault_delivery(key, int(challenge_id), "bond", int(self.challenge_bond[key]))
+        elif result == "upheld":
+            amount = int(settled.get("restitution", 0))
+            if amount > 0:
+                self._queue_vault_delivery(key, int(challenge_id), "reimbursement", amount)
+        elif result == "registration_expired":
+            raise gl.vm.UserError("[EXPECTED] expired challenge has no value delivery")
+        else:
+            raise gl.vm.UserError("[EXPECTED] unsupported settlement result")
+        if str(self.settlement_delivery.get(key, "")) == "pending":
+            self.settlement_delivery[key] = "retry_pending"
 
     @gl.public.view
     def has_open_challenge(self, spend_id: int) -> bool:

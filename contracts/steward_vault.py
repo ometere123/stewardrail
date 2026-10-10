@@ -83,7 +83,7 @@ class StewardVault(gl.Contract):
         if existing > 0:
             if existing != value:
                 raise gl.vm.UserError("[EXPECTED] conflicting reimbursement replay")
-            return
+            raise gl.vm.UserError("[EXPECTED] duplicate reimbursement delivery")
         self.reimbursement_received[key] = u256(value)
         self.treasury = u256(int(self.treasury) + value)
         self.funded = u256(int(self.funded) + value)
@@ -208,10 +208,18 @@ class StewardVault(gl.Contract):
         if existing > 0:
             if existing != value:
                 raise gl.vm.UserError("[EXPECTED] conflicting challenge bond replay")
-            return
+            raise gl.vm.UserError("[EXPECTED] duplicate challenge bond delivery")
         self.challenge_bond_received[key] = u256(value)
         self.treasury = u256(int(self.treasury) + value)
         self.funded = u256(int(self.funded) + value)
+
+    @gl.public.view
+    def reimbursement_credit(self, challenge_id: int) -> int:
+        return int(self.reimbursement_received.get(u256(int(challenge_id)), u256(0)))
+
+    @gl.public.view
+    def challenge_bond_credit(self, challenge_id: int) -> int:
+        return int(self.challenge_bond_received.get(u256(int(challenge_id)), u256(0)))
 
     @gl.public.view
     def status(self) -> str:

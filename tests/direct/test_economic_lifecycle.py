@@ -407,16 +407,63 @@ def test_settled_dismissal_reconciliation_redelivers_lost_vault_credit_once():
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
     before=json.loads(rt.call(VAULT,'status',sender=A))['funded']
     assert before == 0
+    bond_before = rt.balances[BOND]
     assert rt.finalized
     rt.finalized.pop(0)
+    # Ordinary Court reconciliation must not guess that the first child failed.
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A)
+    rt.flush_finalized()
+    assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == 0
+    # A caller that has inspected the missing child can invoke the explicit
+    # delivery recovery. Two simultaneous retries still queue one child.
+    rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
+    rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
     rt.flush_finalized()
     after=json.loads(rt.call(VAULT,'status',sender=A))['funded']
     assert after == quote
+    assert rt.balances[BOND] == bond_before - quote
     # A second reconciliation is harmless and does not credit the bond twice.
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A)
     rt.flush_finalized()
     assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == quote
+    assert rt.balances[BOND] == bond_before - quote
+
+def test_settled_upheld_reconciliation_does_not_reimburse_twice():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.call(VAULT,'pay',0,sender=A)
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'post-payment defect',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'upheld'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    vault_before=dict(rt.balances)[VAULT]; bond_before=dict(rt.balances)[BOND]
+    funded_before=json.loads(rt.call(VAULT,'status',sender=A))['funded']
+    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
+    rt.call(BOND,'reconcile_settlement_delivery',0,sender=B); rt.flush_finalized()
+    assert dict(rt.balances)[VAULT] == vault_before
+    assert dict(rt.balances)[BOND] == bond_before
+    assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == funded_before
+
+def test_duplicate_payable_credits_revert_without_balance_movement():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.call(VAULT,'pay',0,sender=A)
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'duplicate credit',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61; rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'upheld'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    vault_before=rt.balances[VAULT]; funded_before=json.loads(rt.call(VAULT,'status',sender=A))['funded']
+    with pytest.raises(Exception,match='duplicate reimbursement delivery'):
+        rt.call(VAULT,'receive_reimbursement',0,200,sender=BOND,value=200)
+    assert rt.balances[VAULT] == vault_before
+    assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == funded_before
 
 def test_unregistered_challenge_expires_permissionlessly_and_releases_payment_hold():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
