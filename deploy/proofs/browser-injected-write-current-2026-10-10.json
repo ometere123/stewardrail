@@ -1,7 +1,7 @@
 {
   "scenario": "browser-injected-eip1193-write-current-stack",
-  "observed_at": "2026-10-10T11:43:06.237059+01:00",
-  "source_commit": "9a960bb6262c8b3cd04f9f5a3aaa35eee0897d63",
+  "observed_at": "2026-10-10T11:49:43.036719+01:00",
+  "source_commit": "f454407a6b7f1b239ad0161c33497e0c19f9e596",
   "contract_source_commit": "0850dec63113d6590ce276d57cf6058c62266635",
   "production_url": "https://stewardrail.vercel.app/spends/new",
   "network": "Studionet",
@@ -24,18 +24,89 @@
     "execution": "SUCCESS",
     "triggered_children": []
   },
+  "evidence_transactions": {
+    "vendor": {
+      "hash": "0xeb92b7994eb8e569fdbe018e5707d41b90bbf11fb0030826293a13d9d0cb9354",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0xeb92b7994eb8e569fdbe018e5707d41b90bbf11fb0030826293a13d9d0cb9354",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "role": "vendor",
+      "issuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+      "spend_id": 0
+    },
+    "delivery": {
+      "hash": "0xe3b043cb0c6f2c1ef1992f0fb1bc38def0836778fd7a4cc13397de164d8d2370",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0xe3b043cb0c6f2c1ef1992f0fb1bc38def0836778fd7a4cc13397de164d8d2370",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "role": "delivery",
+      "issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+      "spend_id": 0
+    }
+  },
+  "evidence_seal_transaction": {
+    "hash": "0xbe9c4d7d04b28c3a59168a6339f1c215f43c38ee87f84a648136e1dbb06fcb21",
+    "explorer": "https://explorer-studio.genlayer.com/tx/0xbe9c4d7d04b28c3a59168a6339f1c215f43c38ee87f84a648136e1dbb06fcb21",
+    "status": "FINALIZED",
+    "consensus": "MAJORITY_AGREE",
+    "execution": "SUCCESS",
+    "spend_id": 0
+  },
+  "adjudication": {
+    "transaction": {
+      "hash": "0x57d4888f57ef5e21187930737e823b0df887833d370dd7b14348558ea4bdcde7",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x57d4888f57ef5e21187930737e823b0df887833d370dd7b14348558ea4bdcde7",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "votes": {
+        "agree": 3,
+        "idle": 2
+      },
+      "triggered_children": [
+        "0xe6f563521fcc4a6a4c36d0505ad4c28d1d78a0d3bbc8a76dc46700ec5b52aea9"
+      ]
+    },
+    "semantic_result": {
+      "verdict": "allow",
+      "confidence": 99,
+      "reason": "Both authenticated evidence artifacts contain the exact ASCII token STEWARDRAIL_ACCEPT_2026, so the fired token-presence rule is satisfied."
+    },
+    "court_child": {
+      "hash": "0xe6f563521fcc4a6a4c36d0505ad4c28d1d78a0d3bbc8a76dc46700ec5b52aea9",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0xe6f563521fcc4a6a4c36d0505ad4c28d1d78a0d3bbc8a76dc46700ec5b52aea9",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "method": "record_primary",
+      "court": "0xCD60E455a52b12b9e6e93e3171f99843e2f207f8"
+    },
+    "court_readback": {
+      "guard": "0x90539546a6F954E2D5B91c7FE2a5eF21BAAf7809",
+      "spend_id": 0,
+      "primary": "allow",
+      "effective": "allow",
+      "status": "open",
+      "appeal_deadline": 1791632983,
+      "primary_evidence_roles": ["vendor", "delivery"]
+    }
+  },
   "state_after": {
     "spend_id": 0,
-    "state": "held",
-    "enforcement": "held",
-    "reason": "semantic adjudication required",
-    "evidence_sealed": false,
+    "state": "allow",
+    "enforcement": "allow",
+    "reason": "Both authenticated evidence artifacts contain the exact ASCII token STEWARDRAIL_ACCEPT_2026, so the fired token-presence rule is satisfied.",
+    "evidence_sealed": true,
     "evidence_deadline": 1791632586,
     "terminal_semantic": "",
     "terminal_economic": "",
     "terminal_state": "",
-    "revoked": false
+    "revoked": false,
+    "semantic_reason": "Both authenticated evidence artifacts contain the exact ASCII token STEWARDRAIL_ACCEPT_2026, so the fired token-presence rule is satisfied.",
+    "confidence": 99
   },
-  "observed_invariant": "The authorized browser agent submitted a current-stack spend through injected EIP-1193. The transaction finalized with accepted consensus and successful GenVM execution, and the Guard created one held spend without authorizing custody.",
+  "observed_invariant": "The authorized browser agent submitted a current-stack spend through injected EIP-1193, attached two authenticated artifacts, sealed evidence, and reached a finalized semantic ALLOW. The Court child finalized and recorded the effective ALLOW while the appeal window remains open; no terminal custody authorization was emitted yet.",
   "snap_methods_observed": []
 }
