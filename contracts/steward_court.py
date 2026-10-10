@@ -454,32 +454,32 @@ class StewardCourt(gl.Contract):
 
 
     @gl.public.write
-    def close_unappealed(self, guard: str, spend_id: int, vault: str) -> None:
-        record = self._load(str(guard), int(spend_id))
+    def close_unappealed(self, guard: Address, spend_id: int, vault: Address) -> None:
+        record = self._load(guard, int(spend_id))
         if str(record["status"]) != OPEN:
             raise gl.vm.UserError("[EXPECTED] case is not open")
         if self._now() <= int(record["appeal_deadline"]):
             raise gl.vm.UserError("[EXPECTED] appeal window has not elapsed")
         record["status"] = TERMINAL
-        self._save(str(guard), int(spend_id), record)
-        self._terminal_emit(str(vault), str(guard), int(spend_id), record)
+        self._save(guard, int(spend_id), record)
+        self._terminal_emit(vault, guard, int(spend_id), record)
 
     @gl.public.write
-    def reconcile_terminal(self, guard: str, spend_id: int, vault: str) -> None:
+    def reconcile_terminal(self, guard: Address, spend_id: int, vault: Address) -> None:
         """Re-emit an already-terminal result after a child delivery failure.
 
         The stored Court record is authoritative; this method cannot change the
         effective decision and all receivers enforce their own bindings and
         idempotence rules.
         """
-        record = self._load(str(guard), int(spend_id))
+        record = self._load(guard, int(spend_id))
         if str(record["status"]) not in (APPEALED, TERMINAL):
             raise gl.vm.UserError("[EXPECTED] only terminal court records can be reconciled")
-        self._terminal_emit(str(vault), str(guard), int(spend_id), record)
+        self._terminal_emit(vault, guard, int(spend_id), record)
 
     @gl.public.view
-    def case(self, guard: str, spend_id: int) -> str:
-        return json.dumps(self._load(str(guard), int(spend_id)))
+    def case(self, guard: Address, spend_id: int) -> str:
+        return json.dumps(self._load(guard, int(spend_id)))
 
     @gl.public.view
     def info(self) -> str:
