@@ -139,6 +139,34 @@ class StewardCourt(gl.Contract):
         if _addr(info["court"]) != _addr(gl.message.contract_address) or _addr(info["guard"]) != _addr(guard):
             raise gl.vm.UserError("[EXPECTED] vault is not bound to this guard and court")
 
+    def _registration_status(self, record: dict, bond_vault: str) -> str:
+        """Read the collateral contract's authoritative registration state."""
+        challenge = json.loads(str(gl.get_contract_at(_address(bond_vault)).view().challenge(int(record["challenge_id"]))))
+        if int(challenge.get("spend_id", -1)) != int(record["spend_id"]):
+            raise gl.vm.UserError("[EXPECTED] collateral challenge identity mismatch")
+        state = str(challenge.get("state", ""))
+        settlement = challenge.get("settlement", "")
+        if state == "settled" and settlement != "":
+            try:
+                result = str(json.loads(str(settlement)).get("result", ""))
+            except Exception:
+                result = ""
+            if result == "registration_expired":
+                return "expired"
+        if state == OPEN and bool(challenge.get("registered", False)):
+            return "registered"
+        if state == OPEN:
+            return "pending"
+        return "invalid"
+
+    def _mark_registration_expired(self, key: str, record: dict) -> None:
+        record["status"] = TERMINAL
+        record["upheld"] = False
+        record["reason"] = "challenge registration expired before acknowledgment"
+        record["confidence"] = 100
+        record["terminal_kind"] = "registration_expired"
+        self.challenge_records[key] = json.dumps(record)
+
     def _issuer_policy(self, mandate: dict, issuer: str, role: str):
         who = _addr(str(issuer))
         for entry in mandate.get("issuers", []):
@@ -231,6 +259,18 @@ class StewardCourt(gl.Contract):
                     and _addr(existing.get("vault", "")) == _addr(vault)
                     and str(existing.get("cause", "")) == str(cause)
                     and int(existing.get("response_deadline", 0)) == int(response_deadline)):
+                if str(existing.get("status", "")) == TERMINAL and str(existing.get("terminal_kind", "")) == "registration_expired":
+                    return
+                if str(existing.get("status", "")) != OPEN:
+                    raise gl.vm.UserError("[EXPECTED] conflicting challenge registration")
+                registration = self._registration_status(existing, sender)
+                if registration == "expired":
+                    self._mark_registration_expired(key, existing)
+                    return
+                if registration == "pending":
+                    gl.get_contract_at(Address(str(sender))).emit(on="finalized").ack_challenge(int(challenge_id))
+                elif registration != "registered":
+                    raise gl.vm.UserError("[EXPECTED] collateral challenge is no longer open")
                 return
             raise gl.vm.UserError("[EXPECTED] conflicting challenge registration")
         mandate = context["mandate"]
@@ -259,7 +299,7 @@ class StewardCourt(gl.Contract):
             },
             "opened_at": int(evidence_cutoff), "evidence_cutoff": int(evidence_cutoff), "response_deadline": int(response_deadline),
             "adjudication_deadline": int(response_deadline) + int(challenge_policy.get("response_window_seconds", 1)),
-            "status": OPEN, "upheld": False,
+            "registration_deadline": int(response_deadline), "status": OPEN, "upheld": False,
         })
         gl.get_contract_at(Address(str(sender))).emit(on="finalized").ack_challenge(int(challenge_id))
 
@@ -274,6 +314,12 @@ class StewardCourt(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
         if str(record["status"]) != OPEN:
             raise gl.vm.UserError("[EXPECTED] challenge case is already terminal")
+        registration = self._registration_status(record, bond_vault)
+        if registration == "expired":
+            self._mark_registration_expired(key, record)
+            return
+        if registration != "registered":
+            raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")
         if self._now() < int(record["response_deadline"]):
             raise gl.vm.UserError("[EXPECTED] challenge response window is still open")
         criteria = record.get("substantive_criteria", {})
@@ -351,7 +397,15 @@ class StewardCourt(gl.Contract):
         record = json.loads(raw)
         if str(record["bond_vault"]) != _addr(bond_vault):
             raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
-        if str(record["status"]) != OPEN or self._now() < int(record["adjudication_deadline"]):
+        if str(record["status"]) != OPEN:
+            raise gl.vm.UserError("[EXPECTED] challenge case is already terminal")
+        registration = self._registration_status(record, bond_vault)
+        if registration == "expired":
+            self._mark_registration_expired(key, record)
+            return
+        if registration == "pending":
+            raise gl.vm.UserError("[EXPECTED] challenge registration must expire before this case can expire")
+        if registration != "registered" or self._now() < int(record["adjudication_deadline"]):
             raise gl.vm.UserError("[EXPECTED] challenge cannot yet expire")
         record["status"] = TERMINAL
         record["upheld"] = False
@@ -363,16 +417,43 @@ class StewardCourt(gl.Contract):
         )
 
     @gl.public.write
+    def reconcile_expired_challenge(self, guard: str, challenge_id: int, bond_vault: str) -> None:
+        """Converge a Court record after BondVault refunded an unregistered case."""
+        key = self._challenge_key(guard, int(challenge_id))
+        raw = self.challenge_records.get(key, "")
+        if raw == "":
+            raise gl.vm.UserError("[EXPECTED] challenge case is unknown")
+        record = json.loads(raw)
+        if str(record["bond_vault"]) != _addr(bond_vault):
+            raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
+        if str(record.get("terminal_kind", "")) == "registration_expired":
+            return
+        if str(record.get("status", "")) != OPEN:
+            raise gl.vm.UserError("[EXPECTED] challenge case is already terminal")
+        if self._registration_status(record, bond_vault) != "expired":
+            raise gl.vm.UserError("[EXPECTED] challenge registration has not expired")
+        self._mark_registration_expired(key, record)
+
+    @gl.public.write
     def reconcile_challenge(self, guard: str, challenge_id: int, bond_vault: str) -> None:
         key = self._challenge_key(guard, int(challenge_id))
         raw = self.challenge_records.get(key, "")
         if raw == "":
             raise gl.vm.UserError("[EXPECTED] challenge case is unknown")
         record = json.loads(raw)
-        if str(record["status"]) != TERMINAL:
-            raise gl.vm.UserError("[EXPECTED] only terminal challenges can be reconciled")
         if str(record["bond_vault"]) != _addr(bond_vault):
             raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
+        if str(record.get("status", "")) == OPEN:
+            if self._registration_status(record, bond_vault) == "expired":
+                self._mark_registration_expired(key, record)
+                return
+            raise gl.vm.UserError("[EXPECTED] only terminal challenges can be reconciled")
+        if str(record.get("terminal_kind", "")) == "registration_expired":
+            return
+        if str(record.get("status", "")) != TERMINAL:
+            raise gl.vm.UserError("[EXPECTED] only terminal challenges can be reconciled")
+        if self._registration_status(record, bond_vault) == "expired":
+            raise gl.vm.UserError("[EXPECTED] expired challenge has no economic result")
         gl.get_contract_at(_address(guard)).emit(on="finalized").apply_challenge_result(
             int(record["challenge_id"]), int(record["spend_id"]), bool(record["upheld"]), str(bond_vault), str(record["vault"])
         )

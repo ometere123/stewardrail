@@ -98,6 +98,16 @@ class StewardVault(gl.Contract):
         challenge = json.loads(str(gl.get_contract_at(self.bond_vault).view().challenge(int(challenge_id))))
         if int(challenge.get("spend_id", -1)) != int(spend_id):
             raise gl.vm.UserError("[EXPECTED] challenge identity does not match spend")
+        settlement = challenge.get("settlement", "")
+        if str(challenge.get("state", "")) == "settled" and settlement != "":
+            try:
+                settlement_result = str(json.loads(str(settlement)).get("result", ""))
+            except Exception:
+                settlement_result = ""
+            if settlement_result == "registration_expired":
+                raise gl.vm.UserError("[EXPECTED] expired challenge cannot affect custody")
+        if str(challenge.get("state", "")) == "open" and not bool(challenge.get("registered", False)):
+            raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")
         key = u256(int(challenge_id))
         incoming = json.dumps({"challenge_id": int(challenge_id), "upheld": bool(upheld)}, sort_keys=True)
         existing = self.challenge_outcome.get(key, "")

@@ -73,6 +73,12 @@ MUTANTS = [
     ("court-challenge-unavailable-fail-closed", "steward_court.py", 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence unavailable"})', 'return json.dumps({"verdict": ALLOW, "confidence": 100, "reason": "challenge evidence unavailable"})'),
     ("bond-dismissal-keeps-lock", "steward_bond_vault.py", 'keep_lock_for_retry = (not bool(upheld)) and self._future_challenge_permitted(spend_id)', 'keep_lock_for_retry = False'),
     ("bond-dismissal-release-gate", "steward_bond_vault.py", 'if release_lock and locked_for_spend > 0:', 'if locked_for_spend > 0:'),
+    ("bond-ack-expiry-gate", "steward_bond_vault.py", 'if registration_deadline <= 0 or int(datetime.datetime.now().timestamp()) >= registration_deadline:\n            raise gl.vm.UserError("[EXPECTED] challenge registration window has expired")', 'if False:'),
+    ("bond-registration-retry-window", "steward_bond_vault.py", 'if registration_deadline <= 0 or int(datetime.datetime.now().timestamp()) >= registration_deadline:\n            raise gl.vm.UserError("[EXPECTED] challenge registration window has expired; expire it instead")', 'if False:'),
+    ("court-registration-retry-ack", "steward_court.py", 'if registration == "pending":\n                    gl.get_contract_at(Address(str(sender))).emit(on="finalized").ack_challenge(int(challenge_id))', 'if False:'),
+    ("court-late-registration-result-gate", "steward_court.py", 'if registration != "registered":\n            raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")', 'if False:'),
+    ("guard-expired-registration-result-gate", "steward_guard.py", 'if settlement_result == "registration_expired":\n                raise gl.vm.UserError("[EXPECTED] expired challenge cannot apply a result")', 'if False:'),
+    ("vault-expired-registration-result-gate", "steward_vault.py", 'if settlement_result == "registration_expired":\n                raise gl.vm.UserError("[EXPECTED] expired challenge cannot affect custody")', 'if False:'),
 ]
 
 

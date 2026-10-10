@@ -492,3 +492,76 @@ def test_challenge_attempt_limit_is_frozen_and_bounded():
     quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
     with pytest.raises(Exception,match='challenge limit'):
         rt.call(BOND,'open_challenge',0,200,'third attempt',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+
+def test_registration_reconciliation_retries_missing_bond_acknowledgment():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=100
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'ack delivery lost',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    # Court registration succeeds, but the independent Court -> BondVault
+    # acknowledgment is lost before delivery.
+    source,target,method,args,value=rt.finalized.pop(0)
+    assert target == COURT and method == 'open_challenge'
+    rt.call(target,method,*args,sender=source,value=value)
+    assert rt.finalized and rt.finalized[0][2] == 'ack_challenge'
+    rt.finalized.clear()
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['registered'] is False
+    rt.call(BOND,'reconcile_open_challenge',0,sender=B)
+    rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['registered'] is True
+
+def test_expired_refunded_challenge_cannot_late_resolve_or_revoke():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[A]=1000; rt.call(VAULT,'fund',sender=A,value=500)
+    rt.balances[CHALLENGER]=100
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    before_refund=rt.balances[CHALLENGER]
+    rt.call(BOND,'open_challenge',0,200,'registration never acknowledged',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    # Deliver Court registration but lose its acknowledgment.
+    source,target,method,args,value=rt.finalized.pop(0)
+    rt.call(target,method,*args,sender=source,value=value)
+    rt.finalized.clear()
+    rt.now += 61
+    rt.call(BOND,'expire_unregistered_challenge',0,sender=B)
+    # Drop the best-effort Court reconciliation callback and use the public
+    # Court reconciliation path to model a delayed child message.
+    rt.finalized.clear()
+    collateral=json.loads(rt.call(BOND,'challenge',0,sender=A))
+    assert collateral['state']=='settled' and collateral['registered'] is False
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
+    assert rt.balances[CHALLENGER] == before_refund
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER)
+    court_record=json.loads(rt.call(COURT,'challenge',GUARD,0,sender=A))
+    assert court_record['status']=='terminal'
+    assert court_record['terminal_kind']=='registration_expired'
+    assert court_record['upheld'] is False
+    assert json.loads(rt.call(GUARD,'get_spend',0,sender=A))['revoked'] is False
+    assert json.loads(rt.call(VAULT,'payment',0,sender=A))['challenge'] is None
+    # A late result delivery cannot be forged through either custody boundary.
+    with pytest.raises(Exception,match='expired challenge'):
+        rt.call(GUARD,'apply_challenge_result',0,0,True,BOND,VAULT,sender=COURT)
+    with pytest.raises(Exception,match='expired challenge'):
+        rt.call(VAULT,'apply_challenge_result',0,0,True,BOND,sender=GUARD)
+    rt.call(VAULT,'pay',0,sender=A)
+    assert rt.balances[PAYEE] >= 200
+
+def test_registration_acknowledgment_cannot_arrive_after_registration_deadline():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=100
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'late registration',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    source,target,method,args,value=rt.finalized.pop(0)
+    rt.call(target,method,*args,sender=source,value=value)
+    rt.finalized.clear()
+    rt.now += 61
+    with pytest.raises(Exception,match='registration window has expired'):
+        rt.call(BOND,'ack_challenge',0,sender=COURT)

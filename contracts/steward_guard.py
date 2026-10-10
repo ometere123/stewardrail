@@ -694,6 +694,19 @@ class StewardGuard(gl.Contract):
         bond_info = json.loads(str(gl.get_contract_at(Address(str(bond_vault))).view().info()))
         if _addr(bond_info.get("guard", "")) != _addr(gl.message.contract_address) or _addr(bond_info.get("vault", "")) != _addr(str(vault)):
             raise gl.vm.UserError("[EXPECTED] challenge collateral is not bound to this guard and vault")
+        challenge = json.loads(str(gl.get_contract_at(Address(str(bond_vault))).view().challenge(int(challenge_id))))
+        if int(challenge.get("spend_id", -1)) != int(spend_id):
+            raise gl.vm.UserError("[EXPECTED] challenge identity does not match spend")
+        settlement = challenge.get("settlement", "")
+        if str(challenge.get("state", "")) == "settled" and settlement != "":
+            try:
+                settlement_result = str(json.loads(str(settlement)).get("result", ""))
+            except Exception:
+                settlement_result = ""
+            if settlement_result == "registration_expired":
+                raise gl.vm.UserError("[EXPECTED] expired challenge cannot apply a result")
+        if str(challenge.get("state", "")) == "open" and not bool(challenge.get("registered", False)):
+            raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")
         if bool(upheld):
             self.revoked[key] = u256(1)
             self.revocation_reason[key] = "bonded challenge upheld"

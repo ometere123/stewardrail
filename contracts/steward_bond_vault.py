@@ -287,6 +287,9 @@ class StewardBondVault(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] challenge is not open")
         if int(self.challenge_registered.get(key, u256(0))) == 1:
             return
+        registration_deadline = int(self.challenge_registration_deadline.get(key, u256(0)))
+        if registration_deadline <= 0 or int(datetime.datetime.now().timestamp()) >= registration_deadline:
+            raise gl.vm.UserError("[EXPECTED] challenge registration window has expired")
         self.challenge_registered[key] = u256(1)
 
     @gl.public.write
@@ -294,6 +297,11 @@ class StewardBondVault(gl.Contract):
         key = u256(int(challenge_id))
         if str(self.challenge_state.get(key, "")) != "open":
             raise gl.vm.UserError("[EXPECTED] only open challenges can be reconciled")
+        if int(self.challenge_registered.get(key, u256(0))) == 1:
+            return
+        registration_deadline = int(self.challenge_registration_deadline.get(key, u256(0)))
+        if registration_deadline <= 0 or int(datetime.datetime.now().timestamp()) >= registration_deadline:
+            raise gl.vm.UserError("[EXPECTED] challenge registration window has expired; expire it instead")
         spend_id = int(self.challenge_spend[key])
         gl.get_contract_at(self.court).emit(on="finalized").open_challenge(
             _addr(self.guard), spend_id, int(challenge_id), _addr(self.vault), str(self.challenge_cause[key]), int(self.challenge_deadline[key]), int(self.challenge_registration_deadline.get(key, u256(0))), self.challenge_evidence.get(key, "[]")
@@ -303,6 +311,11 @@ class StewardBondVault(gl.Contract):
     def expire_unregistered_challenge(self, challenge_id: int) -> None:
         """Release a challenge hold if its Court registration never finalized."""
         key = u256(int(challenge_id))
+        if str(self.challenge_state.get(key, "")) == "settled":
+            settlement = self.challenge_settlement.get(key, "")
+            if settlement != "" and str(json.loads(settlement).get("result", "")) == "registration_expired":
+                return
+            raise gl.vm.UserError("[EXPECTED] challenge is already settled")
         if str(self.challenge_state.get(key, "")) != "open":
             raise gl.vm.UserError("[EXPECTED] challenge is not open")
         if int(self.challenge_registered.get(key, u256(0))) == 1:
@@ -318,6 +331,12 @@ class StewardBondVault(gl.Contract):
         self.challenge_state[key] = "settled"
         if bond > 0:
             _Payee(challenger).emit_transfer(value=u256(bond))
+        # Court may have recorded the case even though this acknowledgment
+        # never reached BondVault. Reconcile that record without authorizing a
+        # late semantic result.
+        gl.get_contract_at(self.court).emit(on="finalized").reconcile_expired_challenge(
+            _addr(self.guard), int(challenge_id), _addr(gl.message.contract_address)
+        )
 
     def _future_challenge_permitted(self, spend_id: int) -> bool:
         key = u256(int(spend_id))
@@ -336,6 +355,9 @@ class StewardBondVault(gl.Contract):
         key = u256(int(challenge_id))
         state = str(self.challenge_state.get(key, ""))
         if state == "settled":
+            settlement = self.challenge_settlement.get(key, "")
+            if settlement != "" and str(json.loads(settlement).get("result", "")) == "registration_expired":
+                raise gl.vm.UserError("[EXPECTED] expired challenge cannot be settled")
             return
         if state != "open":
             raise gl.vm.UserError("[EXPECTED] challenge is not open")
