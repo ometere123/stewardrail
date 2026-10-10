@@ -1,0 +1,80 @@
+{
+  "packet": "stewardrail-registration-reconciliation-stack",
+  "status": "observed",
+  "timestamp": "2026-10-10T14:30:00Z",
+  "sourceCommit": "611302c520e8d43df97d793e2154b0f15d9f2a5e",
+  "network": "studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "sourceSha256": {
+    "contracts/steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "c738afa349f4754392bf320e51be8943bf398bb96af1955cdca2699c3107acfe",
+    "contracts/steward_guard.py": "38cb4c9a25e8301ff78c2b5955e9b31ea4ad47bb8a3cf6e6e37ac68a5faf51c5",
+    "contracts/steward_vault.py": "d28ab217d79161cdaa235bae12fe8715c89bd716ef30985831605a0211db6bfb",
+    "contracts/steward_bond_vault.py": "0f2f8234013906e8d82edc571e5903250645944ca215f670784b0a0488f10686"
+  },
+  "actors": {
+    "principalA": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "principalB": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "challenger": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "recipient": "0x951e6b75530774ff82321a5ae54e14f778f0c855"
+  },
+  "addresses": {
+    "charter": "0x7B6f4511920042e11f0A385e863DC6A385AbE6d6",
+    "registry": "0x9b27a5111CbC70A872Fb94e0cdd783cf676bFa33",
+    "court": "0x224f990bD28F727c3E40d5c156DaCb526b54097F",
+    "bondVault": "0x20885C34a2acc6d4C539c8320b12985081f27E13",
+    "guard": "0x35BBC15CBCF7A211e69eBACc894c6183a44E96CA",
+    "vault": "0xB4db405c9aa175061219bb2E650b27a63D544902"
+  },
+  "deployment": {
+    "StewardCharter": {"tx": "0x1c5cc8ca0693610f3cada6107e8dcc64cd57c9d7a9e3ea60bd6f3d5e8623324d", "status": "FINALIZED", "execution": "SUCCESS"},
+    "EvidenceRegistry": {"tx": "0xc74be6cc8267117ead50861a3897c1b81872ef6709625b3da435dfc5f1b596bd", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardCourt": {"tx": "0xd6fe440d58cdc01aeda1499f24d6f45107e59691b3db366c02a567a15939d07a", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardBondVault": {"tx": "0xa6a9256647a0341678d729de985bfcd5c8e558d081407e71b01efbd9cca34431", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardGuard": {"tx": "0x1638b1edf7f15bab44bdeb132f30b79b0b6b2bd4e28478d824f4667e894368d5", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardVault": {"tx": "0xda216254500ca55d058ffac061f427187c76cb87b3052c57854cbe1bc9a9c87a", "status": "FINALIZED", "execution": "SUCCESS"}
+  },
+  "bindings": {
+    "mandateApprovalA": "0xeb64492ea7a6b1896d67b6c13a92dfbcef5d290bb4b8bf9a065041e92ecc4f78",
+    "mandateApprovalB": "0x2dbfaedc2b78e879139970ebaee23640cfdcde9ad13f952b62bd2a32d4d5843f",
+    "bondApprovalA": "0x1367d181e760b5fa31c4f45ce099434d39dc4272558785127b817b5ef33f1a51",
+    "bondApprovalB": "0xbea70f5d92c3582093e6e5b92326ccd1fa1a03ca12d4cc82dc4488f35bb29c64",
+    "bondBind": "0x9a4125f689ef383219875f3dc36c3e888c1e3c6739cc35efd64690f0d4578138"
+  },
+  "readbacks": {
+    "charter": {"threshold": 2, "currentVersion": 1, "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
+    "court": {"charter": "0x7b6f4511920042e11f0a385e863dc6a385abe6d6", "registry": "0x9b27a5111cbc70a872fb94e0cdd783cf676bfa33"},
+    "bondVault": {"guard": "0x35bbc15cbcf7a211e69ebacc894c6183a44e96ca", "court": "0x224f990bd28f727c3e40d5c156dacb526b54097f", "vault": "0xb4db405c9aa175061219bb2e650b27a63d544902"},
+    "vault": {"charter": "0x7b6f4511920042e11f0a385e863dc6a385abe6d6", "guard": "0x35bbc15cbcf7a211e69ebacc894c6183a44e96ca", "court": "0x224f990bd28f727c3e40d5c156dacb526b54097f", "bondVault": "0x20885c34a2acc6d4c539c8320b12985081f27e13"}
+  },
+  "semanticAllow": {
+    "request": "0x1a3a20c155245e65d31b021a5c97b20c625a99c8062859f62cffabe007748a48",
+    "vendorAttestation": "0xa5528f1efd125b4d53d89a51ac64d989325a3621c34b2837ebd4e013b788d2a3",
+    "deliveryAttestation": "0x8346e9df2ae05b1840bcec87fb73e7c2ff9ada35f8c310b5d00ccba4e40e8551",
+    "vendorAttach": "0xb6c413644790999d6316e3349fd3f2f9e5767e74d099a0db3197e7f4431114d8",
+    "deliveryAttach": "0x0194c9528cb250555258cfc78902489ac6a99c68bb0cd41a5bdc8e2b93798bab",
+    "seal": "0xf2d93c7caf5769866e59c91c53ead4375c5340575f5b1cba4dcbdd1a6a22da60",
+    "adjudicate": "0xbb0b054cf87c1c4a8af913d0d6ca7506d0b99101a836df6913c79007c07f85f1",
+    "spendId": 0,
+    "observed": {"guardState": "allow", "courtPrimary": "allow", "courtEffective": "allow", "confidence": 99}
+  },
+  "adversarialTests": {
+    "command": "python -m pytest -q tests/direct/test_economic_lifecycle.py -k 'registration_reconciliation or expired_refunded or registration_acknowledgment'",
+    "result": "3 passed, 33 deselected",
+    "properties": [
+      "registration retry re-emits the Court acknowledgment while the registration window is open",
+      "BondVault registration expiry refunds the bond and synchronizes Court to registration_expired",
+      "late acknowledgment and late Guard/Vault results are rejected after refund",
+      "an expired/refunded challenge cannot revoke authorization or settle inconsistently"
+    ]
+  },
+  "limitations": [
+    "The live network run observed the source-matched deployment, bindings, attestations and semantic ALLOW. The validator network does not expose a safe control to drop one internal child transaction, so the lost-acknowledgment branch is proven by the adversarial direct-mode tests rather than by forced live message loss.",
+    "A full terminal challenge settlement requires a terminal spend and an economically bounded challenge window; the focused regression packet records the corrected registration and late-result behavior separately from that live semantic case."
+  ],
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
+}

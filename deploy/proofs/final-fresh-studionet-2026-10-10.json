@@ -1,6 +1,7 @@
 {
   "packet": "stewardrail-fresh-source-stack-2026-10-10",
-  "status": "observed-with-limitations",
+  "status": "historical-superseded",
+  "superseded_by": "registration-reconciliation-stack-2026-10-10.json",
   "timestamp": "2026-10-10T05:30:00Z",
   "sourceCommit": "6a7e7e87151fa429e2c7b2ac5459da5102aea0c9",
   "network": "studionet",

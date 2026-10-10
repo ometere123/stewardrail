@@ -79,7 +79,7 @@ Single-use evidence is consumed only when Guard records a terminal economic `ALL
 
 Each semantic case has a bounded application appeal window. The appeal uses the same frozen mandate and must satisfy all required authenticated evidence roles; a persuasive statement cannot substitute for a missing role. Court can therefore preserve or reverse the effective semantic result without becoming a custody authority.
 
-The deployed BondVault also supports a separate bonded challenge path. A challenge quotes its bond from the spend's frozen policy, is registered through Court, and reaches Guard before any custody consequence. In the observed post-payment case, the original recipient payment remained paid, the challenge was upheld, Guard marked the authorization revoked, and 0.1 GEN was reimbursed to Vault from standing collateral before the bond was refunded. A repeated reconciliation delivered the same terminal result without double settlement.
+The deployed BondVault also supports a separate bonded challenge path. A challenge quotes its bond from the spend's frozen policy, is registered through Court, and reaches Guard before any custody consequence. Historical lifecycle packets contain post-payment restitution observations for an earlier source generation; the current packet does not relabel those transactions as evidence for this corrected deployment.
 
 ## Finalized internal authority and reconciliation
 
@@ -101,45 +101,37 @@ Vault records the recipient and amount from the frozen Guard spend record. `pay(
 
 ## Canonical Studionet deployment
 
-The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the machine-readable lifecycle packet is [`deploy/proofs/final-stack-2026-10-10.json`](deploy/proofs/final-stack-2026-10-10.json).
+The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the machine-readable deployment and registration-safety packet is [`deploy/proofs/registration-reconciliation-stack-2026-10-10.json`](deploy/proofs/registration-reconciliation-stack-2026-10-10.json). Earlier packets are historical records for superseded source generations.
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0xd985…910d](https://explorer-studio.genlayer.com/address/0xd985d10D59DB717DCD0f335dD1Af6A32122d910d) |
-| EvidenceRegistry | [0x6841…8bb9](https://explorer-studio.genlayer.com/address/0x68419Fb7E8db6371f166990765c50e36F1098bb9) |
-| StewardCourt | [0xF4B7…22B6](https://explorer-studio.genlayer.com/address/0xF4B7881d93Bd5BA03D15F2e4FA68502A08b122B6) |
-| StewardBondVault | [0x3b88…44b6](https://explorer-studio.genlayer.com/address/0x3b8869AcbD3F4c628c6DB10ed355cF097dbC44b6) |
-| StewardGuard | [0x8F4b…2C4C](https://explorer-studio.genlayer.com/address/0x8F4b344b3E100FA2F460985b7F802F35E5422C4C) |
-| StewardVault | [0x2198…4B7f](https://explorer-studio.genlayer.com/address/0x2198E29C208f000dAEB4150D9C3F3044Add64B7f) |
+| StewardCharter | [0x7B6f…E6d6](https://explorer-studio.genlayer.com/address/0x7B6f4511920042e11f0A385e863DC6A385AbE6d6) |
+| EvidenceRegistry | [0x9b27…Fa33](https://explorer-studio.genlayer.com/address/0x9b27a5111CbC70A872Fb94e0cdd783cf676bFa33) |
+| StewardCourt | [0x224f…097F](https://explorer-studio.genlayer.com/address/0x224f990bD28F727c3E40d5c156DaCb526b54097F) |
+| StewardBondVault | [0x2088…7E13](https://explorer-studio.genlayer.com/address/0x20885C34a2acc6d4C539c8320b12985081f27E13) |
+| StewardGuard | [0x35BB…96CA](https://explorer-studio.genlayer.com/address/0x35BBC15CBCF7A211e69eBACc894c6183a44E96CA) |
+| StewardVault | [0xB4db…4902](https://explorer-studio.genlayer.com/address/0xB4db405c9aa175061219bb2E650b27a63D544902) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
 ## Source integrity
 
-The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The canonical deployment source commit is `66151accaca6c375f7f978f54c01f01ddaebc7cf`.
+The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The current deployment source commit is `611302c520e8d43df97d793e2154b0f15d9f2a5e`.
 
 ```text
 contracts/steward_charter.py     726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-contracts/steward_court.py       33a10ee3435f21915e2c6f51096b04f4e2453d527cb2db315cf6b5fa99dc7454
-contracts/steward_guard.py       18294b400a0b8a4294a3d0d85737fc0038e239f2439ed723df4993d02af7d60f
-contracts/steward_vault.py       2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088
-contracts/steward_bond_vault.py  d5a9f7b3e8731c2716ce58896247b15906dbc76a52471a0898bf3b2303ff269d
+contracts/steward_court.py       c738afa349f4754392bf320e51be8943bf398bb96af1955cdca2699c3107acfe
+contracts/steward_guard.py       38cb4c9a25e8301ff78c2b5955e9b31ea4ad47bb8a3cf6e6e37ac68a5faf51c5
+contracts/steward_vault.py       d28ab217d79161cdaa235bae12fe8715c89bd716ef30985831605a0211db6bfb
+contracts/steward_bond_vault.py  0f2f8234013906e8d82edc571e5903250645944ca215f670784b0a0488f10686
 ```
 
 ## Observed live proof
 
-The canonical packet contains finalized deployment and binding receipts, two-principal mandate activation, issuer attestations, a semantic `ALLOW`, Court → Guard → Vault finality, standing deposit, Vault funding, exact 0.1 GEN payment, recipient delivery confirmation, duplicate-payment rejection, an upheld post-payment challenge with 0.1 GEN restitution, bond refund, and idempotent reconciliation. A semantic `REFUSE` is not claimed in this packet; earlier disagreement attempts remain historical records.
+The current packet records finalized deployment and threshold binding, the active two-principal mandate, issuer attestations, and a semantic `ALLOW` on the corrected source stack. It also records the adversarial registration-reconciliation tests: an unacknowledged registration can be retried before its deadline, and a refunded registration cannot later produce Guard or Vault consequences. The network does not provide a safe control for deliberately dropping one internal child, so that lost-acknowledgment branch is tested in the deterministic cross-contract harness and is not represented as a forced live observation.
 
-Relevant evidence is linked from the packet, including:
-
-- semantic request and Court child: [`0x4a42…`](https://explorer-studio.genlayer.com/tx/0x4a42cea6b618b23712e9536ed71a8002f1a123056d816883acd944b8d2b17ad6);
-- terminal Court → Guard → Vault chain: [`0xbb12…`](https://explorer-studio.genlayer.com/tx/0xbb12dd78424de95a54cde78f16702e0d34b055b813fa19023fb37f60d35705e1), [`0xacfa…`](https://explorer-studio.genlayer.com/tx/0xacfa4e00ad8d672b7f072d6b00240d42b41133a938913f6a106ca8f1b6b42826), [`0xe5be…`](https://explorer-studio.genlayer.com/tx/0xe5be4f0d16edf35cfb07819e95e64b2763249eb7bb213635b20cb780ebe95d7a);
-- payment and delivery child: [`0x6801…`](https://explorer-studio.genlayer.com/tx/0x680178138525b2ea6835a7661ccd039416e1268afe62752c2d6118388646c152), [`0x1e15…`](https://explorer-studio.genlayer.com/tx/0x1e15bbc3a11cd43acbd90c790dffa475f5adb66a4b6537711d894d80aafb66d8);
-- challenge resolution and settlement: [`0x4b1b…`](https://explorer-studio.genlayer.com/tx/0x4b1be2379fda7ed999c39fe356a517cf1b2a9afd9f4fbd2c55453339bcfa686c), [`0xb7da…`](https://explorer-studio.genlayer.com/tx/0xb7daef90b31c3dec85e9cc713ea17c3381045823bf3f6f25663fee5b11e506c8);
-- reconciliation retry: [`0x0bf7…`](https://explorer-studio.genlayer.com/tx/0x0bf76f080d592ada2d84b0392ad348cd7de2ff09c5d23b950ab2fdff4881d774).
-
-Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
+The semantic request, attestations, evidence attachments, sealing and adjudication transactions are linked from [`registration-reconciliation-stack-2026-10-10.json`](deploy/proofs/registration-reconciliation-stack-2026-10-10.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 
 ## Frontend
 

@@ -1,6 +1,7 @@
 {
   "packet": "stewardrail-browser-agent-stack",
-  "status": "deployment_observed",
+  "status": "historical-superseded",
+  "superseded_by": "registration-reconciliation-stack-2026-10-10.json",
   "observed_at": "2026-10-10",
   "source_commit": "ea655f888e4e6aeab64619217a5bbec2ea45427a",
   "network": "studionet",

@@ -1,5 +1,7 @@
 {
   "scenario": "browser-injected-eip1193-write-current-stack",
+  "status": "historical-superseded",
+  "superseded_by": "registration-reconciliation-stack-2026-10-10.json",
   "observed_at": "2026-10-10T12:10:00+01:00",
   "source_commit": "566814df3324ce0c2d03cb4ea38b11595f2fad1d",
   "contract_source_commit": "0850dec63113d6590ce276d57cf6058c62266635",

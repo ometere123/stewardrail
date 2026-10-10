@@ -1,5 +1,7 @@
 {
   "scenario": "final-stack-economic-lifecycle",
+  "status": "historical-superseded",
+  "superseded_by": "registration-reconciliation-stack-2026-10-10.json",
   "timestamp": "2026-10-10",
   "source_commit": "66151accaca6c375f7f978f54c01f01ddaebc7cf",
   "network": "Studionet",

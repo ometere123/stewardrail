@@ -1,5 +1,7 @@
 {
   "scenario": "browser-injected-eip1193-write",
+  "status": "historical-superseded",
+  "superseded_by": "registration-reconciliation-stack-2026-10-10.json",
   "observed_at": "2026-10-10",
   "source_commit": "ba79e18",
   "production_url": "https://stewardrail.vercel.app/spends/new",

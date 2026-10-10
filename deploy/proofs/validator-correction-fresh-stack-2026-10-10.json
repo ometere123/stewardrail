@@ -1,6 +1,7 @@
 {
   "packet": "stewardrail-validator-correction-fresh-stack",
-  "status": "observed",
+  "status": "historical-superseded",
+  "superseded_by": "registration-reconciliation-stack-2026-10-10.json",
   "timestamp": "2026-10-10T07:00:00Z",
   "sourceCommit": "ea655f888e4e6aeab64619217a5bbec2ea45427a",
   "repositoryCommit": "973fc46dbed117cdf5caec53e6b3d9546d3780b3",
