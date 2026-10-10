@@ -15,8 +15,18 @@ TERMINAL = "terminal"
 def _addr(value) -> str:
     if hasattr(value, "as_hex"):
         return str(value.as_hex).lower()
+    if isinstance(value, (bytes, bytearray)):
+        return "0x" + bytes(value).hex()
     address = Address(str(value))
     return str(getattr(address, "as_hex", address)).lower()
+
+
+def _address(value) -> Address:
+    if hasattr(value, "as_hex"):
+        return Address(str(value.as_hex))
+    if isinstance(value, (bytes, bytearray)):
+        return Address("0x" + bytes(value).hex())
+    return Address(str(value))
 
 
 def _as_dict(value):
@@ -45,7 +55,7 @@ def _verdict(value) -> dict:
 
 
 def _record_key(guard: str, spend_id: int) -> str:
-    return _addr(str(guard)) + "|" + str(int(spend_id))
+    return _addr(guard) + "|" + str(int(spend_id))
 
 
 def _origin(uri: str) -> str:
@@ -74,19 +84,19 @@ class StewardCourt(gl.Contract):
         return int(datetime.datetime.now().timestamp())
 
     def _load(self, guard: str, spend_id: int) -> dict:
-        raw = self.records.get(_record_key(str(guard), int(spend_id)), "")
+        raw = self.records.get(_record_key(guard, int(spend_id)), "")
         if raw == "":
             raise gl.vm.UserError("[EXPECTED] primary decision is not finalized into court")
         return json.loads(raw)
 
     def _save(self, guard: str, spend_id: int, record: dict) -> None:
-        self.records[_record_key(str(guard), int(spend_id))] = json.dumps(record)
+        self.records[_record_key(guard, int(spend_id))] = json.dumps(record)
 
     def _challenge_key(self, guard: str, challenge_id: int) -> str:
-        return _addr(str(guard)) + "|challenge|" + str(int(challenge_id))
+        return _addr(guard) + "|challenge|" + str(int(challenge_id))
 
     def _validate_guard(self, guard: str) -> dict:
-        info = json.loads(str(gl.get_contract_at(Address(str(guard))).view().info()))
+        info = json.loads(str(gl.get_contract_at(_address(guard)).view().info()))
         if _addr(info["charter"]) != _addr(self.charter) or _addr(info["registry"]) != _addr(self.registry):
             raise gl.vm.UserError("[EXPECTED] guard does not belong to this court's charter/registry")
         if _addr(info["court"]) != _addr(gl.message.contract_address):
@@ -94,7 +104,7 @@ class StewardCourt(gl.Contract):
         return info
 
     def _validate_vault(self, vault: str, guard: str) -> None:
-        info = json.loads(str(gl.get_contract_at(Address(str(vault))).view().info()))
+        info = json.loads(str(gl.get_contract_at(_address(vault)).view().info()))
         if _addr(info["court"]) != _addr(gl.message.contract_address) or _addr(info["guard"]) != _addr(guard):
             raise gl.vm.UserError("[EXPECTED] vault is not bound to this guard and court")
 
@@ -136,7 +146,7 @@ class StewardCourt(gl.Contract):
     def _terminal_emit(self, vault: str, guard: str, spend_id: int, record: dict) -> None:
         self._validate_vault(str(vault), str(guard))
         terminal_evidence = record.get("appeal_evidence", record.get("primary_evidence", []))
-        gl.get_contract_at(Address(str(guard))).emit(on="finalized").apply_terminal_decision(
+        gl.get_contract_at(_address(guard)).emit(on="finalized").apply_terminal_decision(
             int(spend_id), str(record["effective"]), json.dumps(terminal_evidence), str(vault)
         )
 
@@ -169,13 +179,13 @@ class StewardCourt(gl.Contract):
             challenge_evidence = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
         except Exception as exc:
             raise gl.vm.UserError("[EXPECTED] challenge evidence must be valid JSON") from exc
-        context = json.loads(str(gl.get_contract_at(Address(str(guard))).view().appeal_context(int(spend_id))))
+        context = json.loads(str(gl.get_contract_at(_address(guard)).view().appeal_context(int(spend_id))))
         validated_evidence = []
         for item in challenge_evidence:
             validated_evidence.append(self._validate_appeal_item(context["mandate"], item, self._now()))
         if json.dumps(validated_evidence, sort_keys=True) != json.dumps(challenge.get("evidence", []), sort_keys=True):
             raise gl.vm.UserError("[EXPECTED] challenge evidence registration mismatch")
-        key = self._challenge_key(str(guard), int(challenge_id))
+        key = self._challenge_key(guard, int(challenge_id))
         if self.challenge_records.get(key, "") != "":
             existing = json.loads(self.challenge_records[key])
             if (int(existing.get("spend_id", -1)) == int(spend_id)
@@ -187,7 +197,7 @@ class StewardCourt(gl.Contract):
         mandate = context["mandate"]
         challenge_policy = mandate.get("challenge", {})
         self.challenge_records[key] = json.dumps({
-            "guard": _addr(str(guard)), "vault": _addr(str(vault)), "bond_vault": sender,
+            "guard": _addr(guard), "vault": _addr(vault), "bond_vault": sender,
             "spend_id": int(spend_id), "challenge_id": int(challenge_id), "cause": str(cause)[:240],
             "challenge_evidence": validated_evidence,
             "opened_at": self._now(), "response_deadline": int(response_deadline),
@@ -197,18 +207,18 @@ class StewardCourt(gl.Contract):
 
     @gl.public.write
     def resolve_challenge(self, guard: str, challenge_id: int, bond_vault: str) -> None:
-        key = self._challenge_key(str(guard), int(challenge_id))
+        key = self._challenge_key(guard, int(challenge_id))
         raw = self.challenge_records.get(key, "")
         if raw == "":
             raise gl.vm.UserError("[EXPECTED] challenge case is unknown")
         record = json.loads(raw)
-        if str(record["bond_vault"]) != _addr(str(bond_vault)):
+        if str(record["bond_vault"]) != _addr(bond_vault):
             raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
         if str(record["status"]) != OPEN:
             raise gl.vm.UserError("[EXPECTED] challenge case is already terminal")
         if self._now() < int(record["response_deadline"]):
             raise gl.vm.UserError("[EXPECTED] challenge response window is still open")
-        context = json.loads(str(gl.get_contract_at(Address(str(guard))).view().appeal_context(int(record["spend_id"]))))
+        context = json.loads(str(gl.get_contract_at(_address(guard)).view().appeal_context(int(record["spend_id"]))))
         spend = context["spend"]
         challenge_evidence = record.get("challenge_evidence", [])
         prompt = (
@@ -217,7 +227,7 @@ class StewardCourt(gl.Contract):
             "Return JSON only with verdict allow or refuse, confidence 0..100, reason.\n"
             + "CAUSE:" + str(record["cause"]) + "\nSPEND:" + json.dumps({"amount": spend["amount"], "recipient": spend["recipient"], "category": spend["category"]})
         )
-        guard_target = gl.get_contract_at(Address(str(guard)))
+        guard_target = gl.get_contract_at(_address(guard))
         def leader() -> str:
             blocks = []
             for item in challenge_evidence:
@@ -262,12 +272,12 @@ class StewardCourt(gl.Contract):
 
     @gl.public.write
     def expire_challenge(self, guard: str, challenge_id: int, bond_vault: str) -> None:
-        key = self._challenge_key(str(guard), int(challenge_id))
+        key = self._challenge_key(guard, int(challenge_id))
         raw = self.challenge_records.get(key, "")
         if raw == "":
             raise gl.vm.UserError("[EXPECTED] challenge case is unknown")
         record = json.loads(raw)
-        if str(record["bond_vault"]) != _addr(str(bond_vault)):
+        if str(record["bond_vault"]) != _addr(bond_vault):
             raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
         if str(record["status"]) != OPEN or self._now() < int(record["adjudication_deadline"]):
             raise gl.vm.UserError("[EXPECTED] challenge cannot yet expire")
@@ -276,28 +286,28 @@ class StewardCourt(gl.Contract):
         record["reason"] = "challenge adjudication deadline expired"
         record["confidence"] = 100
         self.challenge_records[key] = json.dumps(record)
-        gl.get_contract_at(Address(str(guard))).emit(on="finalized").apply_challenge_result(
+        gl.get_contract_at(_address(guard)).emit(on="finalized").apply_challenge_result(
             int(record["challenge_id"]), int(record["spend_id"]), False, str(bond_vault), str(record["vault"])
         )
 
     @gl.public.write
     def reconcile_challenge(self, guard: str, challenge_id: int, bond_vault: str) -> None:
-        key = self._challenge_key(str(guard), int(challenge_id))
+        key = self._challenge_key(guard, int(challenge_id))
         raw = self.challenge_records.get(key, "")
         if raw == "":
             raise gl.vm.UserError("[EXPECTED] challenge case is unknown")
         record = json.loads(raw)
         if str(record["status"]) != TERMINAL:
             raise gl.vm.UserError("[EXPECTED] only terminal challenges can be reconciled")
-        if str(record["bond_vault"]) != _addr(str(bond_vault)):
+        if str(record["bond_vault"]) != _addr(bond_vault):
             raise gl.vm.UserError("[EXPECTED] challenge collateral binding mismatch")
-        gl.get_contract_at(Address(str(guard))).emit(on="finalized").apply_challenge_result(
+        gl.get_contract_at(_address(guard)).emit(on="finalized").apply_challenge_result(
             int(record["challenge_id"]), int(record["spend_id"]), bool(record["upheld"]), str(bond_vault), str(record["vault"])
         )
 
     @gl.public.view
     def challenge(self, guard: str, challenge_id: int) -> str:
-        raw = self.challenge_records.get(self._challenge_key(str(guard), int(challenge_id)), "")
+        raw = self.challenge_records.get(self._challenge_key(guard, int(challenge_id)), "")
         if raw == "":
             raise gl.vm.UserError("[EXPECTED] challenge case is unknown")
         return raw
@@ -341,7 +351,7 @@ class StewardCourt(gl.Contract):
         caller = _addr(gl.message.sender_address)
         charter = gl.get_contract_at(self.charter).view()
         guard_info = self._validate_guard(str(guard))
-        context = json.loads(str(gl.get_contract_at(Address(str(guard))).view().appeal_context(int(spend_id))))
+        context = json.loads(str(gl.get_contract_at(_address(guard)).view().appeal_context(int(spend_id))))
         spend = context["spend"]
         if not bool(charter.is_principal(caller)) and caller != _addr(str(guard_info["agent"])) and caller != _addr(str(spend["recipient"])):
             raise gl.vm.UserError("[EXPECTED] only a principal, agent, or spend recipient may appeal")
