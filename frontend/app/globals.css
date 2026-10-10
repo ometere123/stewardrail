@@ -36,3 +36,5 @@
 .rawDetails{margin-top:14px}.rawDetails summary{cursor:pointer;color:var(--muted);font-size:12px}
 @media(max-width:900px){.challengeHeader{grid-template-columns:1fr}.challengeFacts{grid-template-columns:repeat(2,minmax(0,1fr))}.actionGrid{grid-template-columns:1fr}}
 @media(max-width:560px){.challengeFacts{grid-template-columns:1fr}.actionCard{padding:14px}.txPreview{grid-template-columns:78px minmax(0,1fr)}}
+/* Page headings carry the destination context; route paths stay in the URL and navigation. */
+.routeTag{display:none}
