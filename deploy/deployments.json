@@ -1,83 +1,65 @@
 {
   "network": "studionet",
   "chainId": 61999,
-  "status": "historical-superseded",
+  "status": "canonical",
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
-  "sourceCommit": "d326703c9d3aa2a7adf2154caad0eb38affaf3da",
-  "deployer": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
-  "agent": "0x21892bba93381d94037fb4aab01cafbdf4453b56",
+  "sourceCommit": "c014fd8",
+  "deployer": "0xca3b966a5064a6bbcc2ac90267863453e45c9fc2",
+  "agent": "0x8d1b997611ba953a3025c2c4e91e3cf8e18a522a",
   "actors": {
-    "principalA": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
-    "principalB": "0xa7eeae0e93793e3146cb14b0700251b8b0ebadfb",
-    "evidenceVendor": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
-    "evidenceDelivery": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
+    "principalA": "0xca3b966a5064a6bbcc2ac90267863453e45c9fc2",
+    "principalB": "0xc92ab24fc6902c4a8c9808bd1e046017265540ce",
+    "evidenceVendor": "0x58e72af1d466df225b9c4886a9ca597c4994be7b",
+    "evidenceDelivery": "0xe55615428cdab04aabbf283058528b8cad4acc62",
+    "recipient": "0x67436626fb396c4c219cf3fba461c4fe3c97c8d3",
+    "challenger": "0x0c0c0e85ac600176fcc4fa3019de0ce3cc6cd133"
   },
-  "charter": "0x731f9a5b82d8E3D9E2F663ba6D282C92363941d5",
-  "registry": "0x51Ff147982edf6E762d6B0a5FF158FBD5Ecc8ac4",
-  "court": "0x6E1d52F2E853A493eB6f3F5287F7160fF43E1F87",
-  "bondVault": "0xEC2BDB9B10C07e556FaE3222183F4513572A507f",
-  "guard": "0x240d459827CD38623CF831Abc204893319c449DB",
-  "vault": "0x9776118Fb084Ada5e7094e82f3A8B31C7841Bf0E",
+  "charter": "0xD0077db791497669f6A1BeC39788A21Ce02eAdE4",
+  "registry": "0x8E205Cfed3E2495B1857640Ccb7a693f8AfadA5B",
+  "court": "0x458627EBb81f0F24164AD11c95BC52CBE9A63E51",
+  "bondVault": "0xc6aC46b28914Ed613128CD74a30d6d7985F1a687",
+  "guard": "0xDcd768D17A0b45C18a82691F4801E10e40384f51",
+  "vault": "0xa47EEd150417b90bc368196AC17fE3f320Ed0F49",
   "sourceSha256": {
     "contracts/steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
     "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
-    "contracts/steward_court.py": "f31b6d1a41e84afea3befa67636b8ff8eb1eda20389d5ef901f30c1abfea9419",
-    "contracts/steward_bond_vault.py": "d26237311e6cc45ff59cdd31ed36dec1c6139dcc00bd909bbd8ca4070500f41b",
-    "contracts/steward_guard.py": "08addf00871db99bc8127d4d7abeeccdf6011547374319562db571b7dfc17f19",
-    "contracts/steward_vault.py": "05b8b7c699c3d472cc23971a5c68c1562515a30dbfa29f7cfb06188c5c2705f9"
+    "contracts/steward_court.py": "54a92fd114a38dc41621b1f5e12d6baa222cda3fed4cf23beec734eecf4c2bae",
+    "contracts/steward_bond_vault.py": "58bbce0bd21fbdb2d0001d506aee2feb3611d4cd5813cdc6d949adf33dc64e5a",
+    "contracts/steward_guard.py": "216b1452c3ce67e485af4fb574bfac9cdd2e09916e66ab8677048de27dbe652d",
+    "contracts/steward_vault.py": "2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088"
   },
   "transactions": {
-    "charter": {"hash": "0x1e3250c6715a44ea348c2aaeab7765b7ff6550d98df08ddcf5ec6765b733e743", "status": "FINALIZED", "execution": "SUCCESS"},
-    "registry": {"hash": "0x5b0b9a53cda80569d4a2268d9ef129c3e795b0c259fdf57eef07976f4e1ac024", "status": "FINALIZED", "execution": "SUCCESS"},
-    "court": {"hash": "0xb23d34c69409a018392cb813bef897917ed583dcb43987e417cf6599647525d2", "status": "FINALIZED", "execution": "SUCCESS"},
-    "bondVault": {"hash": "0xe7b0345db97fb7e58928dcec58ac17a395e7d86866f1e0b28e1648beb1822185", "status": "FINALIZED", "execution": "SUCCESS"},
-    "guard": {"hash": "0x998312a837c24badd9f56daa168819c1de378c03a5ce781d374ca03688bcf73a", "status": "FINALIZED", "execution": "SUCCESS"},
-    "vault": {"hash": "0x49ef10907735c627c82596130f6512d6a8a7fb3972441dc188d3c24ded3e465d", "status": "FINALIZED", "execution": "SUCCESS"},
-    "mandateApprovalA": {"hash": "0x18efe2ee61b365112b21eef6008d1ed73bbc5166b27b3d1aeb03ca51cc272787", "status": "FINALIZED", "execution": "SUCCESS"},
-    "mandateApprovalB": {"hash": "0xd90e8fe39e9f55ca81cdb7a20b399ec37bac9d16beec7f31594b88b51d2cce3b", "status": "FINALIZED", "execution": "SUCCESS"},
-    "bondBindingApprovalB": {"hash": "0xc592029f95770fffbdf5e05671d74b8a8ba09e487bb4b0fd66687c4ec2276718", "status": "FINALIZED", "execution": "SUCCESS"},
-    "bondBinding": {"hash": "0x20b03433dd59e6f2edba1f8987c7a3b300d0a5455b830fb3723eca5a55c24e8a", "status": "FINALIZED", "execution": "SUCCESS"}
+    "charter": {"hash": "0x21f3a8d14cb77ff56c8e366bf1a8c158e23c2de2ff11fad1466704b8424d6586", "status": "FINALIZED", "execution": "SUCCESS"},
+    "registry": {"hash": "0xe12dfd7bfa2788dc0029a8116135e61f528f9dbcc608e620c52216b18e48368b", "status": "FINALIZED", "execution": "SUCCESS"},
+    "court": {"hash": "0x50ac527c5630c344848c89e8cf05a05969d21f391a677faeddf466e7a990afe8", "status": "FINALIZED", "execution": "SUCCESS"},
+    "bondVault": {"hash": "0xe2b29037a6a3d514e27c35e3ccc19eceab9f78f6d706f0c05d539cabf6b9aa13", "status": "FINALIZED", "execution": "SUCCESS"},
+    "guard": {"hash": "0xb033a4224cce1d507f9bef8ae93e2dcb0cc9b94bcf77d39691cbebf0b1a0b66e", "status": "FINALIZED", "execution": "SUCCESS"},
+    "vault": {"hash": "0xae8daa8960663a066098bd3e6ed09b4ff8c05064ea399af5a8fd71989abc8a6d", "status": "FINALIZED", "execution": "SUCCESS"},
+    "mandateApprovalA": {"hash": "0x0f6d2096cb38d25117acd6a5992a5ba9509c0a4c15576223525ceb84ab1cd44f", "status": "FINALIZED", "execution": "SUCCESS"},
+    "mandateApprovalB": {"hash": "0xa3f9504222f06576ab806ba3c6e219c8d18096465707be2b24d7cb68b8698580", "status": "FINALIZED", "execution": "SUCCESS"},
+    "bondBindingApprovalA": {"hash": "0xd7072a33183a63b57a76dd0242489314cf2fed5b6b5ad53bd29e26b3d2fe7d22", "status": "FINALIZED", "execution": "SUCCESS"},
+    "bondBindingApprovalB": {"hash": "0x01cdb8884851a055e511af86d6a7ae688ed8614e9d81de6edfd01376246e6e32", "status": "FINALIZED", "execution": "SUCCESS"},
+    "bondBinding": {"hash": "0x979008ca180b6021c82c233d9e25fdd087b47749217749adae8cc527e92812e3", "status": "FINALIZED", "execution": "SUCCESS"}
   },
   "readbacks": {
     "charterVersion": 1,
     "bondVaultBinding": true,
     "vaultBinding": {
-      "charter": "0x731f9a5b82d8e3d9e2f663ba6d282c92363941d5",
-      "guard": "0x240d459827cd38623cf831abc204893319c449db",
-      "court": "0x6e1d52f2e853a493eb6f3f5287f7160ff43e1f87",
-      "bond_vault": "0xec2bdb9b10c07e556fae3222183f4513572a507f"
+      "charter": "0xd0077db791497669f6a1bec39788a21ce02eade4",
+      "guard": "0xdcd768d17a0b45c18a82691f4801e10e40384f51",
+      "court": "0x458627ebb81f0f24164ad11c95bc52cbe9a63e51",
+      "bond_vault": "0xc6ac46b28914ed613128cd74a30d6d7985f1a687",
+      "vault": "0xa47eed150417b90bc368196ac17fe3f320ed0f49"
     }
   },
-  "observations": [
-    {
-      "id": "deterministic-refusal-per-spend-cap",
-      "parentTx": "0x63cb96220f3746cc09b85d296c01ebe3bc86028e24b3c7495603cc1edb0d294c",
-      "parentStatus": "FINALIZED",
-      "parentExecution": "SUCCESS",
-      "childTxs": [
-        {
-          "hash": "0x6a0907893901724587fb76e8407273405a5776b3b5da41fbca8b38a213fff62d",
-          "contract": "StewardCourt",
-          "status": "FINALIZED",
-          "execution": "SUCCESS",
-          "result": "record_primary(spend_id=0, decision=refuse, reason=per-spend cap exceeded, confidence=100)"
-        }
-      ],
-      "requestAmount": "6000000000000000000",
-      "configuredPerSpendCap": "5000000000000000000",
-      "result": "deterministic refusal; no Vault authorization observed",
-      "explorerUrls": [
-        "https://explorer-studio.genlayer.com/tx/0x63cb96220f3746cc09b85d296c01ebe3bc86028e24b3c7495603cc1edb0d294c",
-        "https://explorer-studio.genlayer.com/tx/0x6a0907893901724587fb76e8407273405a5776b3b5da41fbca8b38a213fff62d"
-      ]
-    }
-  ],
-  "deployedAt": "2026-10-09T05:58:00Z",
+  "observations": [],
+  "deployedAt": "2026-10-10T02:00:00Z",
   "notes": [
     "All six deployment transactions were independently read back as FINALIZED with successful leader execution.",
     "The principal-A collateral-binding approval was observed through the finalized threshold binding readback; its hash was not captured by the CLI session and is intentionally not fabricated here.",
-    "Economic lifecycle scenarios not represented by this deployment record remain unproven until fresh transaction evidence is recorded for a new stack.",
-    "This record is historical and must not be used as the current frontend or release address source. The current source hashes are in contracts/SOURCE_MANIFEST.json."
+    "Scenarios not represented by the fresh packet remain unobserved and are not claimed as live proof.",
+    "This canonical record is the source for the current deployment addresses and hashes.",
+    "The payout and recovery value-transfer children report value_credited=true but NO_MAJORITY; the protocol records the custody action while the network does not provide an independent consensus-success classification for the EOA transfer."
   ]
 }

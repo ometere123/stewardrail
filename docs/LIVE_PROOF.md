@@ -1,11 +1,13 @@
 # Live proof index
 
-The packets under `deploy/proofs/` include historical Studionet observations and
-are labeled by source generation. The previously indexed six-contract deployment
-is superseded by the current collateral and custody changes.
+The canonical fresh packet is
+[`deploy/proofs/final-fresh-studionet-2026-10-10.json`](../deploy/proofs/final-fresh-studionet-2026-10-10.json).
+It records the six-contract Studionet deployment, threshold binding, authenticated
+evidence, Court → Guard → Vault terminal delivery, challenge settlement,
+reconciliation, payout observation and threshold recovery.
 
-No current economic proof is declared until a fresh six-contract deployment has
-been finalized from the exact files in `contracts/`, followed by independent
-readbacks for the evidence, appeal, challenge, custody, payout and recovery
-scenarios. In particular, no payout or reversal is inferred from an ACCEPTED
-transaction or from an earlier deployment.
+The packet distinguishes `FINALIZED` protocol execution from EOA value-transfer
+delivery. The observed payout and recovery children reported `value_credited=true`
+and `NO_MAJORITY`, so those transfers are not described as consensus-confirmed.
+Scenarios not listed as observed in the packet remain unclaimed. Earlier packets
+are retained with an explicit `historical-superseded` status.

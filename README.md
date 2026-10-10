@@ -66,6 +66,7 @@ This creates three independent trust layers:
 | `steward_guard.py` | synchronous deterministic screening + semantic jury | hold GEN; amend mandates; override verdicts |
 | `steward_court.py` | one explicit application-level appeal with reversal semantics | pay funds; rewrite original record |
 | `steward_vault.py` | hold GEN and pay only Guard-delivered terminal economic ALLOW decisions | adjudicate; accept direct Court authority |
+| `steward_bond_vault.py` | hold agent standing and challenge bonds; settle finalized challenge outcomes | adjudicate semantic claims; bypass Guard or Vault |
 
 ## Protocol boundaries
 
@@ -164,7 +165,7 @@ npm run build
 
 Repository structure alone is not live evidence. A canonical Studionet deployment should be accompanied by a machine-readable lifecycle record proving:
 
-1. two of three principals activate a mandate;
+1. two principals activate a threshold mandate;
 2. an authorized issuer attests an evidence digest;
 3. deterministic refusal needs no jury;
 4. semantic ALLOW from independently fetched attested evidence;
@@ -176,24 +177,30 @@ Repository structure alone is not live evidence. A canonical Studionet deploymen
 
 The scripts in `deploy/` are written to produce a machine-readable packet rather than relying on screenshots.
 
-## Deployment status
+## Canonical Studionet deployment
 
-The previously indexed Studionet stack is retained as historical evidence only. It
-was deployed from an earlier contract source generation and is superseded by the
-current Court → Guard → Vault and collateral changes. This checkout deliberately
-does not present those addresses as current.
+The current six-contract stack was deployed from source commit `c014fd8` on
+Studionet. Every deployment and binding transaction was read back as `FINALIZED`
+with leader execution `SUCCESS`.
 
-A fresh six-contract deployment is required before this source generation can be
-called canonical. Until that deployment is finalized and independently read back,
-there are no current contract addresses or live economic scenarios to list here.
-The network lock remains Studionet, chain `61999`, RPC
-`https://studio.genlayer.com/api`, with repository-local CLI `0.39.1`.
+| Contract | Address |
+| --- | --- |
+| StewardCharter | [`0xD007…AdE4`](https://explorer-studio.genlayer.com/address/0xD0077db791497669f6A1BeC39788A21Ce02eAdE4) |
+| EvidenceRegistry | [`0x8E20…dA5B`](https://explorer-studio.genlayer.com/address/0x8E205Cfed3E2495B1857640Ccb7a693f8AfadA5B) |
+| StewardCourt | [`0x4586…3E51`](https://explorer-studio.genlayer.com/address/0x458627EBb81f0F24164AD11c95BC52CBE9A63E51) |
+| StewardBondVault | [`0xc6aC…A687`](https://explorer-studio.genlayer.com/address/0xc6aC46b28914Ed613128CD74a30d6d7985F1a687) |
+| StewardGuard | [`0xDcd7…4f51`](https://explorer-studio.genlayer.com/address/0xDcd768D17A0b45C18a82691F4801E10e40384f51) |
+| StewardVault | [`0xa47E…0F49`](https://explorer-studio.genlayer.com/address/0xa47EEd150417b90bc368196AC17fE3f320Ed0F49) |
 
-The exact source hashes for the current checkout are maintained in
-[`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json). Deployment
-records in [`deploy/deployments.json`](deploy/deployments.json) and packets under
-[`deploy/proofs/`](deploy/proofs/) are labeled historical until they refer to the
-fresh deployment of these exact files.
+The machine-readable deployment record is [`deploy/deployments.json`](deploy/deployments.json).
+The fresh lifecycle packet is [`deploy/proofs/final-fresh-studionet-2026-10-10.json`](deploy/proofs/final-fresh-studionet-2026-10-10.json).
+Historical packets remain explicitly marked `historical-superseded`.
+
+The six exact source hashes are maintained in [`contracts/SOURCE_MANIFEST.json`](contracts/SOURCE_MANIFEST.json) and repeated in the fresh packet. The
+deployment and recovery value-transfer child transactions report `value_credited=true`
+but `NO_MAJORITY`; the network therefore does not provide an independent consensus-success
+classification for those EOA transfers. The packet records this limitation rather than
+calling it a consensus-confirmed payment.
 
 ## Verification
 
