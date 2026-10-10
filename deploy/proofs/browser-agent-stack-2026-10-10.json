@@ -93,6 +93,154 @@
       "consensus": "MAJORITY_AGREE",
       "leader_execution": "SUCCESS",
       "readback": "held; request timestamp follows the issuer attestation"
+    },
+    {
+      "spend_id": 2,
+      "transaction": "0x543c17e6fac11b4c631b600bec052b04bd25a9a3a52fa290d1504101454f8ec7",
+      "method": "attach_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "issuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+      "role": "vendor",
+      "readback": "vendor evidence attached"
+    },
+    {
+      "spend_id": 2,
+      "transaction": "0x77d3d8eb05e11c110340dea89735512c2a8903637b714bd788006c140f8d1229",
+      "method": "attach_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+      "role": "delivery",
+      "readback": "delivery evidence attached"
+    },
+    {
+      "spend_id": 2,
+      "transaction": "0x7ea7c306d310609280815abd273c81f1acc3628ab9c6cc59c1ffa179e6ff2945",
+      "method": "seal_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "evidence_sealed=true"
+    },
+    {
+      "spend_id": 2,
+      "transaction": "0x7577eff31258e07347dc874f3bdc7e5df5daeb562f9972e4ceb295bb1aa544e5",
+      "method": "adjudicate",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "triggered_children": ["0xaeba64fa57acacb124b74e31ba91ac39f502b2cefd99a8b4b8d837b0d052d025"],
+      "readback": "semantic state allow; confidence 92; both authenticated artifacts contain the required token"
+    },
+    {
+      "spend_id": 4,
+      "transaction": "0xbb5a810a12cfd1ddc31d7320cdee0e524c1a68284d3f87e4d939233a8814506e",
+      "method": "request_spend",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "held; semantic adjudication required"
+    },
+    {
+      "spend_id": 4,
+      "transaction": "0x320cfb43bd953429ef320fb4959f1eeba357f7dfad9caab55c4cd32b1822d707",
+      "method": "attach_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "issuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+      "role": "vendor",
+      "readback": "vendor evidence attached"
+    },
+    {
+      "spend_id": 4,
+      "transaction": "0xa1966e9dc3c4aeca6e14c69da10ce2f75a02c64a95a971bcb7db7c743a9b3e85",
+      "method": "attach_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+      "role": "delivery",
+      "readback": "delivery evidence attached"
+    },
+    {
+      "spend_id": 4,
+      "transaction": "0x2d2a56ceb2939c4b9cccddac8339b4ace82a0da3d5a6730e477d56305ecb84e8",
+      "method": "seal_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "evidence_sealed=true"
+    },
+    {
+      "spend_id": 4,
+      "transaction": "0xec212072ac6d2154efcc4b61b77b898d4b2d735e274e6095850c63cbdab8c82e",
+      "method": "adjudicate",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "triggered_children": ["0x93a2928c46253d9b89548eb4ccb0535ec0b47b1107219414617d0655aca49b0f"],
+      "readback": "semantic state refuse; confidence 99; required token absent"
+    }
+  ],
+  "semantic_lifecycle_observations": [
+    {
+      "spend_id": 2,
+      "outcome": "ALLOW",
+      "adjudication": {
+        "parent": "0x7577eff31258e07347dc874f3bdc7e5df5daeb562f9972e4ceb295bb1aa544e5",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS"
+      },
+      "court_primary_child": {
+        "transaction": "0xaeba64fa57acacb124b74e31ba91ac39f502b2cefd99a8b4b8d837b0d052d025",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS"
+      },
+      "guard_readback": {
+        "state": "allow",
+        "reason": "Both authenticated evidence artifacts contain the exact ASCII token STEWARDRAIL_ACCEPT_2026 verbatim, satisfying the token-presence rule for every artifact.",
+        "confidence": 92,
+        "evidence_roles": ["vendor", "delivery"]
+      },
+      "note": "This is an accepted semantic ALLOW on the fresh browser-agent stack. Terminal custody remains pending the configured application appeal window."
+    },
+    {
+      "spend_id": 4,
+      "outcome": "REFUSE",
+      "adjudication": {
+        "parent": "0xec212072ac6d2154efcc4b61b77b898d4b2d735e274e6095850c63cbdab8c82e",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS"
+      },
+      "court_primary_child": {
+        "transaction": "0x93a2928c46253d9b89548eb4ccb0535ec0b47b1107219414617d0655aca49b0f",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS"
+      },
+      "guard_readback": {
+        "state": "refuse",
+        "reason": "The token STEWARDRAIL_ACCEPT_2026 is missing from the provided evidence artifacts.",
+        "confidence": 99,
+        "evidence_roles": ["vendor", "delivery"]
+      },
+      "note": "This is an accepted semantic REFUSE on the fresh browser-agent stack. Both required authenticated evidence roles were present and valid at request time; the semantic rule rejected the artifact content."
     }
   ],
   "rejected_attempts": [
@@ -106,7 +254,7 @@
     }
   ],
   "pending": [
-    "Attach authorized vendor and delivery evidence to spend 2, seal it, and adjudicate it from the browser agent before semantic lifecycle evidence can be added to this packet."
+    "Complete terminal custody/readback for accepted cases after the configured application appeal window."
   ],
   "explorer_prefix": "https://explorer-studio.genlayer.com/tx/"
 }
