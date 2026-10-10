@@ -1,0 +1,80 @@
+{
+  "packet": "stewardrail-browser-agent-stack",
+  "status": "deployment_observed",
+  "observed_at": "2026-10-10",
+  "source_commit": "ea655f888e4e6aeab64619217a5bbec2ea45427a",
+  "network": "studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "deployer": "0x21892bba93381d94037fb4aab01cafbdf4453b56",
+  "actors": {
+    "principal_a": "0x21892bba93381d94037fb4aab01cafbdf4453b56",
+    "principal_b": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "agent": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+    "vendor_issuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "delivery_issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468"
+  },
+  "contracts": {
+    "StewardCharter": {
+      "address": "0xB8f23F595fae253Da3Ae5F113d724ba7f1898841",
+      "deployment_tx": "0xfc185aa9fd26a33a649548f52ff2f3da2f7c3e27da55e6228cccc6a40050ea85",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS"
+    },
+    "EvidenceRegistry": {
+      "address": "0x6751dc33d38574455aFe01E5552a84d3E175516a",
+      "deployment_tx": "0x0a576ed6a89e6b1d5a8796182f1f94aace79ccfb4712168619e864f6e2ea0d46",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS"
+    },
+    "StewardCourt": {
+      "address": "0x2bFe0F3F726D84106B665B95ab7E5E56C3E70AbF",
+      "deployment_tx": "0xb62252c84bcebc77010455be0fc13becf1f7e1154670f6611ab113dd273ae4cf",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS"
+    },
+    "StewardBondVault": {
+      "address": "0xB39e6C179678938C3793E9F753313796E9179Da1",
+      "deployment_tx": "0x814a2143447c262ffe2a50786ca9f0af4c443b0bdd908bf2662a2fa81b41a514",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS"
+    },
+    "StewardGuard": {
+      "address": "0x9f14c9AbF5e79CEE0ce2a063C880DBe9b3E1b0Dc",
+      "deployment_tx": "0x3b3d528c89d35f074c6a6d093686ca032964655d339e455798e3d712712916f0",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS"
+    },
+    "StewardVault": {
+      "address": "0xD23A90Fb7534edA9bf998dF2fc29FBd88e1B247F",
+      "deployment_tx": "0xd3d81c117ff78564b59de4904aacaf6418da1e743cbd59a1a2da2fd3a99db067",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS"
+    }
+  },
+  "governance_and_binding": {
+    "mandate_approval_a": "0x9f38e332fe46069431b0e0a5fb5b646d57d9e36320319022bd6da4e24fb1839f",
+    "mandate_approval_b": "0x2e9cd566d8a8976fcc3f10fea667c482b18c7d9fa57333bafd4c3ea3a320a687",
+    "bond_binding_approval_a": "0x22850da1a2311238b194c92e217732bcf974a62c69e02259a4734446c5a8cf3c",
+    "bond_binding_approval_b": "0xcddd7df6cf7ac7e4241a0171ed163554e024c9c0d4e8ad5a71b45796ce131af1",
+    "bond_binding": "0xcb2e8517f212158ba3b32d1f3fcf8be4b0f09100d651e2fe741bc28e7b8a56fa"
+  },
+  "readbacks": {
+    "charter_agent": "0xfcef676044658b5402f590dabe9e04a0f640522f",
+    "charter_threshold": "2 of 2",
+    "bond_vault_guard": "0x9f14c9abf5e79cee0ce2a063c880dbe9b3e1b0dc",
+    "bond_vault_vault": "0xd23a90fb7534eda9bf998df2fc29fbd88e1b247f"
+  },
+  "pending": [
+    "An authorized browser-agent spend must still be approved and observed before semantic lifecycle evidence is added to this packet."
+  ],
+  "explorer_prefix": "https://explorer-studio.genlayer.com/tx/"
+}
