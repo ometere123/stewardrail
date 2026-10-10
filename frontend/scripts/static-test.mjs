@@ -23,4 +23,8 @@ if (!text.includes("status_by_number") || !text.includes("execution_by_number") 
 if (text.includes("amount (wei)") || text.includes("fund amount (wei)")) throw new Error("raw wei label remains in the primary UI");
 const evidence = fs.readFileSync(path.join(root, "app", "evidence", "page.tsx"), "utf8").toLowerCase();
 if (!evidence.includes("const [issuer,setissuer]") || !evidence.includes("args={[number(spend),issuer")) throw new Error("evidence attachment must bind the explicit attested issuer");
+const court = fs.readFileSync(path.join(root, "app", "court", "page.tsx"), "utf8");
+if (!court.includes('id="challenge-id"') || !court.includes('const [challengeId')) throw new Error("court progression must use a dedicated challenge ID");
+if (!court.includes('className="actionGrid"') || !court.includes('className="full challengeProgression"')) throw new Error("court challenge progression must be a full-width responsive action grid");
+if (!court.includes('method="reconcile_open_challenge" args={[challengeArg]}') || !court.includes('method="resolve_challenge" args={[DEPLOYMENTS.guard,challengeArg,DEPLOYMENTS.bondVault]')) throw new Error("court challenge actions must pass the challenge ID");
 console.log("frontend static test: PASS");

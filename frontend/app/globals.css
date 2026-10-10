@@ -9,3 +9,30 @@
 @media(max-width:560px){.headerActions{gap:5px}.walletCluster{gap:5px}.walletPill{padding:9px 8px;font-size:11px}.headerActions .button{padding:9px 10px}}
 
 .status.undetermined{border-color:#76552d;color:var(--amber)}
+
+/* Operational write cards stay readable at every route width. */
+.panel{min-width:0}
+.row{min-width:0;flex-wrap:wrap}
+.writeAction{display:flex;flex-direction:column;gap:10px;min-width:0}
+.writeAction .button{align-self:flex-start}
+.button:disabled{cursor:not-allowed;opacity:.5;filter:none}
+.actionHint{margin:0;color:var(--amber)!important;font-size:12px}
+.txDetails{min-width:0;border:1px solid var(--line);background:#11110f}
+.txDetails summary{cursor:pointer;padding:9px 12px;color:var(--muted);font-size:12px}
+.txPreview{display:grid;grid-template-columns:90px minmax(0,1fr);gap:6px 10px;margin:0;padding:12px;border-top:1px solid var(--line);min-width:0}
+.txPreview small{color:var(--muted);font-size:10px;letter-spacing:.08em}
+.txPreview b,.txPreview code{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.txPreview code{font-size:11px;color:var(--text)}
+.challengeProgression{grid-column:1/-1}
+.actionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0}
+.actionCard{border:1px solid var(--line);padding:16px;min-width:0;background:#191914}
+.actionCard h3{margin:0 0 8px;font-size:16px}
+.challengeHeader{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr);gap:20px;align-items:start;min-width:0}
+.challengeStatus{border:1px solid var(--line);padding:14px;min-width:0;background:#151510}
+.challengeFacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.challengeFacts div{border-top:1px solid var(--line);padding-top:8px;min-width:0}
+.challengeFacts small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase}
+.challengeFacts strong{display:block;margin-top:4px;font-size:13px;overflow-wrap:anywhere}
+.rawDetails{margin-top:14px}.rawDetails summary{cursor:pointer;color:var(--muted);font-size:12px}
+@media(max-width:900px){.challengeHeader{grid-template-columns:1fr}.challengeFacts{grid-template-columns:repeat(2,minmax(0,1fr))}.actionGrid{grid-template-columns:1fr}}
+@media(max-width:560px){.challengeFacts{grid-template-columns:1fr}.actionCard{padding:14px}.txPreview{grid-template-columns:78px minmax(0,1fr)}}

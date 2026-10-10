@@ -248,6 +248,42 @@
       "leader_execution": "SUCCESS",
       "triggered_children": ["0x144643d91cf46750b7ce5ce47cb8c7504467ec231801b449b95d1f402fd2d01d"],
       "readback": "semantic state allow; confidence 100; exact token present in both artifacts"
+    },
+    {
+      "spend_id": 7,
+      "transaction": "0x30cfbd46d6be69e2c6e2bea82f859cd1a7dcb7e3ef538a82d5df6efa1253e177",
+      "method": "request_spend",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "amount": "100000000000000000",
+      "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+      "category": "creative",
+      "readback": "held; semantic adjudication required"
+    },
+    {
+      "spend_id": 7,
+      "transaction": "0xb5e9d3bfddd150af200002d8f23aeff6b8f2a9d5253663ce845414fdbaf4c87e",
+      "method": "seal_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "evidence_sealed=true; vendor and delivery roles present"
+    },
+    {
+      "spend_id": 7,
+      "transaction": "0x789e0475ea5067e440abc17e54074e36abc8addbfdd8ae7754aae5716c3a20f6",
+      "method": "adjudicate",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "verdict": "allow",
+      "confidence": 100,
+      "triggered_children": ["0x3932ce04126308a527f6dc2919d4fdac32aeb6d0346d97ddd53bba7b3c7941da"],
+      "readback": "semantic state allow; all validators that reached quorum agreed on the authenticated token-presence observation"
     }
   ],
   "semantic_lifecycle_observations": [
@@ -378,6 +414,118 @@
         "amount": "100000000000000000"
       },
       "note": "Authenticated semantic ALLOW reached accepted consensus. The guard downgraded custody to REFUSE because no standing collateral was funded; Vault recorded REFUSE and payment remained impossible."
+    },
+    {
+      "spend_id": 7,
+      "outcome": "ALLOW",
+      "adjudication": {
+        "parent": "0x789e0475ea5067e440abc17e54074e36abc8addbfdd8ae7754aae5716c3a20f6",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "leader_verdict": "allow",
+        "leader_confidence": 100,
+        "triggered_children": ["0x3932ce04126308a527f6dc2919d4fdac32aeb6d0346d97ddd53bba7b3c7941da"]
+      },
+      "court_primary_child": {
+        "transaction": "0x3932ce04126308a527f6dc2919d4fdac32aeb6d0346d97ddd53bba7b3c7941da",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "record_primary"
+      },
+      "terminal_close": {
+        "transaction": "0xb6ea9964a6bd443145d2cff85f789d43495f0b32164b5c571e6046d4e8a49917",
+        "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "triggered_children": ["0x9f48d04e4229396bf8ee0d0dd204410e90d4871c77335ed99b383a7bee05ce9b"]
+      },
+      "guard_terminal_child": {
+        "transaction": "0x9f48d04e4229396bf8ee0d0dd204410e90d4871c77335ed99b383a7bee05ce9b",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "apply_terminal_decision",
+        "triggered_children": ["0x546cb44d39b20606cc018c40e3062fd778a55977593307456433cf279853f6d9"]
+      },
+      "collateral_lock_child": {
+        "transaction": "0x546cb44d39b20606cc018c40e3062fd778a55977593307456433cf279853f6d9",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "lock_exposure",
+        "secured_amount": "100000000000000000",
+        "challenge_deadline": 1791623452,
+        "triggered_children": ["0xfeaea3c35ddbf050d68dba67deba9c6f9613d0b935c92734f1c90240412206d2"]
+      },
+      "collateral_confirmation": {
+        "transaction": "0xfeaea3c35ddbf050d68dba67deba9c6f9613d0b935c92734f1c90240412206d2",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "confirm_exposure_lock",
+        "secured_amount": "100000000000000000",
+        "triggered_children": ["0xae0839f7f4520dea0e9b117b2a882af21f55e3dddc44f820f2454557d8f05851"]
+      },
+      "vault_terminal_child": {
+        "transaction": "0xae0839f7f4520dea0e9b117b2a882af21f55e3dddc44f820f2454557d8f05851",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "record_terminal",
+        "decision": "allow"
+      },
+      "guard_readback": {
+        "state": "allow",
+        "terminal_semantic": "allow",
+        "terminal_economic": "allow",
+        "terminal_state": "allow",
+        "terminal_reason": "semantic terminal decision accepted",
+        "terminal_at": 1791622852,
+        "evidence_roles": ["vendor", "delivery"]
+      },
+      "vault_readback_before_payout": {
+        "terminal_decision": "allow",
+        "paid": false,
+        "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+        "amount": "100000000000000000"
+      },
+      "funding": {
+        "transaction": "0x4099fd6b0d3df943a9ed383b117ebc7609aff3420ff1c1c941b332ec69227b78",
+        "value": "1000000000000000000",
+        "status": "FINALIZED",
+        "value_credited": true,
+        "treasury_before_payout": "1000000000000000000"
+      },
+      "payout": {
+        "transaction": "0x9b2dbe4859fbe3b85c6d3cdd5640b088cd3f0580ed83c878c3755a249613cf5a",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "triggered_transfer": "0x825f38f726004ae90a58e0c0f843c798f67ba38f31e15445a855585daf2ba255",
+        "transfer_status": "FINALIZED",
+        "transfer_value": "100000000000000000",
+        "transfer_value_credited": true,
+        "treasury_after_payout": "800000000000000000",
+        "paid_total": "200000000000000000",
+        "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468"
+      },
+      "duplicate_payout": {
+        "transaction": "0x5279607f2d65e46bfb6102ffbab117ca53a4b4aa8b9290c3f75292d583a0b259",
+        "from": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "ERROR",
+        "reason": "[EXPECTED] spend already paid"
+      },
+      "standing_readback": {
+        "standing": "2000000000000000000",
+        "locked": "200000000000000000",
+        "challenge_count": 0
+      },
+      "note": "This is the browser-submitted semantic ALLOW with complete finalized Court → Guard → BondVault lock/confirmation → Vault terminal authorization and a funded 0.1 GEN payout. The transfer child finalized with value_credited=true."
     }
   ],
   "rejected_attempts": [

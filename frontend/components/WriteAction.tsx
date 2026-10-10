@@ -6,12 +6,13 @@ import { writeContract } from "@/lib/genlayer";
 import { NETWORK } from "@/lib/deployments";
 import { formatGen } from "@/lib/gen";
 
-export function WriteAction({ address, method, action, args, value=0n, label }: { address: string; method: string; action: string; args: unknown[]; value?: bigint; label: string }) {
+export function WriteAction({ address, method, action, args, value=0n, label, disabled=false, disabledReason }: { address: string; method: string; action: string; args: unknown[]; value?: bigint; label: string; disabled?: boolean; disabledReason?: string }) {
   const wallet = useWallet();
   const { setTx } = useTx();
   const [error, setError] = useState("");
   const go = async () => {
     setError("");
+    if (disabled) return setError(disabledReason || "This action is not currently eligible.");
     if (!wallet.connected) return setError("Connect an injected wallet first.");
     if (!wallet.correctNetwork) return setError("Wrong network: switch to Studionet 61999 first.");
     if (!address) return setError("Deployment address is not configured yet.");
@@ -20,11 +21,16 @@ export function WriteAction({ address, method, action, args, value=0n, label }: 
     } catch (e: any) { setError(String(e?.message ?? e)); }
   };
   return <div className="writeAction">
-    <div className="txPreview">
-      <small>ACTION</small><b>{action}</b>
-      <small>CONTRACT</small><code>{address || "not deployed"}</code>
-      <small>NETWORK / VALUE</small><code>{NETWORK.name} · {NETWORK.chainId} · {formatGen(value)} GEN</code>
-    </div>
-    <button className="button" onClick={go}>{label}</button>{error && <p className="error">{error}</p>}
+    <button className="button" onClick={go} disabled={disabled} aria-describedby={disabledReason ? `${method}-disabled-reason` : undefined}>{label}</button>
+    {disabledReason && <p id={`${method}-disabled-reason`} className="actionHint">{disabledReason}</p>}
+    <details className="txDetails">
+      <summary>Transaction details</summary>
+      <div className="txPreview">
+        <small>ACTION</small><b>{action}</b>
+        <small>CONTRACT</small><code title={address || "not deployed"}>{address || "not deployed"}</code>
+        <small>NETWORK / VALUE</small><code>{NETWORK.name} · {NETWORK.chainId} · {formatGen(value)} GEN</code>
+      </div>
+    </details>
+    {error && <p className="error">{error}</p>}
   </div>;
 }
