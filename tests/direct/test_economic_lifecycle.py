@@ -328,11 +328,13 @@ def test_challenge_digest_mismatch_is_terminal_refuse_not_upheld():
     rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
     rt.call(BOND,'open_challenge',0,200,'digest defect',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized()
     rt.web[URI]=b'changed after challenge attestation'
+    prompt_count = len(rt.prompts)
     rt.now += 61; rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'ignore the digest'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     record=json.loads(rt.call(COURT,'challenge',GUARD,0,sender=A))
     assert record['upheld'] is False
     assert 'digest mismatch' in record['reason']
+    assert len(rt.prompts) == prompt_count
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
 
 def test_challenge_unavailable_evidence_is_terminal_refuse_not_upheld():
@@ -343,11 +345,27 @@ def test_challenge_unavailable_evidence_is_terminal_refuse_not_upheld():
     rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
     rt.call(BOND,'open_challenge',0,200,'unavailable record',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized()
     del rt.web[URI]
+    prompt_count = len(rt.prompts)
     rt.now += 61; rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'invent evidence'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     record=json.loads(rt.call(COURT,'challenge',GUARD,0,sender=A))
     assert record['upheld'] is False
     assert 'unavailable' in record['reason']
+    assert len(rt.prompts) == prompt_count
+
+def test_challenge_prompt_uses_frozen_original_evidence_content():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'compare original and challenge evidence',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized()
+    rt.now += 61; rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    prompt=rt.prompts[-1]
+    assert 'FROZEN ORIGINAL EVIDENCE CONTENT:' in prompt
+    assert URI in prompt and digest in prompt
+    assert 'UNTRUSTED CHALLENGE EVIDENCE:' in prompt
 
 def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
@@ -438,6 +456,25 @@ def test_standing_lock_is_obligation_specific_and_blocks_withdrawal_until_settle
     quote2=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
     rt.call(BOND,'open_challenge',0,200,'second dismissed',challenge_evidence(digest),sender=CHALLENGER,value=quote2); rt.flush_finalized(); rt.now += 61
     rt.call(COURT,'resolve_challenge',GUARD,1,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
+
+def test_dismissed_challenge_cannot_release_frozen_lock_before_future_attempts_are_exhausted():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=1000; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'first dismissal',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['future_challenges_remaining'] is True
+    with pytest.raises(Exception,match='challenge window is still open'):
+        rt.call(BOND,'release_expired_exposure',0,sender=B)
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
+    quote2=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'second dismissal',challenge_evidence(digest),sender=CHALLENGER,value=quote2); rt.flush_finalized(); rt.now += 61
+    rt.call(COURT,'resolve_challenge',GUARD,1,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'challenge',1,sender=A))['future_challenges_remaining'] is False
     assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
 
 def test_unchallenged_lock_expires_permissionlessly_and_can_be_withdrawn():
