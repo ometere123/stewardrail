@@ -73,8 +73,40 @@
     "bond_vault_guard": "0x9f14c9abf5e79cee0ce2a063c880dbe9b3e1b0dc",
     "bond_vault_vault": "0xd23a90fb7534eda9bf998df2fc29fbd88e1b247f"
   },
+  "browser_write_observations": [
+    {
+      "spend_id": 0,
+      "transaction": "0xd85ddd9dfb5959228df3c8dfb1398ec7022eec480d24161a8645decac2fa980e",
+      "method": "request_spend",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "held; semantic adjudication required"
+    },
+    {
+      "spend_id": 2,
+      "transaction": "0xe252ee8ee22a0b69a7290cf505dec3323c13180990765807cfefac3dd15c3808",
+      "method": "request_spend",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "held; request timestamp follows the issuer attestation"
+    }
+  ],
+  "rejected_attempts": [
+    {
+      "transaction": "0x3fec3aeb0f78cdaa317b302d11ff670858a41d63e9afb2e099791389b1127118",
+      "method": "attach_evidence",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "reason": "historical issuer attestation did not exist at spend 0 request time"
+    }
+  ],
   "pending": [
-    "An authorized browser-agent spend must still be approved and observed before semantic lifecycle evidence is added to this packet."
+    "Attach authorized vendor and delivery evidence to spend 2, seal it, and adjudicate it from the browser agent before semantic lifecycle evidence can be added to this packet."
   ],
   "explorer_prefix": "https://explorer-studio.genlayer.com/tx/"
 }
