@@ -1,8 +1,8 @@
 {
-  "packet": "stewardrail-final-fresh-studionet",
+  "packet": "stewardrail-fresh-source-stack-2026-10-10",
   "status": "observed-with-limitations",
-  "timestamp": "2026-10-10T03:20:00Z",
-  "sourceCommit": "c014fd8",
+  "timestamp": "2026-10-10T05:30:00Z",
+  "sourceCommit": "6a7e7e87151fa429e2c7b2ac5459da5102aea0c9",
   "network": "studionet",
   "chainId": 61999,
   "rpc": "https://studio.genlayer.com/api",
@@ -10,203 +10,104 @@
   "sourceSha256": {
     "contracts/steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
     "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
-    "contracts/steward_court.py": "54a92fd114a38dc41621b1f5e12d6baa222cda3fed4cf23beec734eecf4c2bae",
-    "contracts/steward_bond_vault.py": "58bbce0bd21fbdb2d0001d506aee2feb3611d4cd5813cdc6d949adf33dc64e5a",
+    "contracts/steward_court.py": "424ae88d563b587dd6569df2035e533d44c206672b152c2889ac30c38b743e32",
     "contracts/steward_guard.py": "216b1452c3ce67e485af4fb574bfac9cdd2e09916e66ab8677048de27dbe652d",
-    "contracts/steward_vault.py": "2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088"
+    "contracts/steward_vault.py": "2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088",
+    "contracts/steward_bond_vault.py": "1cc62373f3be8d918cfa97fff6ebf61df0b02c80440a30ca9189d17d905dc0a4"
   },
   "addresses": {
-    "charter": "0xD0077db791497669f6A1BeC39788A21Ce02eAdE4",
-    "registry": "0x8E205Cfed3E2495B1857640Ccb7a693f8AfadA5B",
-    "court": "0x458627EBb81f0F24164AD11c95BC52CBE9A63E51",
-    "bondVault": "0xc6aC46b28914Ed613128CD74a30d6d7985F1a687",
-    "guard": "0xDcd768D17A0b45C18a82691F4801E10e40384f51",
-    "vault": "0xa47EEd150417b90bc368196AC17fE3f320Ed0F49"
+    "charter": "0x66D2b55b53A7464d09E2B9666d257B56CB830695",
+    "registry": "0x8551DdEE20bD83372A69a7781E64c905d31c988F",
+    "court": "0x16FA4B83541194F989c255925eBEa74243DbC50c",
+    "bondVault": "0xB944998aBf5D5ee533cE5318DAA7AC0e75D9Ec3C",
+    "guard": "0x563647674D14E7e040210B22e7549e2647AB75B9",
+    "vault": "0x49aC65C93C0BDaBaF5aF8e0DD1a6b98ea34E6E15"
   },
   "actors": {
-    "principalA": "0xca3b966a5064a6bbcc2ac90267863453e45c9fc2",
-    "principalB": "0xc92ab24fc6902c4a8c9808bd1e046017265540ce",
-    "agent": "0x8d1b997611ba953a3025c2c4e91e3cf8e18a522a",
-    "vendorIssuer": "0x58e72af1d466df225b9c4886a9ca597c4994be7b",
-    "deliveryIssuer": "0xe55615428cdab04aabbf283058528b8cad4acc62",
-    "recipient": "0x67436626fb396c4c219cf3fba461c4fe3c97c8d3",
-    "challenger": "0x0c0c0e85ac600176fcc4fa3019de0ce3cc6cd133"
+    "principalA": "0x21892bba93381d94037fb4aab01cafbdf4453b56",
+    "principalB": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "agent": "0x24fae7cd031ed702be63bdea8912141805b996bd",
+    "vendorIssuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "deliveryIssuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+    "challenger": "0xb5ecd6dda36b370aca4af5e2005d8e2ae89c6db2"
   },
   "deployment": {
     "transactions": {
-      "charter": "0x21f3a8d14cb77ff56c8e366bf1a8c158e23c2de2ff11fad1466704b8424d6586",
-      "registry": "0xe12dfd7bfa2788dc0029a8116135e61f528f9dbcc608e620c52216b18e48368b",
-      "court": "0x50ac527c5630c344848c89e8cf05a05969d21f391a677faeddf466e7a990afe8",
-      "bondVault": "0xe2b29037a6a3d514e27c35e3ccc19eceab9f78f6d706f0c05d539cabf6b9aa13",
-      "guard": "0xb033a4224cce1d507f9bef8ae93e2dcb0cc9b94bcf77d39691cbebf0b1a0b66e",
-      "vault": "0xae8daa8960663a066098bd3e6ed09b4ff8c05064ea399af5a8fd71989abc8a6d"
+      "charter": "0x52444ddaf02cfb5c56b85ad83471cce78d9505b80dd14184897602049e61548a",
+      "registry": "0x6d80bab9f85de96ee242f4a800439ea4d8eb7b44b3e996290551804bcf38bc59",
+      "court": "0x2c49cd764eb4bb9e4234665e482bfa6e153c1dfe69919c154c5169ef35add7a8",
+      "bondVault": "0xe949e6973bf6533250d336c72f1d13a2ca588b8fd8ecc382d17485962c438119",
+      "guard": "0x74113b3bb6fb91fdf6e4623800ea631aaee36b4a2338c24a5c70bf39a0956db7",
+      "vault": "0xd06a0a06a7a7209c5ecdf2bf86cb91120bbc5c0e7a0f93a70da7537f7416d9fd"
     },
-    "all": "FINALIZED / leader execution SUCCESS"
+    "status": "FINALIZED",
+    "execution": "SUCCESS"
+  },
+  "governance": {
+    "mandateVersion1": {"principalA": "0xaf9cf64689b57bb017f794ade28990640552830af2ef99e017f99e0993e4fc8c", "principalB": "0x50dcb668cca1b6e0cde88d5b52a8d4a80b8f9bf8f8b2918bfe27d8d1d390f4bd"},
+    "mandateVersion2": {"principalA": "0xbe16c09995e694031523ffde4ff6db4cfe9b650f24e2158e348bad6949be77fa", "principalB": "0x34ec280014d4ca4a25d50f3531072818223c3cf977006d5c88ac75d592de84c1"},
+    "mandateVersion3": {"principalA": "0xa26a2fc460b0eb4285999e2bf590f7e09172065b751edbd9fc98a38c8d77699d", "principalB": "0x1dcda95704a906628a672b96b6fee1e480419918c06e0d47ae8bdb8ec03ca0ab"},
+    "bondBinding": {"principalA": "0x3e9b7b34873b22ddf8aad12f6fd940e34e111ac06475e7c384befa7a2d60d816", "principalB": "0x98c261bb5e0db82718d17e430477d9e2423297cd18aa5ca215487b9db1178b81", "bind": "0x818e4cca0cd3963e84d5a05d6108a1cc5826c503433cd093415402f321b8676f"},
+    "readback": {"activeVersion": 3, "threshold": "2 of 2", "agent": "0x24fae7cd031ed702be63bdea8912141805b996bd"}
   },
   "scenarios": [
     {
-      "id": "threshold-mandate-and-bindings",
+      "id": "authenticated-issuer-evidence",
       "result": "observed",
-      "transactions": [
-        "0x0f6d2096cb38d25117acd6a5992a5ba9509c0a4c15576223525ceb84ab1cd44f",
-        "0xa3f9504222f06576ab806ba3c6e219c8d18096465707be2b24d7cb68b8698580",
-        "0xd7072a33183a63b57a76dd0242489314cf2fed5b6b5ad53bd29e26b3d2fe7d22",
-        "0x01cdb8884851a055e511af86d6a7ae688ed8614e9d81de6edfd01376246e6e32",
-        "0x979008ca180b6021c82c233d9e25fdd087b47749217749adae8cc527e92812e3"
-      ],
-      "readback": {
-        "charterVersion": 1,
-        "threshold": "2 of 2",
-        "bondVaultIsApproved": true
-      },
-      "invariant": "Neither approval alone activates the mandate; both approvals are required."
-    },
-    {
-      "id": "authenticated-evidence",
-      "result": "observed",
-      "transactions": [
-        "0xcf3ac0a1866d43737d25d860028a369c691a42c59f6d7e659beafdc77f735a65",
-        "0xbcb624742119ec5662a1f9c726af7710445ce250d2825246de17125d4715bdf4"
-      ],
-      "facts": {
-        "uri": "https://raw.githubusercontent.com/ometere123/stewardrail/5661753cb18e7e665d8083a4068e03cde3b0e97c/README.md",
-        "sha256": "6896afd6e78e3d8fdc56db2190b7ec3a0e82f92ff1b82bba540f6cc4a6e76087",
-        "roles": ["vendor", "delivery"],
-        "issuerOrigins": ["https://raw.githubusercontent.com"]
-      },
+      "transactions": {"vendor": "0xacaa03791bdbe68d6fbfcab74a5beb5cacc25cd436d6c7557313d850950f7de9", "delivery": "0xa52b9a06ebc371e1b694c9f5e7f64abfe490334ff18f3a216d55c6ed50f2dfaf"},
+      "facts": {"uri": "https://raw.githubusercontent.com/ometere123/stewardrail/5661753cb18e7e665d8083a4068e03cde3b0e97c/README.md", "sha256": "6896afd6e78e3d8fdc56db2190b7ec3a0e82f92ff1b82bba540f6cc4a6e76087", "roles": ["vendor", "delivery"], "origin": "https://raw.githubusercontent.com"},
       "invariant": "Two distinct configured issuer accounts attested the exact URI and digest."
     },
     {
-      "id": "court-guard-vault-terminal-chain",
-      "result": "observed",
-      "spendId": 1,
-      "request": {
-        "tx": "0x934001bf65cf482686a977c1ed3112afa616805ecb28280560ef1d0bc8c1b1",
-        "status": "FINALIZED",
-        "execution": "SUCCESS"
-      },
-      "evidence": {
-        "vendorAttach": "0xb7fd014f8b1705996ee5f1c36e9f5d9a4fcd9ea67aecd101cc2fd91061f89ee5",
-        "deliveryAttach": "0xd3f661c7c92021da343cede03431aabaf72f6efeef32fe294ff9bb7e6591d152",
-        "seal": "0x5daa25efb1763d7c36ff057bbb097110f583fb8b9cb1a16e37b4710e5b6f7b63"
-      },
-      "adjudication": {
-        "tx": "0x28e8ed2b1b701fb329027786310a39c8b4f43be5fd1faa8cc861f836ef20ca39",
-        "status": "FINALIZED",
-        "execution": "SUCCESS"
-      },
-      "terminal": {
-        "court": "0xa922fe26ef813429d496430e890cf98fd3981205f79a427cb30d60924521968e",
-        "guard": "0xbfedfa6ab3338c5c446943163f8033c78d40a694897fa2048d8bfd923b147f93",
-        "guardLock": "0xf64a8b52e4e20a032abd5bb33c84001e6f26ec80143cc2f3bc018fe0e85ac626",
-        "guardConfirmation": "0xe24d0f7be9b91f337829f42c57b1be3b7df8e5a26496de41aa0fb888b997d0fc",
-        "vault": "0x6b802e8fdf393cebd8583f0b2676ef3d2c2489b1d0e75a9f6b16d5f2b5caa8"
-      },
-      "readback": {
-        "terminalSemantic": "allow",
-        "terminalEconomic": "allow",
-        "terminalReason": "semantic terminal decision accepted",
-        "vaultPaid": false
-      },
-      "invariant": "Court emits only to Guard; Guard finalizes economic authorization before Vault records it."
-    },
-    {
-      "id": "deterministic-standing-coverage-downgrade",
+      "id": "semantic-refuse-court-guard-vault",
       "result": "observed",
       "spendId": 0,
-      "terminalTx": "0x22a012bab4b66939f809f93f5d5449205adfdb80fe3e04809f9f476f6a112ecc",
-      "readback": {
-        "terminalSemantic": "allow",
-        "terminalEconomic": "refuse",
-        "terminalReason": "standing collateral coverage unavailable"
-      },
-      "invariant": "A semantic allow cannot become payable when deterministic standing coverage is unavailable."
+      "parent": "0x11946012c0532db624b6fa70aa411b56982d01974b04408fa6dbec0c1a3855e8",
+      "children": ["0x99a9c0a3da774817f11575dc7c5630ff0802430009f0c17a3e3e176235133e19"],
+      "applicationAppeal": {"parent": "0x82056f3af25d5585c4c49079d986f80069a0b83da56fbc7e03b356d75b43127c", "guard": "0xb69270719ad3eed7cd4c3fbe8760c7795cd645517403dcce4e9aa1119c5aa201", "vault": "0xd99ea0e91ad8f793842eb6a788f5c7e747d71c47164dae699456b6b2a4da80fa"},
+      "readback": {"primary": "refuse", "effective": "refuse", "terminalSemantic": "refuse", "terminalEconomic": "refuse", "vaultPaid": false},
+      "invariant": "A semantic refusal was recorded by Court, enforced economically by Guard and delivered to Vault without payment."
     },
     {
-      "id": "funding-and-payout-transfer-observation",
-      "result": "observed-with-network-limitation",
-      "fundingTx": "0xc4f61aa99f7e683ddcd2703e054e9cdae75cbc033bf898a3a39d5cee82b460e9",
-      "paymentParent": "0xf418583434e1d6dc473a27b803cfa0578e86706d6db2c5bdf9cc27f725074126",
-      "paymentChild": "0xda544940b7538477777b4771156fd9b7be8ac0dd3f87b98f3bf30becc6d109c6",
-      "balances": {
-        "paymentAmount": "1000000000000000000",
-        "recipientDeltaObserved": "1000000000000000000",
-        "vaultTreasuryAfter": "4000000000000000000"
-      },
-      "child": {
-        "status": "FINALIZED",
-        "execution": "NO_MAJORITY",
-        "valueCredited": true
-      },
-      "invariant": "The recipient value was credited, but the EOA child did not receive an independent consensus-success result; the packet does not call this a consensus-confirmed transfer."
-    },
-    {
-      "id": "duplicate-payout-rejection",
+      "id": "deterministic-allow-finalized-custody",
       "result": "observed",
-      "tx": "0x147871202b718a18580c6d7aabff0deeea221e01548b4349aed9c576f1effcbd",
+      "spendId": 2,
+      "request": "0xd2e136db7050d819ad8adc3cf6b2b6f4ffd15a7dc55da8790d9565e5664d6cfa",
+      "terminalChain": ["0x2b117a9e71ff7a2994f7395642e89dba3ea2e44e76aa70e3915b3808d9168037", "0x386cc2ee99b1d584476206e838470f62395f2b6eb31309dc0c3161185af4487d", "0x44b6a8447410fe7680e3fabb75c58144274b40cd76ea65b27602f41015c6b0d1", "0xd353a8c6a387507d83e8746ddfa20a95f758a7d7f4e5191f0d4e6580881e7eb1", "0x064f83330e1974b2bdbcc6afffdf067f6e230d30cd82ae1bfa0618dd7d72a3f0"],
+      "readback": {"primary": "allow", "effective": "allow", "terminalEconomic": "allow", "amount": "500000000000000000", "paid": true, "vaultTreasuryAfter": "3500000000000000000"},
+      "invariant": "Court finalization was followed by finalized Guard authorization and finalized Vault recording before payment."
+    },
+    {
+      "id": "treasury-funding-and-payment",
+      "result": "observed-with-transfer-classification-limit",
+      "funding": {"latest": "0xa3114cda9052ead9c4e240d49ca13cc74ac43fa9b4d83faa6d7adb8250711b95", "treasuryBeforeLatest": "3000000000000000000", "treasuryAfterLatest": "4000000000000000000"},
+      "payment": {"parent": "0x9e7242c078b435635134522824e941434a3d22e8bd08e6eb4433b5f296f2cc79", "child": "0x6ec9e8572764ca09b030f071c8035338bc4f10567231059a7d7b23089e80fb26", "childStatus": "FINALIZED", "childExecution": "NO_MAJORITY", "valueCredited": true},
+      "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+      "observed": {"recipientBalanceAfter": "893.27 GEN", "vaultTreasuryAfter": "3500000000000000000", "paidTotal": "500000000000000000"},
+      "invariant": "Vault accounting decreased by the exact recorded amount and the network reported value_credited; the EOA child did not provide an independent consensus-success classification."
+    },
+    {
+      "id": "duplicate-payment-rejection",
+      "result": "observed",
+      "transaction": "0x25cf5566da260e32da348b3caf56d75a26da3b8bdea8dc26afd78f7816d9dd63",
       "status": "FINALIZED",
       "execution": "ERROR",
       "error": "[EXPECTED] spend already paid"
     },
     {
-      "id": "bonded-challenge-dismissal-and-settlement",
-      "result": "observed",
-      "quote": "50000000000000000",
-      "open": {
-        "parent": "0x883a06911a4e9bd928a67a5862631570bcaea2ffe9d38282943c520d90e9e0b2",
-        "courtChild": "0x6df97cbf5732072111314228944f3fade152cef8f59b7d7e1e2407d01e3ee713"
-      },
-      "resolve": {
-        "court": "0xe535533832308765f9d5c0691a7b891113f893c1f426c343a4a7b71781370299",
-        "guard": "0x4e2d5d707179ae81c7a50da8e06cfa1e98bff553aff6c208a5891774cebf5eb8",
-        "vault": "0x3396bba67488f19600baf8436bc4859dbf94909547134715eecd960835be889c",
-        "bondVault": "0xa6cba663b4c5ec402162a72b49e8fe423ef21a5c69c6421656436f12ee656b33",
-        "refund": "0xe992375bda9ca65aaa132722dcccb1a51be709aba69c02ec7103b462e7b0d341"
-      },
-      "readback": {
-        "state": "settled",
-        "settlement": {"result": "dismissed", "restitution": 0, "reward": 0, "shortfall": 0},
-        "standing": "10000000000000000000",
-        "locked": "0"
-      },
-      "invariant": "A real external challenger opened the case; Court resolution, Guard enforcement, Vault consequence and BondVault settlement all finalized."
-    },
-    {
-      "id": "challenge-reconciliation",
-      "result": "observed",
-      "court": "0x224c81aa8fd751f78fc41cd28ede409026eb0dae6ceeb39826131ed80026fdb8",
-      "guard": "0x4fb45be96126d0aa5834551957ba737de9e47442fd92652fd699bf2bcd5491f0",
-      "vault": "0x4d0bf9664dc7de5e12d6517715a6942149385945d7de846df5c64238a0838909",
-      "bondVault": "0x8c27dc67c9d51ebc055e7bd665ee48b269fb12784f000f05c428b06399bbac88",
-      "invariant": "Identical settlement replay re-emitted the nested chain without double settlement."
-    },
-    {
-      "id": "threshold-recovery-and-replay",
-      "result": "observed",
-      "approvals": [
-        "0xd6b9b47a6f0bd78852b958125cd69521303eb242b4a912b8a3d0a894ed343df7",
-        "0x08bac0c3ab258ce15e1a5d82023c38334899b96e2b7dfd27691d87743d0e4e65"
-      ],
-      "recovery": "0x116f58777a2375240c5af536cd13a67e8cf5a330a3db0f284da90f05bf21fdae",
-      "transferChild": "0x028fb91cb86755d59e1140b695fe158ae1833ada6e24beff7af0876db9fbdf28",
-      "replay": "0xd86b75ae50e87b18a3dad231ee4c642f26d705f0f3d6b406a11033aefbc90f57",
-      "readback": {
-        "recoveryNonce": 1,
-        "treasury": "3550000000000000000",
-        "childStatus": "FINALIZED",
-        "childExecution": "NO_MAJORITY",
-        "childValueCredited": true,
-        "replayExecution": "ERROR",
-        "replayError": "[EXPECTED] charter threshold has not approved this recovery"
-      },
-      "invariant": "The nonce advanced once after threshold approval; replay was rejected."
+      "id": "semantic-allow-attempt",
+      "result": "not-observed",
+      "transactions": ["0xc558e3d293ad3f6a3e3f7ec12bde516e6632b0592bd2c9b71963a70f2a805ed5", "0x0b638758f0f9f71159e568f3f306572b5efc6f0031c52fb0a7ab805ee5291dc4"],
+      "status": "FINALIZED",
+      "execution": "MAJORITY_DISAGREE",
+      "note": "The semantic validator set disagreed twice; the held spend remains unterminalized and no economic success is claimed."
     }
   ],
-  "notObserved": [
-    "A fresh ALLOW-to-REFUSE application reversal was not run on this stack.",
-    "A fresh REFUSE-to-ALLOW application reversal was not run on this stack.",
-    "Single-use replay, rolling reservation and post-payment upheld clawback were not run as fresh network scenarios.",
-    "EOA value-transfer children returned value_credited=true with NO_MAJORITY; independent consensus-success classification is unavailable for those transfers."
+  "unobserved": [
+    "A fresh semantic ALLOW was not finalized on this stack.",
+    "Fresh single-use replay, rolling reservation reversal, bonded challenge settlement and threshold recovery were not run against this source stack.",
+    "The recipient balance before the payment was not captured before the payment transaction; only the post-payment CLI balance and value_credited child observation are recorded."
   ],
   "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
 }

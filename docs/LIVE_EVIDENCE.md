@@ -8,9 +8,8 @@ Current evidence:
 - `final-fresh-studionet-2026-10-10.json` is the current packet for the six exact
   sources and addresses in `deploy/deployments.json`.
 - It records finalized deployment/binding receipts, threshold activation,
-  authenticated issuer attestations, nested terminal delivery, a dismissed
-  bonded challenge, idempotent reconciliation, duplicate payout rejection and
-  threshold recovery replay rejection.
+  authenticated issuer attestations, nested terminal delivery and duplicate
+  payout rejection.
 - The payout and recovery EOA children are recorded as value credited with
   `NO_MAJORITY`; this is an explicit network limitation, not a success claim.
 
@@ -25,5 +24,6 @@ Historical evidence:
   deployments and are explicitly not current-deployment proof.
 
 An earlier appeal attempt finalized with execution `ERROR` and is not presented as
-a successful reversal. The current packet explicitly lists unobserved reversal,
-single-use replay and post-payment clawback scenarios rather than inferring them.
+a successful reversal. The current packet explicitly lists unobserved semantic
+ALLOW consensus, reversals, single-use replay, rolling reversal, challenge
+settlement, threshold recovery and post-payment clawback rather than inferring them.
