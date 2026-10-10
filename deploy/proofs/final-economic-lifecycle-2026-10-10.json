@@ -1,0 +1,94 @@
+{
+  "packet": "stewardrail-final-economic-lifecycle",
+  "status": "observed",
+  "observedAt": "2026-10-10",
+  "sourceCommit": "90f7c97c1674406e3b4b217e732452ee08167368",
+  "network": "Studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "sourceSha256": {
+    "contracts/steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31",
+    "contracts/steward_guard.py": "38cb4c9a25e8301ff78c2b5955e9b31ea4ad47bb8a3cf6e6e37ac68a5faf51c5",
+    "contracts/steward_vault.py": "e4c4a442435ce81a03afecb9c9c3546c50e5ff1f80599dbebcf23d75b4b67c03",
+    "contracts/steward_bond_vault.py": "bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3c1da75fe16c342df6"
+  },
+  "addresses": {
+    "charter": "0xbEFb58653774C87c46b94CA877EB3CE8C11d3f3a",
+    "registry": "0x3610c029a5b1d1c8447D5243af5547adA2b8F860",
+    "court": "0xb6B2360943A925c4F8E8938d64681dad9A965d85",
+    "bondVault": "0x99701b42632fDd0b60b5B25A009353F8e75C9630",
+    "guard": "0xC2fdd19405826Cd73c6dee907d424dE079d3625f",
+    "vault": "0x86eeDB18f3f002f1FB1374283BCdb66a6087F8B7"
+  },
+  "deployment": {
+    "charter": "0xa4b590d2d76570b651f6957637e209a1bfde35444dce31f495a5185ba0075531",
+    "registry": "0x7c492f0424bcd71ee128cf6767636fc07ffc66d3d3494627761aa228d01779e5",
+    "court": "0x1d5d13b51c633ccbd603cc793f485227a8833353b91c197502cb2aae8cc3dca6",
+    "bondVault": "0x8371349ff1d7d05404caef00591d58ff42f4cb718289479e7d2be3f142221acd",
+    "guard": "0x31bb079246a3f811096dd0dc3b09a7cd8e5bebd26bb386ca7b0b2310c72ec6d8",
+    "vault": "0xb1eb0edb3429f356be9a17a38d257f53ea76ac7630c427cb1d5d7e9369c848f1"
+  },
+  "governance": {
+    "threshold": "2 of 2",
+    "mandateApprovalA": "0xd5bfdc41623ac56763037ab6eb6c42890582c23eb9be550cb10d3de4f914987e",
+    "mandateApprovalB": "0x04755289a2ebdd41806d7ae75bcf76e617051ea8dbe446b6fe691beb733886a4",
+    "bondApprovalA": "0x16bf4312ffd7f3ef7947af0db12ff830e7a023c3419744cab9687457397b1a37",
+    "bondApprovalB": "0xf3cf0126cb9e899bb0cbf25b84c7c29015f80db062c94fa2e4e9cddd41fae733",
+    "bondBind": "0x042302e1093906a96029e894b1b80525e4ffd45008630db7ec598f8197f205dd"
+  },
+  "funding": {
+    "standingDeposit": {"tx": "0x483305b5d72ebc4878c5ab94295b7e5239edb6e4659861d6fb6811c89c0c0a4b", "amountGen": "1", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true},
+    "vaultFund": {"tx": "0x6232576614dec868a37781a7e57105794573e7f646d2806e5e86a927c4a8b5a5", "amountGen": "2", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true}
+  },
+  "cases": {
+    "semanticAllowWithEconomicDowngrade": {
+      "spendId": 0,
+      "courtSemantic": "allow",
+      "guardEconomic": "refuse",
+      "reason": "standing collateral coverage unavailable",
+      "vaultDecision": "refuse",
+      "paid": false,
+      "courtReconcile": "0xd436457969740f0ba4ad15c7fa06fd400286d7c288b220a429f336ceaf9d00ce"
+    },
+    "fundedSemanticAllow": {
+      "spendId": 1,
+      "request": "0xddbd7a447dc7ece1562381e86f63052f4f51f17bb5fb9ebb562102043e69aab9",
+      "vendorAttach": "0x91e5550d1ac75c5b80161d053fdce085815f6c504ada6861ff17609ad6c9b295",
+      "deliveryAttach": "0xb63d4de2495b3489e1da2a52c9563ebdd12cf2bc87ff5c1d16aabcb4ed164561",
+      "seal": "0x38010887f0cdd630ad8fffa1bee6ac5088c721bc9e60f0fab087a9560f7a58fb",
+      "adjudicate": "0xdb8ea4ed3b0ea3b3ab791740a542b069c392744e9d1690746567ebfa4bb7339d",
+      "courtClose": "0x8cc2abe2827d811f2ddabd2ff062df92618dc6f5725641300719d2cd32fe3983",
+      "courtChildGuard": "0x473233d4f3ec5f867c90ac8f368bfd0565d83ff24049e5448ba36ad82f1e5238",
+      "guardChildBondLock": "0x394ee4015d8f5f6a0861e9c76b13f7964c95f963fce62aae3e6390ff198d183e",
+      "bondChildGuardConfirm": "0xa6f75b5879f617c83bd56a95462ad40200be86a0cc8c4147eee8ad55d192d281",
+      "guardChildVault": "0x46e4a38119c8646084fdabb715bd9d9aec9c98d0e3c88e62aee7b0663baa0e08",
+      "terminal": {"semantic": "allow", "economic": "allow", "amountGen": "1", "recipient": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"},
+      "payment": "0x1d250c550097eb0ce9019725c1edb930efd6bc7f13db878872fb46be89b1c944",
+      "paymentDelivery": {"tx": "0xfe433116a8889fa31036def460396b5814ebb95ceb2f599e3dd78259bf036e3a", "status": "FINALIZED", "valueCredited": true, "result": "NO_MAJORITY"},
+      "vaultBefore": {"treasuryGen": "2", "paidTotalGen": "0"},
+      "vaultAfter": {"treasuryGen": "1", "paidTotalGen": "1", "paid": true}
+    }
+  },
+  "adversarialLocalEvidence": {
+    "command": "python -m pytest -q tests/direct/test_economic_lifecycle.py tests/direct/test_contract_invariants.py",
+    "result": "49 passed",
+    "properties": [
+      "Court cannot bypass Guard to authorize Vault",
+      "single-use evidence replay downgrades economic authorization",
+      "terminal payload retries are idempotent and redeliver downstream",
+      "registration expiry and late challenge results cannot change custody",
+      "unresolved semantic spends reserve rolling capacity",
+      "terminal refusal releases reservation and terminal allow consumes it"
+    ]
+  },
+  "limitations": [
+    "The recipient account was not sampled immediately before payment; the independently observed value-credited child and exact Vault accounting are recorded, but no recipient balance delta is claimed.",
+    "The network does not expose a safe control for dropping a finalized internal child; interrupted-child recovery is proven by direct adversarial tests and idempotent reconciliation rather than forced live message loss.",
+    "Rolling and revocation logic is exact but still scans lifetime maps; bounded indexed rolling accounting is not demonstrated by this source generation.",
+    "Direct EOA bond refunds and rewards are not claimed as independently delivery-confirmed in this packet."
+  ],
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
+}

@@ -97,41 +97,41 @@ Terminal payloads are fingerprinted and idempotent. Court reconciliation can re-
 
 ## Treasury safety
 
-Vault records the recipient and amount from the frozen Guard spend record. `pay(spend_id)` requires a terminal economic `ALLOW`, sufficient treasury, and no prior payment; callers cannot substitute a recipient or amount. The observed payment transferred 0.1 GEN to the recorded recipient, and a duplicate payment finalized with execution error. Threshold recovery remains governed by the Charter rather than an individual owner.
+Vault records the recipient and amount from the frozen Guard spend record. `pay(spend_id)` requires a terminal economic `ALLOW`, sufficient treasury, and no prior payment; callers cannot substitute a recipient or amount. The current packet records a 1 GEN payment, a separate finalized transfer child with `value_credited: true`, and a duplicate-payment rejection in the adversarial suite. Threshold recovery remains governed by the Charter rather than an individual owner.
 
 ## Canonical Studionet deployment
 
-The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the machine-readable deployment and registration-safety packet is [`deploy/proofs/registration-reconciliation-stack-2026-10-10.json`](deploy/proofs/registration-reconciliation-stack-2026-10-10.json). Earlier packets are historical records for superseded source generations.
+The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the machine-readable economic lifecycle packet is [`deploy/proofs/final-economic-lifecycle-2026-10-10.json`](deploy/proofs/final-economic-lifecycle-2026-10-10.json). Earlier packets are historical records for superseded source generations.
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0x7B6f…E6d6](https://explorer-studio.genlayer.com/address/0x7B6f4511920042e11f0A385e863DC6A385AbE6d6) |
-| EvidenceRegistry | [0x9b27…Fa33](https://explorer-studio.genlayer.com/address/0x9b27a5111CbC70A872Fb94e0cdd783cf676bFa33) |
-| StewardCourt | [0x224f…097F](https://explorer-studio.genlayer.com/address/0x224f990bD28F727c3E40d5c156DaCb526b54097F) |
-| StewardBondVault | [0x2088…7E13](https://explorer-studio.genlayer.com/address/0x20885C34a2acc6d4C539c8320b12985081f27E13) |
-| StewardGuard | [0x35BB…96CA](https://explorer-studio.genlayer.com/address/0x35BBC15CBCF7A211e69eBACc894c6183a44E96CA) |
-| StewardVault | [0xB4db…4902](https://explorer-studio.genlayer.com/address/0xB4db405c9aa175061219bb2E650b27a63D544902) |
+| StewardCharter | [0xbEFb…3f3a](https://explorer-studio.genlayer.com/address/0xbEFb58653774C87c46b94CA877EB3CE8C11d3f3a) |
+| EvidenceRegistry | [0x3610…F860](https://explorer-studio.genlayer.com/address/0x3610c029a5b1d1c8447D5243af5547adA2b8F860) |
+| StewardCourt | [0xb6B2…5d85](https://explorer-studio.genlayer.com/address/0xb6B2360943A925c4F8E8938d64681dad9A965d85) |
+| StewardBondVault | [0x9970…9630](https://explorer-studio.genlayer.com/address/0x99701b42632fDd0b60b5B25A009353F8e75C9630) |
+| StewardGuard | [0xC2fd…625f](https://explorer-studio.genlayer.com/address/0xC2fdd19405826Cd73c6dee907d424dE079d3625f) |
+| StewardVault | [0x86ee…F8B7](https://explorer-studio.genlayer.com/address/0x86eeDB18f3f002f1FB1374283BCdb66a6087F8B7) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
 ## Source integrity
 
-The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The current deployment source commit is `611302c520e8d43df97d793e2154b0f15d9f2a5e`.
+The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The current deployment source commit is `90f7c97c1674406e3b4b217e732452ee08167368`.
 
 ```text
 contracts/steward_charter.py     726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-contracts/steward_court.py       c738afa349f4754392bf320e51be8943bf398bb96af1955cdca2699c3107acfe
+contracts/steward_court.py       c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31
 contracts/steward_guard.py       38cb4c9a25e8301ff78c2b5955e9b31ea4ad47bb8a3cf6e6e37ac68a5faf51c5
-contracts/steward_vault.py       d28ab217d79161cdaa235bae12fe8715c89bd716ef30985831605a0211db6bfb
-contracts/steward_bond_vault.py  0f2f8234013906e8d82edc571e5903250645944ca215f670784b0a0488f10686
+contracts/steward_vault.py       e4c4a442435ce81a03afecb9c9c3546c50e5ff1f80599dbebcf23d75b4b67c03
+contracts/steward_bond_vault.py  bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3c1da75fe16c342df6
 ```
 
 ## Observed live proof
 
-The current packet records finalized deployment and threshold binding, the active two-principal mandate, issuer attestations, and a semantic `ALLOW` on the corrected source stack. It also records the adversarial registration-reconciliation tests: an unacknowledged registration can be retried before its deadline, and a refunded registration cannot later produce Guard or Vault consequences. The network does not provide a safe control for deliberately dropping one internal child, so that lost-acknowledgment branch is tested in the deterministic cross-contract harness and is not represented as a forced live observation.
+The current packet records finalized deployment and threshold binding, issuer attestations, a semantic `ALLOW`, deterministic Guard economic enforcement, standing collateral, and a funded Court → Guard → BondVault → Guard → Vault → recipient lifecycle on the corrected source stack. It also records the adversarial registration-reconciliation tests: an unacknowledged registration can be retried before its deadline, and a refunded registration cannot later produce Guard or Vault consequences. The network does not provide a safe control for deliberately dropping one internal child, so that lost-acknowledgment branch is tested in the deterministic cross-contract harness and is not represented as a forced live observation.
 
-The semantic request, attestations, evidence attachments, sealing and adjudication transactions are linked from [`registration-reconciliation-stack-2026-10-10.json`](deploy/proofs/registration-reconciliation-stack-2026-10-10.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
+The semantic request, attestations, evidence attachments, sealing, adjudication, nested finality and payment transactions are linked from [`final-economic-lifecycle-2026-10-10.json`](deploy/proofs/final-economic-lifecycle-2026-10-10.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 
 ## Frontend
 
