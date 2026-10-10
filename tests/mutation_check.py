@@ -82,6 +82,7 @@ MUTANTS = [
     ("vault-bond-credit-replay-guard", "steward_vault.py", 'existing = int(self.challenge_bond_received.get(key, u256(0)))\n        if existing > 0:', 'existing = int(self.challenge_bond_received.get(key, u256(0)))\n        if False:'),
     ("vault-reimbursement-replay-guard", "steward_vault.py", 'existing = int(self.reimbursement_received.get(key, u256(0)))\n        if existing > 0:', 'existing = int(self.reimbursement_received.get(key, u256(0)))\n        if False:'),
     ("bond-settlement-pending-guard", "steward_bond_vault.py", 'if str(self.settlement_delivery.get(key, "")) in ("pending", "retry_pending"):\n            return', 'if False:'),
+    ("bond-settlement-reconcile-no-speculative-retry", "steward_bond_vault.py", 'if delivery_state in ("pending", "retry_pending"):\n            raise gl.vm.UserError("[EXPECTED] settlement delivery is unresolved; child failure cannot be proven on-chain")', 'if False:'),
 ]
 
 
@@ -101,6 +102,10 @@ def main() -> None:
             path.write_text(source.replace(needle, replacement, 1), encoding="utf-8")
             env = os.environ.copy()
             env["STEWARD_MUTANT_CONTRACTS"] = str(mutant_dir)
+            # Mutation checks exercise the static invariant suite only; avoid
+            # loading the network-oriented GenLayer pytest plugin once per
+            # mutant so the complete battery remains reproducible and bounded.
+            env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
             result = subprocess.run(
                 [sys.executable, "-m", "pytest", "-q", "tests/direct/test_contract_invariants.py"],
                 cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,

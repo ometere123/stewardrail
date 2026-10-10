@@ -390,7 +390,7 @@ def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
 
-def test_settled_dismissal_reconciliation_redelivers_lost_vault_credit_once():
+def test_settled_dismissal_reconciliation_never_reemits_while_delivery_is_unresolved():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
     rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
@@ -403,30 +403,90 @@ def test_settled_dismissal_reconciliation_redelivers_lost_vault_credit_once():
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER)
     # Court -> Guard -> Vault -> BondVault are each finalized children.
     flush_one(rt); flush_one(rt); flush_one(rt)
-    # Drop the BondVault -> Vault credit child after BondVault has settled.
+    # BondVault has settled and queued exactly one payable child for the Vault.
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
     before=json.loads(rt.call(VAULT,'status',sender=A))['funded']
     assert before == 0
     bond_before = rt.balances[BOND]
     assert rt.finalized
-    rt.finalized.pop(0)
-    # Ordinary Court reconciliation must not guess that the first child failed.
-    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A)
-    rt.flush_finalized()
+    pending_queue = list(rt.finalized)
+    pending_balances = dict(rt.balances)
+    with pytest.raises(Exception,match='child failure cannot be proven on-chain'):
+        rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
+    with pytest.raises(Exception,match='child failure cannot be proven on-chain'):
+        rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
+    assert rt.finalized == pending_queue
+    assert rt.balances == pending_balances
     assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == 0
-    # A caller that has inspected the missing child can invoke the explicit
-    # delivery recovery. Two simultaneous retries still queue one child.
-    rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
-    rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
-    rt.flush_finalized()
-    after=json.loads(rt.call(VAULT,'status',sender=A))['funded']
-    assert after == quote
-    assert rt.balances[BOND] == bond_before - quote
-    # A second reconciliation is harmless and does not credit the bond twice.
-    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A)
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['settlement_delivery'] == 'pending'
+    # A legacy retry_pending marker is equally unresolved; it is not a
+    # permission to emit another payable message.
+    rt.contracts[BOND].settlement_delivery[0] = 'retry_pending'
+    with pytest.raises(Exception,match='child failure cannot be proven on-chain'):
+        rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
+    assert rt.finalized == pending_queue and rt.balances == pending_balances
+    rt.contracts[BOND].settlement_delivery[0] = 'pending'
+
+    # Delayed success is observed by flushing the original child, not by
+    # sending a second payable child.
     rt.flush_finalized()
     assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == quote
     assert rt.balances[BOND] == bond_before - quote
+    settled_balances = dict(rt.balances)
+    assert rt.call(BOND,'reconcile_settlement_delivery',0,sender=B) is None
+    assert rt.balances == settled_balances
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['settlement_delivery'] == 'delivered'
+
+def test_missing_settlement_child_stays_pending_without_speculative_retry():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[AGENT]=1000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'missing child',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER)
+    flush_one(rt); flush_one(rt); flush_one(rt)
+    assert rt.finalized
+    rt.finalized.pop(0)  # the child is absent; no receiver credit was observed
+    snapshot = (dict(rt.balances), list(rt.transfers), list(rt.finalized))
+    for _ in range(3):
+        with pytest.raises(Exception,match='child failure cannot be proven on-chain'):
+            rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
+        assert (dict(rt.balances), list(rt.transfers), list(rt.finalized)) == snapshot
+    assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == 0
+
+def test_failed_settlement_child_cannot_be_retried_without_protocol_failure_proof():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[AGENT]=1000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'receiver failure',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER)
+    flush_one(rt); flush_one(rt); flush_one(rt)
+    assert rt.finalized
+    original = rt.contracts[VAULT].receive_challenge_bond
+    def fail_receiver(_challenge_id):
+        raise Exception('simulated receiver failure')
+    rt.contracts[VAULT].receive_challenge_bond = fail_receiver
+    try:
+        with pytest.raises(Exception,match='simulated receiver failure'):
+            rt.flush_finalized(limit=1)
+    finally:
+        rt.contracts[VAULT].receive_challenge_bond = original
+    # The stub rolls back the failed call, but the contract still has no
+    # authoritative proof that a GenLayer-held message value is recoverable.
+    before = (dict(rt.balances), list(rt.transfers), list(rt.finalized))
+    for _ in range(2):
+        with pytest.raises(Exception,match='child failure cannot be proven on-chain'):
+            rt.call(BOND,'reconcile_settlement_delivery',0,sender=B)
+        assert (dict(rt.balances), list(rt.transfers), list(rt.finalized)) == before
 
 def test_settled_upheld_reconciliation_does_not_reimburse_twice():
     rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)

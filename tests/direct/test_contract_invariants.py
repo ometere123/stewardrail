@@ -115,6 +115,8 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'def reconcile_settlement_delivery' in src
     assert 'settlement_delivery' in src
     assert 'in ("pending", "retry_pending")' in src
+    assert 'child failure cannot be proven on-chain' in src
+    assert 'def settlement_delivery_state' in src
     assert 'challenge_bond_credit' in text("steward_vault.py")
     assert 'reimbursement_credit' in text("steward_vault.py")
     assert 'if result == "dismissed":' in src

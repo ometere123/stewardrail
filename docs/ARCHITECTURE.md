@@ -83,6 +83,19 @@ Guard also supports optional recipient-scoped rolling limits. The aggregation ke
 
 The vault pays an exact recipient and exact amount once. A terminal refusal is never payable. No agent withdrawal exists. Treasury recovery is available only after the charter threshold approves the exact vault, destination, amount and recovery nonce.
 
+Bond settlement delivery is also one-shot. BondVault emits a finalized payable
+message to Vault and records the delivery as pending before the child runs. The
+contract can mark that delivery complete only after Vault reports the exact
+challenge credit. A zero credit does not prove that the child failed: GenLayer
+holds value attached to an internal message independently of receiver storage,
+and contract code does not currently receive an authoritative child receipt or
+message-value recovery signal. `reconcile_settlement_delivery` therefore never
+re-emits value based on a timeout, a caller assertion, or a zero readback. It
+either confirms the exact existing credit or leaves the delivery unresolved.
+This deliberately favors preventing duplicate GEN movement over speculative
+retries; an unresolved child requires protocol/tooling-level investigation
+before a safe recovery primitive can be added.
+
 ## 10. Deployment order
 
 1. `StewardCharter`
