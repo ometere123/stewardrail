@@ -47,18 +47,29 @@
     "contracts/steward_bond_vault.py": "bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3c1da75fe16c342df6"
   },
   "liveFunding": {
-    "standingDeposit": {"tx": "not-yet-repeated-on-current-stack", "amount": "0", "status": "NOT_OBSERVED"},
-    "treasuryFund": {"tx": "not-yet-repeated-on-current-stack", "amount": "0", "status": "NOT_OBSERVED"}
+    "standingDeposit": {"tx": "0x9b5466fa5805cd91b86fb272f892ccb1befd5d33053ff9adf419523122d977fa", "amount": "2000000000000000000", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true},
+    "treasuryFund": {"tx": "0x475bad4b162a5ce05ec1ffb48d938c9be6f191a80b9cbdb0e95c6d02e1942926", "amount": "2000000000000000000", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true}
   },
   "readbacks": {
     "charter": {"version": 1, "threshold": 2, "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
-    "bondVault": {"standing": "0", "locked": "0", "challengeCount": 0},
-    "vault": {"treasury": "0", "funded": "0", "paidTotal": "0"},
-    "currentStackEconomicLifecycle": "NOT_YET_REPEATED_AFTER_SOURCE_FREEZE"
+    "bondVault": {"standing": "6000000000000000000", "locked": "1000000000000000000", "challengeCount": 0},
+    "vault": {"treasury": "1000000000000000000", "funded": "2000000000000000000", "paidTotal": "1000000000000000000"},
+    "currentStackEconomicLifecycle": "OBSERVED_FUNDED_SEMANTIC_ALLOW_AND_EXACT_PAYOUT"
   },
-  "liveLifecycle": {"currentStack": "NOT_YET_REPEATED_AFTER_SOURCE_FREEZE"},
+  "liveLifecycle": {
+    "currentStack": "OBSERVED_FUNDED_SEMANTIC_ALLOW_AND_EXACT_PAYOUT",
+    "spendId": 0,
+    "courtClose": "0xa6881811e618129ce34417d3e940c628bf4074a415ea9bd03b6ceb2fb8410bff",
+    "guardTerminal": "0x78cc7364a480b1796a967edd5613e1aa4875984c75f8cbcbdcbd3cff907be0fd",
+    "bondVaultLock": "0xda18ed1fd0ce17410aba91a49a50a97ffdd45cd18f8f472a093dc181b2c385d7",
+    "bondVaultConfirmation": "0x6b76b6fc2b9dd932bceab2cbb0338da8450df6ace6931605aaba1466b517d00e",
+    "vaultTerminal": "0x401d7c78cc93a068cb93f6d40bc12f0a6b13bbdbaf360ed96fde5121b179a790",
+    "payout": "0xdfae7661e87e25126a16952d11ac4a7e255f3f2bfdb0f48a250e8c7e4d60dd68",
+    "transferChild": "0x9c77fe074f52a675005277f9d29add4dcc077254854deb1fbd314e79c225c744",
+    "duplicatePayout": "0x14a3bf09d8523a955965b4b199683a7de0762ee64a1bf85762b537d63b0b3466"
+  },
   "limitations": [
-    "The current source generation was deployed fresh; the previous economic lifecycle packet remains historical and is not relabeled as proof for these addresses.",
+    "The current source generation was deployed fresh and now includes a funded semantic ALLOW, finalized Court-to-Guard-to-BondVault-to-Vault authorization, value-credited payout child, and duplicate-payment rejection.",
     "A forced live internal-child loss is not safely inducible on Studionet; retry and expiry behavior is covered by deterministic cross-contract tests.",
     "Active rolling exposure reads use bounded indexes; docket and eligible-revocation readbacks remain historical-map scans and are tracked as a scalability limitation."
   ]

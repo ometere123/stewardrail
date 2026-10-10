@@ -1,6 +1,6 @@
 {
   "packet": "stewardrail-final-source-stack",
-  "status": "deployment_and_adversarial_verification",
+  "status": "deployment_adversarial_and_funded_economic_verification",
   "observedAt": "2026-10-10",
   "sourceCommit": "57fc43cd1c0438e4aaf071822b546509473d8c26",
   "network": "Studionet",
@@ -45,6 +45,80 @@
     "guardBindings": {"charter": "0x5daf7d7351115a28f279e6f0610d362d40c1f0c6", "registry": "0x87d7bd3d6038ffb69fd39b20950e392650c37107", "court": "0xb29ad5acaf20b2187e2b4e50a71450b6f95f2fb6", "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
     "vaultBindings": {"charter": "0x5daf7d7351115a28f279e6f0610d362d40c1f0c6", "guard": "0xea838677a8c0c3a955722846be490fdc90583ad8", "court": "0xb29ad5acaf20b2187e2b4e50a71450b6f95f2fb6", "bondVault": "0x26b7714e00279ca83dc78466be25798e54d05675"}
   },
+  "fundedEconomicLifecycle": {
+    "spendId": 0,
+    "request": {
+      "transactions": {
+        "request": "0xce1d8dd3cc1fb43fd0295b25d928ba6886dac30027dc44322425a39ed646508d",
+        "vendorEvidence": "0x7ba58ea5e4e24b4f283a13d0310dfb8c746bd9a916e2b9fa9b7ec8603625388e",
+        "deliveryEvidence": "0x359e78f43b3be4f6cc3d1b00591f538e82c31dd228a09a6565aee059e71e3928",
+        "seal": "0x0825a94181c623505328ae478b24880c769deee6332c36046b6de59a104ac9f4",
+        "adjudicate": "0x24b8bbc4d379a24e1a597721ec1f669d62c2f17e61fe538bc086d2e553b8e37d"
+      },
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "semantic": "ALLOW",
+      "amount": "1000000000000000000",
+      "recipient": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+      "evidenceRoles": ["vendor", "delivery"]
+    },
+    "standingDeposit": {
+      "transaction": "0x9b5466fa5805cd91b86fb272f892ccb1befd5d33053ff9adf419523122d977fa",
+      "amount": "2000000000000000000",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "valueCredited": true
+    },
+    "treasuryFunding": {
+      "transaction": "0x475bad4b162a5ce05ec1ffb48d938c9be6f191a80b9cbdb0e95c6d02e1942926",
+      "amount": "2000000000000000000",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "valueCredited": true
+    },
+    "courtGuardBondVaultVault": {
+      "courtClose": "0xa6881811e618129ce34417d3e940c628bf4074a415ea9bd03b6ceb2fb8410bff",
+      "guardTerminal": "0x78cc7364a480b1796a967edd5613e1aa4875984c75f8cbcbdcbd3cff907be0fd",
+      "bondVaultLock": "0xda18ed1fd0ce17410aba91a49a50a97ffdd45cd18f8f472a093dc181b2c385d7",
+      "bondVaultConfirmation": "0x6b76b6fc2b9dd932bceab2cbb0338da8450df6ace6931605aaba1466b517d00e",
+      "vaultTerminal": "0x401d7c78cc93a068cb93f6d40bc12f0a6b13bbdbaf360ed96fde5121b179a790",
+      "allStatus": "FINALIZED",
+      "allExecution": "SUCCESS",
+      "economicDecision": "ALLOW"
+    },
+    "payout": {
+      "transaction": "0xdfae7661e87e25126a16952d11ac4a7e255f3f2bfdb0f48a250e8c7e4d60dd68",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "transferChild": "0x9c77fe074f52a675005277f9d29add4dcc077254854deb1fbd314e79c225c744",
+      "transferStatus": "FINALIZED",
+      "transferValue": "1000000000000000000",
+      "transferValueCredited": true,
+      "vaultTreasuryBefore": "2000000000000000000",
+      "vaultTreasuryAfter": "1000000000000000000",
+      "paidTotalAfter": "1000000000000000000",
+      "recipient": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+      "recipientBalanceBefore": "NOT_CAPTURED",
+      "recipientBalanceAfter": "NOT_CAPTURED"
+    },
+    "duplicatePayout": {
+      "transaction": "0x14a3bf09d8523a955965b4b199683a7de0762ee64a1bf85762b537d63b0b3466",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "ERROR",
+      "reason": "[EXPECTED] spend already paid"
+    },
+    "readbacksAfter": {
+      "guard": {"terminalSemantic": "allow", "terminalEconomic": "allow", "terminalState": "allow", "terminalReason": "semantic terminal decision accepted"},
+      "bondVault": {"standing": "6000000000000000000", "locked": "1000000000000000000"},
+      "vault": {"treasury": "1000000000000000000", "funded": "2000000000000000000", "paidTotal": "1000000000000000000", "paid": true}
+    },
+    "invariant": "Only a Guard-finalized economic ALLOW reached Vault; the finalized value-credit child delivered exactly 1 GEN and a second pay finalized with the expected duplicate-payment error."
+  },
   "localVerification": {
     "python": "91 passed, 7 skipped (official Direct Mode run separately)",
     "mutation": "69/69 killed",
@@ -60,14 +134,14 @@
   },
   "liveStatus": {
     "freshDeployment": "observed and finalized with successful execution for all six contracts",
-    "currentStackFundedEconomicLifecycle": "not repeated after the indexed-exposure source freeze",
+    "currentStackFundedEconomicLifecycle": "observed: semantic ALLOW, Court-to-Guard-to-BondVault-to-Vault finalization, funded payout and duplicate-payment rejection",
     "forcedInternalChildLoss": "not safely inducible on Studionet",
-    "recipientBalanceDelta": "not claimed for this source generation"
+    "recipientBalanceDelta": "not captured before payout; transfer child value_credited=true is recorded"
   },
   "limitations": [
     "A forced live internal-child loss is not safely inducible on the active network; deterministic retry/expiry tests cover the recovery rules.",
     "Active rolling exposure queries use bounded indexes; docket and eligible-revocation readbacks remain historical-map scans.",
-    "The prior economic lifecycle packet is historical and is not evidence for this current address set."
+    "The prior economic lifecycle packet remains historical; this packet now contains the current source-generation funded ALLOW and payout evidence."
   ],
   "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
 }

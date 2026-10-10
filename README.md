@@ -109,7 +109,7 @@ The current source-matched stack is recorded in [`deploy/deployments.json`](depl
 | EvidenceRegistry | [0x87D7…7107](https://explorer-studio.genlayer.com/address/0x87D7bD3d6038FFB69fD39b20950E392650C37107) |
 | StewardCourt | [0xb29A…2fB6](https://explorer-studio.genlayer.com/address/0xb29AD5AcAF20B2187e2B4E50A71450b6F95f2fB6) |
 | StewardBondVault | [0x26b7…5675](https://explorer-studio.genlayer.com/address/0x26b7714E00279cA83Dc78466bE25798e54d05675) |
-| StewardGuard | [0xeA83…83AD](https://explorer-studio.genlayer.com/address/0xeA838677a8C0c3A955722846be490FDc90583AD) |
+| StewardGuard | [0xeA83…AD8](https://explorer-studio.genlayer.com/address/0xeA838677a8C0c3A955722846be490FDc90583AD8) |
 | StewardVault | [0xFF6F…fd00](https://explorer-studio.genlayer.com/address/0xFF6FcE9432bC416130de3C26b5b0f507880aFd00) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
@@ -129,7 +129,7 @@ contracts/steward_bond_vault.py  bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3
 
 ## Observed live proof
 
-The current packet records the fresh six-contract deployment, threshold binding, source hashes, and the current source-generation readbacks. The registration-reconciliation behavior is covered by adversarial tests: an unacknowledged registration can be retried before its deadline, and a refunded registration cannot later produce Guard or Vault consequences. The network does not provide a safe control for deliberately dropping one internal child, so that lost-acknowledgment branch is not represented as a forced live observation.
+The current packet records the fresh six-contract deployment, threshold binding, source hashes, and a funded current-source economic lifecycle. Spend `0` reached semantic `ALLOW`, then finalized through Court → Guard → BondVault lock/confirmation → Vault. A 2 GEN treasury fund and 1 GEN payout finalized successfully; the payout's native transfer child reports `value_credited: true`, and a duplicate payment finalized with the expected error. The registration-reconciliation behavior is covered by adversarial tests: an unacknowledged registration can be retried before its deadline, and a refunded registration cannot later produce Guard or Vault consequences. The network does not provide a safe control for deliberately dropping one internal child, so that lost-acknowledgment branch is not represented as a forced live observation.
 
 The current source/deployment record is linked from [`final-source-stack-2026-10-10.json`](deploy/proofs/final-source-stack-2026-10-10.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 
