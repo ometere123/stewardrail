@@ -1,15 +1,13 @@
 # Live proof index
 
-The canonical fresh packet is
-[`deploy/proofs/final-fresh-studionet-2026-10-10.json`](../deploy/proofs/final-fresh-studionet-2026-10-10.json).
-It records the six-contract Studionet deployment, threshold binding, authenticated
-evidence, Court → Guard → Vault terminal delivery, payout observation and duplicate
-payout rejection.
+The current machine-readable packet is
+[`deploy/proofs/validator-correction-fresh-stack-2026-10-10.json`](../deploy/proofs/validator-correction-fresh-stack-2026-10-10.json).
 
-The packet distinguishes `FINALIZED` protocol execution from EOA value-transfer
-delivery. The observed payout and recovery children reported `value_credited=true`
-and `NO_MAJORITY`, so those transfers are not described as consensus-confirmed.
-Scenarios not listed as observed in the packet remain unclaimed, including fresh
-semantic ALLOW consensus, reversal, replay, challenge settlement and threshold
-recovery on this source stack. Earlier packets
-are retained with an explicit `historical-superseded` status.
+It records the corrected six-contract Studionet stack, source hashes, deployment
+transactions, threshold mandate activation, BondVault binding, authenticated
+issuer attestations, and two fresh semantic cases. The REFUSE and ALLOW
+adjudications each reached `MAJORITY_AGREE`, `FINALIZED`, and produced a
+finalized Court child with matching readback.
+
+Historical packets remain in `deploy/proofs/` with explicit historical status.
+They are not substituted for the current deployment evidence.

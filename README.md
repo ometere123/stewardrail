@@ -1,50 +1,48 @@
 # StewardRail
 
-StewardRail is a shared-treasury control system for autonomous agents. Multiple principals approve an immutable mandate, external issuers attest evidence, GenLayer validators answer bounded semantic questions, and deterministic policy decides whether a finalized result may authorize custody.
+StewardRail is a shared-treasury control system for autonomous agents. Multiple principals approve an immutable mandate, authorized issuers attest external evidence, GenLayer validators resolve bounded semantic questions, and deterministic policy controls whether a finalized result may authorize custody.
 
-## What it does
+## What StewardRail is
 
-Some treasury rules are mechanical: an amount cap, a rolling exposure limit, or a recipient allow-list. Other questions require interpretation: does an independently retrieved artifact describe the deliverable required by the mandate? StewardRail keeps those concerns separate. Deterministic checks run first; only the bounded semantic question crosses the GenLayer boundary.
+Shared treasuries often combine mechanical rules with questions that require interpretation. A per-spend cap and a rolling exposure limit are deterministic. Whether an authenticated deliverable satisfies a jointly approved brief is a semantic judgment. StewardRail keeps those decisions separate: deterministic screening happens first, and only the bounded semantic residue is sent to GenLayer.
 
-The result is not controlled by one owner. A mandate is activated by a principal threshold, evidence is tied to an authorized issuer and exact digest, and no principal has a per-spend semantic override.
+No single principal can unilaterally change a semantic result or withdraw the treasury. A mandate is activated by threshold approval, evidence is bound to an issuer and digest, and custody follows a finalized Court → Guard → Vault chain.
 
 ## Trust model
 
-- **Principals** approve identical canonical mandate JSON. Historical versions are immutable and each spend records the version used at request time.
-- **Agent** submits requests but cannot amend a mandate, adjudicate a semantic case, or withdraw treasury value.
-- **Evidence issuers** attest a role, URI and SHA-256 digest for a charter. The registry records issuer authorization and historical validity.
-- **StewardCharter** stores principals, thresholds, immutable mandate versions and threshold recovery approvals.
-- **EvidenceRegistry** authenticates issuer attestations and their historical status.
-- **StewardGuard** performs deterministic screening, bounded semantic adjudication, evidence completeness checks, exposure accounting and terminal economic authorization.
-- **StewardCourt** records the primary semantic result and one application appeal without custody authority.
+- **Principals** approve identical canonical mandate JSON. Activated mandate versions are immutable and each spend records the version used at request time.
+- **Agent** submits requests and evidence but cannot amend a mandate, adjudicate a semantic case, or withdraw treasury value.
+- **Evidence issuers** attest a role, URI and SHA-256 digest. The registry records the issuer identity and historical validity.
+- **StewardCharter** stores principals, threshold, immutable mandate versions and threshold recovery/unfreeze approvals.
+- **EvidenceRegistry** authenticates issuer attestations and supports historical status checks.
+- **StewardGuard** performs deterministic screening, evidence checks, semantic adjudication, exposure accounting and terminal economic authorization.
+- **StewardCourt** records primary results and application appeals. It never pays the treasury directly.
 - **StewardVault** holds treasury value and accepts terminal economic decisions only from the configured Guard.
-- **StewardBondVault** holds agent standing and challenge bonds; it settles finalized challenge outcomes but does not adjudicate semantics.
+- **StewardBondVault** holds agent standing and challenge bonds and settles finalized challenge outcomes without adjudicating semantics.
 
-Court cannot pay the treasury directly. The custody path is always:
+The custody authority path is:
 
 ```text
-Court (finalized semantic result)
+Court finalized semantic result
         ↓
-Guard (final deterministic economic authorization)
+Guard finalized economic authorization
         ↓
-Vault (custody and exact payout)
+Vault custody and exact payout
 ```
 
 ## Decision lifecycle
 
-Deterministic refusals are resolved without a jury. A semantic request follows:
+Deterministic refusals do not require semantic consensus. A semantic request follows:
 
 ```text
 request → HELD → evidence attachment/sealing → validator adjudication
-        → Court result → application appeal window
+        → Court primary result → application appeal window
         → Guard terminal economic result → Vault authorization → payment
 ```
 
-The protocol exposes separate fields for primary semantic result, Court effective semantic result, Guard terminal economic result and reason, and Vault terminal/payment state.
+The protocol exposes distinct fields for the primary semantic result, Court effective result, Guard terminal economic result and reason, and Vault payment state. A semantic result that reaches `FINALIZED` with `MAJORITY_DISAGREE` is not accepted; it remains unresolved.
 
-An unresolved semantic spend reserves exposure while it remains appealable. Terminal ALLOW remains counted; terminal REFUSE releases the reservation. Optional recipient-scoped rolling policy derives its key from the canonical recipient address, never from an agent-supplied grouping value.
-
-Mandate semantic rules can record an observe-only breach, refuse the current spend, freeze new agent requests, or revoke eligible unpaid authorizations. Freeze clearing and treasury recovery require threshold-approved actions. Already-paid history is not rewritten.
+Unresolved semantic spends reserve rolling exposure while an appeal remains possible. Terminal `ALLOW` remains counted and terminal `REFUSE` releases the reservation. Observe-only, refuse, freeze, revoke and clawback consequences are frozen into the approved mandate version.
 
 ## Evidence provenance
 
@@ -54,61 +52,60 @@ An evidence identity is bound to:
 charter | issuer wallet | role | URI | SHA-256 digest
 ```
 
-The mandate also fixes the HTTPS origin and usage policy. Validators treat fetched pages, manifests and comments as untrusted data; source text cannot change protocol instructions or the output schema. Evidence must have been attested and historically valid no later than the spend request time. An appeal statement is an argument, not a substitute for a missing authenticated role.
+The mandate fixes the allowed HTTPS origin and whether a role is `single_use` or `reusable`. Evidence must have been attested and historically valid no later than the spend request time. Validators treat fetched pages, manifests and comments as untrusted data; source text cannot change protocol instructions or the output schema. An appeal statement is an argument, not a replacement for an authenticated role.
 
-`single_use` evidence is consumed only when Guard records a terminal economic ALLOW. Reusable evidence may be used again where the frozen mandate permits it. Terminal REFUSE does not consume a single-use artifact.
+`single_use` evidence is consumed only when Guard records a terminal economic `ALLOW`. Reusable evidence can be used again where the frozen mandate permits it. A terminal `REFUSE` does not consume a single-use artifact.
 
-## Finalized messages and reconciliation
+## Finalized internal messages and reconciliation
 
-Irreversible authority messages use finalized internal transactions. A Court terminal record emits to Guard; a finalized Guard authorization then emits to Vault. Guard and Vault terminal records are idempotent and carry a full payload fingerprint, so a reconciliation call can re-deliver an identical missing child without changing the decision or consuming evidence twice.
+Irreversible authority messages use `on="finalized"`. Court emits only to Guard. After Guard applies the deterministic terminal checks, Guard emits the exact economic decision to Vault. Terminal records use full payload fingerprints and are idempotent, so reconciliation can re-deliver an identical missing child without changing the decision or consuming evidence twice.
 
 ## Canonical Studionet deployment
 
-The current six-contract stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the machine-readable lifecycle packet is [`deploy/proofs/final-fresh-studionet-2026-10-10.json`](deploy/proofs/final-fresh-studionet-2026-10-10.json). Deployment and binding transactions in that record were observed as `FINALIZED` with successful leader execution.
+The current six-contract stack is recorded in [`deploy/deployments.json`](deploy/deployments.json). The fresh semantic evidence packet is [`deploy/proofs/validator-correction-fresh-stack-2026-10-10.json`](deploy/proofs/validator-correction-fresh-stack-2026-10-10.json).
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0x66D2…0695](https://explorer-studio.genlayer.com/address/0x66D2b55b53A7464d09E2B9666d257B56CB830695) |
-| EvidenceRegistry | [0x8551…988F](https://explorer-studio.genlayer.com/address/0x8551DdEE20bD83372A69a7781E64c905d31c988F) |
-| StewardCourt | [0x16FA…C50c](https://explorer-studio.genlayer.com/address/0x16FA4B83541194F989c255925eBEa74243DbC50c) |
-| StewardBondVault | [0xB944…9Ec3C](https://explorer-studio.genlayer.com/address/0xB944998aBf5D5ee533cE5318DAA7AC0e75D9Ec3C) |
-| StewardGuard | [0x5636…75B9](https://explorer-studio.genlayer.com/address/0x563647674D14E7e040210B22e7549e2647AB75B9) |
-| StewardVault | [0x49aC…6E15](https://explorer-studio.genlayer.com/address/0x49aC65C93C0BDaBaF5aF8e0DD1a6b98ea34E6E15) |
+| StewardCharter | [0x442F…C1aa](https://explorer-studio.genlayer.com/address/0x442F7d7d3ad82944110504560B731DC6b6aaC1aa) |
+| EvidenceRegistry | [0x634C…Fa89](https://explorer-studio.genlayer.com/address/0x634Cc7b736167984adD0D0efF68d5aA351afFa89) |
+| StewardCourt | [0x9D4f…b7AD](https://explorer-studio.genlayer.com/address/0x9D4fe9Ab3da9d6054944eE68985C7B60e31db7AD) |
+| StewardBondVault | [0x4BD6…a380](https://explorer-studio.genlayer.com/address/0x4BD6531119BbbDFAD565e59fC11BBCb08fFCa380) |
+| StewardGuard | [0xfc1A…a600](https://explorer-studio.genlayer.com/address/0xfc1A9F98957333e602d8f1f71987Cd039543a600) |
+| StewardVault | [0x7C61…eA4A](https://explorer-studio.genlayer.com/address/0x7C61c83cD880838D8Aa148370Ac734aAb85deA4A) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
 ## Observed live evidence
 
-The current packet is deliberately explicit about what was and was not observed on this source stack:
+The current packet records only observations from the corrected source stack:
 
 | Scenario | Observation |
 | --- | --- |
-| Two-principal mandate and threshold BondVault binding | Finalized approvals and binding read back on the canonical stack. |
-| Distinct issuer attestations | Vendor and delivery roles were attested by separate configured accounts for the same URI and digest. |
-| Semantic REFUSE | Court recorded REFUSE, Guard recorded terminal economic REFUSE, and Vault recorded REFUSE without payment through finalized children. |
-| Deterministic ALLOW | Guard and Court ALLOW reached Guard lock/confirmation and Vault terminal recording through finalized children; a subsequent payment was recorded. |
-| Duplicate payout | A second `pay` finalized with the expected execution error. |
-| Value transfer classification | Studionet reported `value_credited=true`, but the EOA transfer child returned `NO_MAJORITY`; the packet does not call that an independently consensus-confirmed delivery. |
-| Semantic ALLOW consensus, fresh reversals, replay, rolling reversal, challenge settlement and recovery | Not observed in this packet; no claim is made for them. |
+| Threshold mandate activation | Two distinct principal approvals activated mandate version 1. |
+| BondVault binding | Two principal approvals were followed by finalized binding to the deployed Guard and Vault. |
+| Authenticated evidence | Separate vendor and delivery issuers attested the exact URI and digest for each semantic case. |
+| Semantic REFUSE | Spend 0 reached `MAJORITY_AGREE` and `FINALIZED`; Guard and Court read back `refuse`, with a finalized Court child. |
+| Semantic ALLOW | Spend 1 reached `MAJORITY_AGREE` and `FINALIZED`; Guard and Court read back `allow`, with a finalized Court child. |
+| Ambiguous/undetermined behavior | Earlier historical attempts with validator disagreement remain labeled historical and were not treated as acceptance. |
 
-Historical packets under `deploy/proofs/` are retained with `historical-superseded` status and are not the current deployment evidence.
+The packet records leader execution and protocol consensus separately. Validator entries canceled after quorum are not silently relabeled as successful execution.
 
 ## Source integrity
 
-The five core contracts plus BondVault use one readable source file each. The same files are tested, linted, mutation-tested and supplied to deployment. The exact SHA-256 values in the current manifest are:
+The six readable contract files are the exact files used for tests, lint, mutation checks and deployment. No generated or minified deployment copy exists.
 
 ```text
 contracts/steward_charter.py     726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-contracts/steward_court.py       424ae88d563b587dd6569df2035e533d44c206672b152c2889ac30c38b743e32
-contracts/steward_guard.py       216b1452c3ce67e485af4fb574bfac9cdd2e09916e66ab8677048de27dbe652d
+contracts/steward_court.py       7b264012c84f78fc76fe1aea2f68cd302de669677bbf8c66e84bbafdf358131a
+contracts/steward_guard.py       3922a08083d2fc8dfb9daaab25e3e17c9ecaf813c83207a9c7f40431c93bc601
 contracts/steward_vault.py       2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088
 contracts/steward_bond_vault.py  1cc62373f3be8d918cfa97fff6ebf61df0b02c80440a30ca9189d17d905dc0a4
 ```
 
 ## Frontend
 
-The application is available at [stewardrail.vercel.app](https://stewardrail.vercel.app). It uses an injected EIP-1193 wallet, hard-blocks writes away from Studionet 61999, preserves a deliberate app-level disconnect, shows GEN amounts with exact 18-decimal conversion, and tracks parent/child transaction finality. Deployment addresses and network values are supplied through public environment variables rather than frontend source constants.
+The application is available at [stewardrail.vercel.app](https://stewardrail.vercel.app). It uses an injected EIP-1193 wallet, hard-blocks writes away from Studionet 61999, preserves deliberate disconnect, converts native amounts exactly to GEN, and tracks parent/child transaction finality. Deployment addresses and network values come from public environment variables rather than frontend source constants.
 
 Routes include `/workspace`, `/charters/new`, `/charters/[address]`, `/spends/new`, `/spends/[id]`, `/evidence`, `/court`, `/vault`, `/verify` and `/docs`.
 
@@ -130,23 +127,23 @@ npm run typecheck
 npm run build
 ```
 
-Use `npm exec -- genlayer ...` for repository-local CLI commands. The frontend requires the public `NEXT_PUBLIC_*` deployment variables; local development uses an ignored `frontend/.env.local`, while CI and Vercel use their environment configuration.
+Use `npm exec -- genlayer ...` for repository-local CLI commands. Local frontend configuration belongs in the ignored `frontend/.env.local`; CI and Vercel use their own public environment configuration.
 
 ## Repository map
 
 ```text
 contracts/   exact deployable Intelligent Contract sources
-reference/   deterministic policy and appeal model
+reference/   deterministic policy and public semantic fixtures
 frontend/    Next.js App Router application
 tests/       deterministic, adversarial and Direct Mode coverage
-scripts/     manifest, preflight, mutation and live tooling
+scripts/     manifest, preflight, mutation and validation tooling
 deploy/      deployment records and machine-readable proof packets
 docs/        architecture, threat model, deployment and live-evidence notes
 ```
 
 ## Limitations
 
-Validator consensus and external web availability affect semantic cases. An authorized issuer proves which bytes were attested, not that the issuer is truthful. A transfer child can report value credit while lacking an independent consensus-success classification on Studionet; the packet records that distinction. Studionet is a test network and live observations are limited to the scenarios explicitly listed in the current packet.
+Validator consensus and external web availability affect semantic cases. An authorized issuer proves which bytes were attested, not that the issuer is truthful. Studionet is a test network. The fresh packet proves accepted semantic primary outcomes and Court delivery; it does not claim that every broader economic lifecycle or every value-transfer child has been independently observed on this source stack.
 
 ## License
 

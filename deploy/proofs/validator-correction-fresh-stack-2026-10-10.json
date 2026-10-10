@@ -1,0 +1,86 @@
+{
+  "packet": "stewardrail-validator-correction-fresh-stack",
+  "status": "observed",
+  "timestamp": "2026-10-10T07:00:00Z",
+  "sourceCommit": "ea655f888e4e6aeab64619217a5bbec2ea45427a",
+  "repositoryCommit": "973fc46dbed117cdf5caec53e6b3d9546d3780b3",
+  "network": "studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "sourceSha256": {
+    "contracts/steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "7b264012c84f78fc76fe1aea2f68cd302de669677bbf8c66e84bbafdf358131a",
+    "contracts/steward_guard.py": "3922a08083d2fc8dfb9daaab25e3e17c9ecaf813c83207a9c7f40431c93bc601",
+    "contracts/steward_vault.py": "2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088",
+    "contracts/steward_bond_vault.py": "1cc62373f3be8d918cfa97fff6ebf61df0b02c80440a30ca9189d17d905dc0a4"
+  },
+  "addresses": {
+    "charter": "0x442F7d7d3ad82944110504560B731DC6b6aaC1aa",
+    "registry": "0x634Cc7b736167984adD0D0efF68d5aA351afFa89",
+    "court": "0x9D4fe9Ab3da9d6054944eE68985C7B60e31db7AD",
+    "bondVault": "0x4BD6531119BbbDFAD565e59fC11BBCb08fFCa380",
+    "guard": "0xfc1A9F98957333e602d8f1f71987Cd039543a600",
+    "vault": "0x7C61c83cD880838D8Aa148370Ac734aAb85deA4A"
+  },
+  "actors": {
+    "principalA": "0x21892bba93381d94037fb4aab01cafbdf4453b56",
+    "principalB": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "agent": "0x24fae7cd031ed702be63bdea8912141805b996bd",
+    "vendorIssuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "deliveryIssuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468"
+  },
+  "deployment": {
+    "contracts": {
+      "StewardCharter": {"tx": "0xe96b1129081cf4dc35df9d3b15781dc8b07353b977ffe7f562672c0e0ca2cb4f", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "leaderExecution": "SUCCESS", "address": "0x442F7d7d3ad82944110504560B731DC6b6aaC1aa"},
+      "EvidenceRegistry": {"tx": "0x3d3cf941e69d93a1dcce6aa713dc317bdf291877dc0e588260c7e23407621705", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "leaderExecution": "SUCCESS", "address": "0x634Cc7b736167984adD0D0efF68d5aA351afFa89"},
+      "StewardCourt": {"tx": "0xd3743e5783df0b4a81fb3987cb4f4338cc14c0fc6360ece6b923ee7446f0a04b", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "leaderExecution": "SUCCESS", "address": "0x9D4fe9Ab3da9d6054944eE68985C7B60e31db7AD"},
+      "StewardBondVault": {"tx": "0x5fcb1a2a690b9c1af0e7ea4e592a95b45f11b3a45295248224a456cabab03811", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "leaderExecution": "SUCCESS", "address": "0x4BD6531119BbbDFAD565e59fC11BBCb08fFCa380"},
+      "StewardGuard": {"tx": "0x6ece63efa2abd387f05d923d05cc5a4a885749eb7701680b21a8daa7a63f913e", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "leaderExecution": "SUCCESS", "address": "0xfc1A9F98957333e602d8f1f71987Cd039543a600"},
+      "StewardVault": {"tx": "0x1723bf692d9c9eb69faa35e609c9736752f623be7ac534e240cf370e5b7a130c", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "leaderExecution": "SUCCESS", "address": "0x7C61c83cD880838D8Aa148370Ac734aAb85deA4A"}
+    },
+    "mandateActivation": [
+      "0xb70b46ca8e9aa175fa27bc0147f22d0d6b738ce6969a69d0e5cb11013ffb53d4",
+      "0xd10efa6a0ca987c6d8ab7ad314a212fa808652e98ad0ac8844aa84b0f9261e2d"
+    ],
+    "bondBinding": [
+      "0x3f5494247c7c48e8d5855c87b388d16a2b19f36eecf56910097c13f57ca7f71c",
+      "0x3d0e254a9cca9a8a594755ede7dd92024f2690917ed402250d13facbf509561d",
+      "0x80b217a6364efb41ef1f030683b7ea45c9e7c9a2158d9bf2f9d938c16968a979"
+    ],
+    "bindingReadback": "BondVault bound to the deployed Guard and Vault after two principal approvals."
+  },
+  "evidence": {
+    "refuseArtifact": {"uri": "https://raw.githubusercontent.com/ometere123/stewardrail/5661753cb18e7e665d8083a4068e03cde3b0e97c/README.md", "sha256": "6896afd6e78e3d8fdc56db2190b7ec3a0e82f92ff1b82bba540f6cc4a6e76087", "attestations": ["0x27638274a7ff872d8b41bcfd1e3fc71db47a76a5287c9e65ab6d26ad21cc88a3", "0x7ab255f0a04c64ef1275e51e1a3352f9ed3bf4fe7e3eabf55b2bc0f0ae63d827"]},
+    "allowArtifact": {"uri": "https://raw.githubusercontent.com/ometere123/stewardrail/973fc46/reference/live-semantic-allow.txt", "sha256": "7211b94f61a9a193dae3de166d900bfe91e967130155dd7f9084c4652efd9c98", "attestations": ["0xf16eecbbf85fd00ac3ebae36e76b3d564c7f9cca7668e6c2f6f6a5111747a268", "0xe8c7c2fded0523c54a1bdc96b0bfcd67e4e4786529fc522ed60261ad75ecccd0"]}
+  },
+  "semanticCases": [
+    {
+      "id": "semantic-refuse-authenticated-evidence",
+      "spendId": 0,
+      "request": "0xc69be67e3221440dc7f946ec841be2bb4b4102031ea7ab802f3d60fc98d7f6a6",
+      "evidence": ["0xf36601e07519d7e5ed8d2fd2e50a9e590966764a0c07596943b21d52286002b2", "0xcbea8791dfe489280c6945993974de183c6423bfa5bae02d8ca766c24735e09c"],
+      "seal": "0xddc21b5780dbea080df2101378f331b0413be28290d3117c3ecdd4cef6303cd0",
+      "adjudication": {"parent": "0xea7f861f5bfcc9cd730a9ff780aeeb0784b2ce4b302f7dde83d5360f4fc76952", "consensus": "MAJORITY_AGREE", "status": "FINALIZED", "leaderExecution": "SUCCESS", "courtChild": "0x179a4df6bd4882677d0209bc446411382081414eb06b617473fa9ae7d6816757", "courtChildConsensus": "MAJORITY_AGREE", "courtChildStatus": "FINALIZED", "courtChildExecution": "SUCCESS"},
+      "readback": {"guardState": "refuse", "courtPrimary": "refuse", "courtEffective": "refuse", "reason": "The exact ASCII token was absent from the authenticated artifacts."},
+      "invariant": "Authenticated semantic REFUSE reached accepted consensus and was recorded by Court without an economic ALLOW."
+    },
+    {
+      "id": "semantic-allow-authenticated-evidence",
+      "spendId": 1,
+      "request": "0xea118cd07f7db11fe9e808828b70d331e28c823590a9fd1459ad10c80e8654af",
+      "evidence": ["0x45a39485b436285d291c19433ce674976019027f85d3be9e1679fa9f5b64e927", "0xa9784ddec87366e8c7882cda1f849fae5f2df175dcb68361c685d04f0ab1c5d1"],
+      "seal": "0x83c35bb97acb34ea8fa41243c1386a4bcc786ef13146fd72baa6dca80e3db7a0",
+      "adjudication": {"parent": "0xb910b50addc1ddec49df079d4c8915a0a173032d93d022b6dee8403707e3377a", "consensus": "MAJORITY_AGREE", "status": "FINALIZED", "leaderExecution": "SUCCESS", "courtChild": "0x636a90ab741b801d041fe711403856ac6e46456665d51900820c6cbac2e89259", "courtChildConsensus": "MAJORITY_AGREE", "courtChildStatus": "FINALIZED", "courtChildExecution": "SUCCESS"},
+      "readback": {"guardState": "allow", "courtPrimary": "allow", "courtEffective": "allow", "confidence": 99},
+      "invariant": "Authenticated semantic ALLOW reached accepted consensus and the finalized primary Court record matched the Guard result."
+    }
+  ],
+  "limitations": [
+    "These cases prove accepted semantic primary outcomes and Court child delivery on the corrected source stack; they do not by themselves prove the complete terminal appeal, payout, challenge, or recovery matrix.",
+    "The CLI receipt exposes leader execution SUCCESS and consensus directly; some validator entries may report cancellation or idle errors after quorum, which are retained as receipt details rather than normalized away."
+  ],
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
+}

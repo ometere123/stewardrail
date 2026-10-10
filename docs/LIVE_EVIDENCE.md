@@ -1,29 +1,15 @@
-# Studionet live evidence index
+# Studionet live evidence
 
-The machine-readable records in `deploy/proofs/` distinguish fresh observations
-from historical records at chain 61999.
+The canonical current record is
+[`deploy/proofs/validator-correction-fresh-stack-2026-10-10.json`](../deploy/proofs/validator-correction-fresh-stack-2026-10-10.json).
+It points to the addresses in [`deploy/deployments.json`](../deploy/deployments.json)
+and the six exact source hashes in `contracts/SOURCE_MANIFEST.json`.
 
-Current evidence:
+The packet contains finalized deployment and binding receipts, two-principal
+mandate activation, separate issuer attestations, an accepted semantic REFUSE,
+an accepted semantic ALLOW, the Court child transaction for each case, and
+authoritative Guard/Court readbacks.
 
-- `final-fresh-studionet-2026-10-10.json` is the current packet for the six exact
-  sources and addresses in `deploy/deployments.json`.
-- It records finalized deployment/binding receipts, threshold activation,
-  authenticated issuer attestations, nested terminal delivery and duplicate
-  payout rejection.
-- The payout and recovery EOA children are recorded as value credited with
-  `NO_MAJORITY`; this is an explicit network limitation, not a success claim.
-
-Historical evidence:
-
-- `canonical-deployment-2026-10-09.json` records a historical six-contract stack
-  from an earlier source generation. It is superseded and is not the current
-  deployment for this checkout.
-- `deployments.json` is the current canonical deployment index.
-- `deployment.json`, `fresh-correction-live.json`, `live-scenarios.json` and
-  `live-final-hardening.json` are historical records for earlier source
-  deployments and are explicitly not current-deployment proof.
-
-An earlier appeal attempt finalized with execution `ERROR` and is not presented as
-a successful reversal. The current packet explicitly lists unobserved semantic
-ALLOW consensus, reversals, single-use replay, rolling reversal, challenge
-settlement, threshold recovery and post-payment clawback rather than inferring them.
+Older packets are retained for audit history and are explicitly marked
+`historical-superseded`. An earlier validator-disagreement result remains
+unclaimed as an economic success.
