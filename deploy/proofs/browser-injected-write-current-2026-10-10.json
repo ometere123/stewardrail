@@ -1,0 +1,41 @@
+{
+  "scenario": "browser-injected-eip1193-write-current-stack",
+  "observed_at": "2026-10-10T11:43:06.237059+01:00",
+  "source_commit": "9a960bb6262c8b3cd04f9f5a3aaa35eee0897d63",
+  "contract_source_commit": "0850dec63113d6590ce276d57cf6058c62266635",
+  "production_url": "https://stewardrail.vercel.app/spends/new",
+  "network": "Studionet",
+  "chain_id": 61999,
+  "provider": "injected EIP-1193",
+  "wallet_account": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+  "configured_agent": "0xfcef676044658b5402f590dabe9e04a0f640522f",
+  "action": "request_spend",
+  "arguments": {
+    "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+    "amount_gen": "0.1",
+    "amount_base_units": "100000000000000000",
+    "category": "creative"
+  },
+  "parent_transaction": {
+    "hash": "0x4a97ea97a18c4bd356d85417d5c712424b83ecbaa6b405171fa1958858640d86",
+    "explorer": "https://explorer-studio.genlayer.com/tx/0x4a97ea97a18c4bd356d85417d5c712424b83ecbaa6b405171fa1958858640d86",
+    "status": "FINALIZED",
+    "consensus": "MAJORITY_AGREE",
+    "execution": "SUCCESS",
+    "triggered_children": []
+  },
+  "state_after": {
+    "spend_id": 0,
+    "state": "held",
+    "enforcement": "held",
+    "reason": "semantic adjudication required",
+    "evidence_sealed": false,
+    "evidence_deadline": 1791632586,
+    "terminal_semantic": "",
+    "terminal_economic": "",
+    "terminal_state": "",
+    "revoked": false
+  },
+  "observed_invariant": "The authorized browser agent submitted a current-stack spend through injected EIP-1193. The transaction finalized with accepted consensus and successful GenVM execution, and the Guard created one held spend without authorizing custody.",
+  "snap_methods_observed": []
+}
