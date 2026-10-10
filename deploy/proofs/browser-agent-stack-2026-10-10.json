@@ -193,6 +193,61 @@
       "leader_execution": "SUCCESS",
       "triggered_children": ["0x93a2928c46253d9b89548eb4ccb0535ec0b47b1107219414617d0655aca49b0f"],
       "readback": "semantic state refuse; confidence 99; required token absent"
+    },
+    {
+      "spend_id": 5,
+      "transaction": "0x79fde41c8363757c92bfbeeaa87efee5009510c98c3f7857d970f3d9351f4110",
+      "method": "request_spend",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "held; mandate version 2; 30-second application window"
+    },
+    {
+      "spend_id": 5,
+      "transaction": "0x2a1869a8cdd75b08f9d7199137b2ab4deef25a1d3b890478b6c41570920ccb4b",
+      "method": "attach_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "issuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+      "role": "vendor",
+      "readback": "vendor evidence attached"
+    },
+    {
+      "spend_id": 5,
+      "transaction": "0x343eb869e4bb54506f283ad6aca1a5c3fa5bd0ac61b20f02e316b41f405abf1e",
+      "method": "attach_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+      "role": "delivery",
+      "readback": "delivery evidence attached"
+    },
+    {
+      "spend_id": 5,
+      "transaction": "0x066ceb5fd4a9977d0cbded010940b25bfbce4cbeddeb53fbb8b484cc6faa9752",
+      "method": "seal_evidence",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "readback": "evidence_sealed=true"
+    },
+    {
+      "spend_id": 5,
+      "transaction": "0xc5a79a1719917b2f776404a7115a8915a58a07c72b1f3d3296e7a695fb3ec0cd",
+      "method": "adjudicate",
+      "from": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "triggered_children": ["0x144643d91cf46750b7ce5ce47cb8c7504467ec231801b449b95d1f402fd2d01d"],
+      "readback": "semantic state allow; confidence 100; exact token present in both artifacts"
     }
   ],
   "semantic_lifecycle_observations": [
@@ -241,6 +296,88 @@
         "evidence_roles": ["vendor", "delivery"]
       },
       "note": "This is an accepted semantic REFUSE on the fresh browser-agent stack. Both required authenticated evidence roles were present and valid at request time; the semantic rule rejected the artifact content."
+    },
+    {
+      "spend_id": 5,
+      "outcome": "ALLOW (semantic) / REFUSE (economic terminal)",
+      "adjudication": {
+        "parent": "0xc5a79a1719917b2f776404a7115a8915a58a07c72b1f3d3296e7a695fb3ec0cd",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "leader_verdict": "allow",
+        "leader_confidence": 100,
+        "triggered_children": ["0x144643d91cf46750b7ce5ce47cb8c7504467ec231801b449b95d1f402fd2d01d"]
+      },
+      "court_primary_child": {
+        "transaction": "0x144643d91cf46750b7ce5ce47cb8c7504467ec231801b449b95d1f402fd2d01d",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "record_primary"
+      },
+      "terminal_close": {
+        "transaction": "0x92653ae260e54ad64fc9287ca10c2e5328fc754c95babc9a3dd7fe0ea6464bee",
+        "from": "0xac3AC69dC0Bde389256dD6748C75817ead9286D9",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "triggered_children": ["0x3c4e6a3648e1f78ab35ad068f25da5ba01f2610aaea4724ce17c4eaecbc77cf3"]
+      },
+      "guard_terminal_child": {
+        "transaction": "0x3c4e6a3648e1f78ab35ad068f25da5ba01f2610aaea4724ce17c4eaecbc77cf3",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "apply_terminal_decision",
+        "triggered_children": ["0x01dd5eb845f9d1fa4f7e3d4dac820312f8043beb514cb164a532104e85bbf25f"]
+      },
+      "collateral_lock_child": {
+        "transaction": "0x01dd5eb845f9d1fa4f7e3d4dac820312f8043beb514cb164a532104e85bbf25f",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "lock_exposure",
+        "secured_amount": "0"
+      },
+      "collateral_confirmation": {
+        "transaction": "0xbc7a556d452c290b20c23162c1d610083cdc48b78b48d16e3afb9a986165b8cf",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "confirm_exposure_lock",
+        "secured_amount": "0"
+      },
+      "vault_terminal_child": {
+        "transaction": "0x7813f2c4b7fcd71e955bb6e7bd48c0a75bc872fa2392c62d19767dd57e985e86",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "leader_execution": "SUCCESS",
+        "method": "record_terminal",
+        "decision": "refuse"
+      },
+      "court_readback": {
+        "status": "terminal",
+        "primary": "allow",
+        "effective": "allow",
+        "appeal_deadline": 1791619797
+      },
+      "guard_readback": {
+        "primary": "allow",
+        "terminal_semantic": "allow",
+        "terminal_economic": "refuse",
+        "terminal_state": "refuse",
+        "terminal_reason": "standing collateral coverage unavailable",
+        "terminal_at": 1791619869,
+        "evidence_roles": ["vendor", "delivery"]
+      },
+      "vault_readback": {
+        "terminal_decision": "refuse",
+        "paid": false,
+        "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+        "amount": "100000000000000000"
+      },
+      "note": "Authenticated semantic ALLOW reached accepted consensus. The guard downgraded custody to REFUSE because no standing collateral was funded; Vault recorded REFUSE and payment remained impossible."
     }
   ],
   "rejected_attempts": [
@@ -254,7 +391,7 @@
     }
   ],
   "pending": [
-    "Complete terminal custody/readback for accepted cases after the configured application appeal window."
+    "A funded standing-collateral case producing terminal economic ALLOW and GEN payout is not represented in this browser-agent packet."
   ],
   "explorer_prefix": "https://explorer-studio.genlayer.com/tx/"
 }
