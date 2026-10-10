@@ -1,0 +1,97 @@
+{
+  "scenario": "final-stack-economic-lifecycle",
+  "timestamp": "2026-10-10",
+  "source_commit": "66151accaca6c375f7f978f54c01f01ddaebc7cf",
+  "network": "Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "source_sha256": {
+    "steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
+    "evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "steward_court.py": "33a10ee3435f21915e2c6f51096b04f4e2453d527cb2db315cf6b5fa99dc7454",
+    "steward_guard.py": "18294b400a0b8a4294a3d0d85737fc0038e239f2439ed723df4993d02af7d60f",
+    "steward_vault.py": "2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088",
+    "steward_bond_vault.py": "d5a9f7b3e8731c2716ce58896247b15906dbc76a52471a0898bf3b2303ff269d"
+  },
+  "addresses": {
+    "charter": "0xd985d10D59DB717DCD0f335dD1Af6A32122d910d",
+    "registry": "0x68419Fb7E8db6371f166990765c50e36F1098bb9",
+    "court": "0xF4B7881d93Bd5BA03D15F2e4FA68502A08b122B6",
+    "bond_vault": "0x3b8869AcbD3F4c628c6DB10ed355cF097dbC44b6",
+    "guard": "0x8F4b344b3E100FA2F460985b7F802F35E5422C4C",
+    "vault": "0x2198E29C208f000dAEB4150D9C3F3044Add64B7f"
+  },
+  "deployment_transactions": {
+    "charter": "0x381c26e37ff5c4367893fb8585ed7daeb61d72878cbb5504dc8a559ceb680cfd",
+    "registry": "0xe4c93b4d7d23af134c09602b65467ad6d9dbf498868ed6b4a3eae2a95cb5ecb7",
+    "court": "0x9ea52c4b0f585a13ba88cf17531cea58f17cb097ac5a301e927c6f6dfbae6584",
+    "bond_vault": "0x44131e5a76050d287b277b83763d14ed9ee3846b252c897ca2b6ec804676d484",
+    "guard": "0x5e08b33965799578a07b85bc8f6c8783519ff11f79ec514915f2c4fe91c4372b",
+    "vault": "0x2a6134da157a53212ee6d0c2da1a52d0fef081b57232b474e06aa6a522bdbe45"
+  },
+  "binding_transactions": {
+    "mandate_approval_a": "0x29a890ca8275cc7a462bfe11514df5db4e85e83475a9dfbead7d743d34d24f73",
+    "mandate_approval_b": "0x1431088ae78bd5ff1fdeb9a2a05e1c2787d88faf29c668ef725495713aa16757",
+    "bond_approval_b": "0xcf5da23a9c9c25d72c278d97192b8caa3f7f46191c1d117b7ccd6ebabbd7d9ff",
+    "bond_approval_a": "0xbcce889bd07eaabdf08250cee909037cdec2b4409e93bca65154b2f565453d56",
+    "bond_bind": "0xa1cdb0a9ef6ff57201d5978e074f9f4b4e40b4878dfccc9ffbbce90f99e812bf"
+  },
+  "actors": {
+    "principal_a": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "principal_b": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
+    "recipient": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "challenger": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
+  },
+  "scenarios": {
+    "authenticated_semantic_allow": {
+      "attestations": ["0x0fee1d78bafd31343b1edab410bf587b2c039f84fc4cbcd374fbe400ead2c8fa", "0x72722111df94f6777c947ae15ddaf970788e49b5d5fc665ff695d6313d9cd536"],
+      "request": "0x4a42cea6b618b23712e9536ed71a8002f1a123056d816883acd944b8d2b17ad6",
+      "evidence_attach": ["0x8d22791bcf503c28fa0c37663958d50ebea5fdfc5d10cbfd4af102f8585b8342", "0xf53d56000f9832ba42a9fad156451e646ad62c5bc47aed7b7b03d85e2c6984c4"],
+      "seal": "0x2f9be20ef4bae9d2dfb675a98743de26b09df779d5b11237676027afc2340df2",
+      "adjudication": "0x8b43a0955733bccd0a9bda27125489130298845d12af141400eff2fef04f0b0d",
+      "court_child": "0x8f986d1f908292c63719c956109c7842a863b95925fd4eca8db4246f5942f2dd",
+      "observed": {"primary": "allow", "court_effective": "allow", "guard_terminal_economic": "allow", "amount_gen": "0.1"}
+    },
+    "court_guard_bondvault_vault_finality": {
+      "court_close": "0xbb12dd78424de95a54cde78f16702e0d34b055b813fa19023fb37f60d35705e1",
+      "guard_terminal_child": "0xacfa4e00ad8d672b7f072d6b00240d42b41133a938913f6a106ca8f1b6b42826",
+      "bond_lock_child": "0xb7744c1bb764490ada296d288506f8f352ed8cc9e61f4a23b861da4bf3b69bb5",
+      "guard_confirmation_child": "0x1f46ff328bbcaa3dc1bf8d0cc312f680145303cee1bbd9df2b51913be42bd5de",
+      "vault_terminal_child": "0xe5be4f0d16edf35cfb07819e95e64b2763249eb7bb213635b20cb780ebe95d7a",
+      "all_layers": "FINALIZED with successful execution"
+    },
+    "funding_and_payment": {
+      "standing_deposit": "0x39efcf2a354298da3fdd89ae68e7a5cc9bd83daa4214bc0c81e65e41aee538a9",
+      "vault_funding": "0xd6d5e1e0f72ae18504209a9963831a06ae930dc61be0c439bcfe44f1798d0af5",
+      "standing_before_gen": "1.0",
+      "locked_before_challenge_gen": "0.1",
+      "payment": "0x680178138525b2ea6835a7661ccd039416e1268afe62752c2d6118388646c152",
+      "payment_delivery_child": "0x1e15bbc3a11cd43acbd90c790dffa475f5adb66a4b6537711d894d80aafb66d8",
+      "recipient_delivery_confirmed": true,
+      "vault_status_after_payment": {"treasury_gen": "0", "paid_total_gen": "0.1"},
+      "duplicate_payment": {"transaction": "0x35665403c2964617f4c14a657ef62fb3252125ba8f7e96a882b9fab0d16e2d58", "status": "FINALIZED", "execution": "ERROR"}
+    },
+    "post_payment_upheld_challenge": {
+      "bond_quote_gen": "0.005",
+      "open_challenge": "0x7fda12e1bff7d725d63a7ad51e7558f12183b1bb34bf5f73f2b93b4642909e4a",
+      "court_registration": "0x071ce4cd1b099fd9f9500f65fe8c6a0729ef38abf23d93cd7630ceb44904ae14",
+      "bond_registration_ack": "0x58b7a595cf377a11430bf49a34e2e5a327ce11ef69cf6025dfd32aff4e0ed870",
+      "resolve": "0x4b1be2379fda7ed999c39fe356a517cf1b2a9afd9f4fbd2c55453339bcfa686c",
+      "guard_result_child": "0x1ee12936ba51e2f19a945cb77b4618bf6bfaf9170f50065dc7356485bcf2d63b",
+      "vault_result_child": "0x56ff386038bba99aa8d68d2650bb2199df86619bcc01436bdf91dc361a0c82a5",
+      "bond_settlement": "0xb7daef90b31c3dec85e9cc713ea17c3381045823bf3f6f25663fee5b11e506c8",
+      "reimbursement_child": "0x15fe9960bdb4878799d6d79bb7bba1ef1a87c0aaa1b5b096f1d45f1317d05b20",
+      "bond_refund_child": "0xfaa2586599efa5e4a0e217300957d8d4c05a5ce919fcd7122100a57e561647a1",
+      "observed": {"challenge": "upheld", "original_payment": "paid", "restitution_gen": "0.1", "standing_after_gen": "0.9", "locked_after_gen": "0", "vault_treasury_after_gen": "0.1", "shortfall_gen": "0", "guard_revoked": true}
+    },
+    "reconciliation": {
+      "court_reconcile": "0x0bf76f080d592ada2d84b0392ad348cd7de2ff09c5d23b950ab2fdff4881d774",
+      "guard_child": "0x08c3ef86e464bf5b6048a1100612ed5b1f42146fae6f391e7b243505dc1bea24",
+      "vault_child": "0x4aa03da9441db1355feafa3e3b090e341aa914ae5eb7bf29bf324fc3d23bd882",
+      "bond_settlement_retry": "0x0f4abff325f119cedfca64173aa725e73d5e7a18e6e78241fea16ccfa0b75f92",
+      "observed": "idempotent redelivery completed without changing the settled economic outcome"
+    }
+  }
+}

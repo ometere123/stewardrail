@@ -1,13 +1,15 @@
 # Live proof index
 
 The current machine-readable packet is
-[`deploy/proofs/validator-correction-fresh-stack-2026-10-10.json`](../deploy/proofs/validator-correction-fresh-stack-2026-10-10.json).
+[`deploy/proofs/final-stack-2026-10-10.json`](../deploy/proofs/final-stack-2026-10-10.json).
 
-It records the corrected six-contract Studionet stack, source hashes, deployment
-transactions, threshold mandate activation, BondVault binding, authenticated
-issuer attestations, and two fresh semantic cases. The REFUSE and ALLOW
-adjudications each reached `MAJORITY_AGREE`, `FINALIZED`, and produced a
-finalized Court child with matching readback.
+It records the source-matched six-contract Studionet stack, source hashes,
+deployment and binding transactions, threshold mandate activation, authenticated
+issuer attestations, a semantic `ALLOW`, finalized Court → Guard → Vault
+delivery, standing collateral, funded payment, recipient delivery confirmation,
+duplicate-payment rejection, an upheld post-payment challenge with restitution,
+bond refund, and idempotent reconciliation.
 
-Historical packets remain in `deploy/proofs/` with explicit historical status.
-They are not substituted for the current deployment evidence.
+This packet does not claim a semantic `REFUSE`; earlier validator-disagreement
+attempts remain historical and are not substituted for current evidence.
+Historical packets remain in `deploy/proofs/` with explicit superseded status.
