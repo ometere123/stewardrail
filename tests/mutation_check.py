@@ -32,7 +32,7 @@ MUTANTS = [
     ("guard-terminal-conflict", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] conflicting terminal authorization payload")', "return"),
     ("guard-single-use-evidence", "steward_guard.py", 'if ((previous != "" and previous != str(int(spend_id)))', "if False:"),
     ("guard-terminal-vault-binding", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] vault binding mismatch")', "return"),
-    ("guard-terminal-reservation", "steward_guard.py", 'terminal == ALLOW or (terminal == "" and (semantic or self.state[key] != REFUSE))', 'terminal == ALLOW'),
+    ("guard-indexed-rolling-sum", "steward_guard.py", 'total += int(self.exposure_amount.get(spend_key, u256(0)))', 'total += 0'),
     ("guard-terminal-emission", "steward_guard.py", 'emit(on="finalized").record_terminal(', 'emit(on="accepted").record_terminal('),
     ("guard-category-bound", "steward_guard.py", 'raise gl.vm.UserError("[EXPECTED] category must be 1..64 characters")', "return"),
     ("court-appeal-role-gate", "steward_court.py", 'raise gl.vm.UserError("[EXPECTED] appeal cannot produce ALLOW without authenticated roles: " + ",".join(missing))', "return"),

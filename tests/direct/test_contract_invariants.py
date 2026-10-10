@@ -170,9 +170,13 @@ def test_consequential_guards_remain_present():
     assert 'info.get("guard", "")) != _addr(gl.message.contract_address)' in guard
     assert 'raise gl.vm.UserError("[EXPECTED] vault binding mismatch")' in guard
     assert 'str(item.get("usage", "single_use")) != expected_usage' in guard
-    assert 'semantic or self.state[key] != REFUSE' in guard
+    assert "exposure_queue_head" in guard
+    assert "recipient_queue_head" in guard
+    assert "self._release_exposure(int(spend_id))" in guard
+    assert "MAX_ROLLING_SECONDS = 604800" in guard
+    assert "total += int(self.exposure_amount.get(spend_key, u256(0)))" in guard
     assert "category must be 1..64 characters" in guard
-    assert "terminal == ALLOW" in guard
+    assert "self.exposure_amount.get(spend_key, u256(0))" in guard
     assert "amount_gte value must be a non-negative integer" in charter
     assert "unsupported semantic consequence" in charter
     assert "evidence_window_seconds must be 1..604800" in charter

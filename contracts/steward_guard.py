@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 ALLOW = "allow"
 REFUSE = "refuse"
 HELD = "held"
+MAX_ROLLING_SECONDS = 604800
 
 
 def _addr(value) -> str:
@@ -124,6 +125,16 @@ class StewardGuard(gl.Contract):
     freeze_reason: str
     revoked: TreeMap[u256, u256]
     revocation_reason: TreeMap[u256, str]
+    exposure_amount: TreeMap[u256, u256]
+    exposure_queue_at: TreeMap[u256, u256]
+    exposure_queue_spend: TreeMap[u256, u256]
+    exposure_queue_head: u256
+    exposure_queue_tail: u256
+    recipient_exposure_amount: TreeMap[u256, u256]
+    recipient_queue_at: TreeMap[str, u256]
+    recipient_queue_spend: TreeMap[str, u256]
+    recipient_queue_head: TreeMap[str, u256]
+    recipient_queue_tail: TreeMap[str, u256]
 
     def __init__(self, charter: str, registry: str, court: str):
         self.charter = Address(str(charter))
@@ -141,6 +152,8 @@ class StewardGuard(gl.Contract):
         self.freeze_epoch = u256(0)
         self.unfreeze_nonce = u256(0)
         self.freeze_reason = ""
+        self.exposure_queue_head = u256(0)
+        self.exposure_queue_tail = u256(0)
 
     def _now(self) -> int:
         return int(datetime.datetime.now().timestamp())
@@ -163,14 +176,13 @@ class StewardGuard(gl.Contract):
     def _rolling_total(self, now: int, seconds: int) -> int:
         floor = int(now) - int(seconds)
         total = 0
-        i = 0
-        while i < int(self.spend_count):
-            key = u256(i)
-            at = int(self.requested_at[key])
-            terminal = str(self.terminal_state.get(key, ""))
-            semantic = self._is_semantic(key)
-            if floor < at <= int(now) and (terminal == ALLOW or (terminal == "" and (semantic or self.state[key] != REFUSE))):
-                total += int(self.amount[key])
+        i = int(self.exposure_queue_head)
+        while i < int(self.exposure_queue_tail):
+            queue_key = u256(i)
+            spend_key = u256(int(self.exposure_queue_spend.get(queue_key, u256(0))) )
+            at = int(self.exposure_queue_at.get(queue_key, u256(0)))
+            if floor < at <= int(now):
+                total += int(self.exposure_amount.get(spend_key, u256(0)))
             i += 1
         return total
 
@@ -178,17 +190,64 @@ class StewardGuard(gl.Contract):
         floor = int(now) - int(seconds)
         total = 0
         target = _addr(str(recipient))
-        i = 0
-        while i < int(self.spend_count):
-            key = u256(i)
-            if _addr(str(self.recipient[key])) == target:
-                at = int(self.requested_at[key])
-                terminal = str(self.terminal_state.get(key, ""))
-                semantic = self._is_semantic(key)
-                if floor < at <= int(now) and (terminal == ALLOW or (terminal == "" and (semantic or str(self.state[key]) != REFUSE))):
-                    total += int(self.amount[key])
+        head = int(self.recipient_queue_head.get(target, u256(0)))
+        tail = int(self.recipient_queue_tail.get(target, u256(0)))
+        i = head
+        while i < tail:
+            entry = target + "|" + str(i)
+            spend_key = u256(int(self.recipient_queue_spend.get(entry, u256(0))) )
+            at = int(self.recipient_queue_at.get(entry, u256(0)))
+            if floor < at <= int(now):
+                total += int(self.recipient_exposure_amount.get(spend_key, u256(0)))
             i += 1
         return total
+
+    def _prune_exposure_indexes(self, now: int, recipient: str) -> None:
+        """Advance bounded active-exposure cursors; never scan lifetime spends."""
+        floor = int(now) - MAX_ROLLING_SECONDS
+        head = int(self.exposure_queue_head)
+        tail = int(self.exposure_queue_tail)
+        while head < tail:
+            entry = u256(head)
+            if int(self.exposure_queue_at.get(entry, u256(0))) > floor:
+                break
+            spend_key = u256(int(self.exposure_queue_spend.get(entry, u256(0))) )
+            self.exposure_amount[spend_key] = u256(0)
+            head += 1
+        self.exposure_queue_head = u256(head)
+        target = _addr(str(recipient))
+        rhead = int(self.recipient_queue_head.get(target, u256(0)))
+        rtail = int(self.recipient_queue_tail.get(target, u256(0)))
+        while rhead < rtail:
+            entry = target + "|" + str(rhead)
+            if int(self.recipient_queue_at.get(entry, u256(0))) > floor:
+                break
+            spend_key = u256(int(self.recipient_queue_spend.get(entry, u256(0))) )
+            self.recipient_exposure_amount[spend_key] = u256(0)
+            rhead += 1
+        self.recipient_queue_head[target] = u256(rhead)
+
+    def _index_exposure(self, spend_id: int, now: int, recipient: str, amount: int) -> None:
+        key = u256(int(spend_id))
+        value = int(amount)
+        self.exposure_amount[key] = u256(value)
+        tail = int(self.exposure_queue_tail)
+        entry = u256(tail)
+        self.exposure_queue_at[entry] = u256(int(now))
+        self.exposure_queue_spend[entry] = key
+        self.exposure_queue_tail = u256(tail + 1)
+        target = _addr(str(recipient))
+        rtail = int(self.recipient_queue_tail.get(target, u256(0)))
+        rentry = target + "|" + str(rtail)
+        self.recipient_queue_at[rentry] = u256(int(now))
+        self.recipient_queue_spend[rentry] = key
+        self.recipient_queue_tail[target] = u256(rtail + 1)
+        self.recipient_exposure_amount[key] = u256(value)
+
+    def _release_exposure(self, spend_id: int) -> None:
+        key = u256(int(spend_id))
+        self.exposure_amount[key] = u256(0)
+        self.recipient_exposure_amount[key] = u256(0)
 
     def _classify(self, mandate: dict, amount: int, recipient: str, category: str, now: int) -> dict:
         d = mandate["deterministic"]
@@ -358,6 +417,7 @@ class StewardGuard(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] charter has no active mandate")
         mandate = json.loads(str(current["mandate"]))
         now = self._now()
+        self._prune_exposure_indexes(now, str(recipient))
         decision = self._classify(mandate, int(amount), str(recipient), str(category), now)
         sid = int(self.spend_count)
         key = u256(sid)
@@ -375,6 +435,8 @@ class StewardGuard(gl.Contract):
         self.confidence[key] = u256(100 if decision["state"] != HELD else 0)
         self.evidence_count[key] = u256(0)
         self.spend_count = u256(sid + 1)
+        if decision["state"] in (ALLOW, HELD):
+            self._index_exposure(sid, now, str(recipient), int(amount))
         if decision["state"] != HELD:
             self._send_primary(sid, str(decision["state"]), str(decision["reason"]), 100)
 
@@ -611,6 +673,8 @@ class StewardGuard(gl.Contract):
                         self.revoked[prior_key] = u256(1)
                         self.revocation_reason[prior_key] = "revoked by terminal " + highest + " consequence"
                     prior += 1
+        if economic == REFUSE:
+            self._release_exposure(int(spend_id))
         fingerprint = self._terminal_fingerprint(int(spend_id), str(semantic_decision), economic, str(vault), key, identities)
         self.terminal_semantic[key] = str(semantic_decision)
         self.terminal_state[key] = economic
@@ -680,6 +744,7 @@ class StewardGuard(gl.Contract):
         self._release_reserved_identity_strings(json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")), int(spend_id))
         self.terminal_state[key] = REFUSE
         self.terminal_reason[key] = "standing collateral coverage unavailable"
+        self._release_exposure(int(spend_id))
         self.terminal_fingerprint[key] = self._terminal_fingerprint(int(spend_id), str(self.terminal_semantic[key]), REFUSE, str(vault), key, json.loads(self.terminal_evidence.get(str(int(spend_id)), "[]")))
         self._emit_vault_terminal(str(vault), int(spend_id), REFUSE)
 

@@ -113,12 +113,12 @@ class StewardCharter(gl.Contract):
         rolling = deterministic.get("rolling_limit")
         if not isinstance(rolling, dict):
             raise gl.vm.UserError("[EXPECTED] rolling_limit must be an object")
-        if isinstance(rolling.get("seconds"), bool) or not isinstance(rolling.get("seconds"), int) or isinstance(rolling.get("amount"), bool) or not isinstance(rolling.get("amount"), int) or int(rolling.get("seconds", 0)) <= 0 or int(rolling.get("amount", 0)) <= 0:
-            raise gl.vm.UserError("[EXPECTED] rolling_limit needs positive seconds and amount")
+        if isinstance(rolling.get("seconds"), bool) or not isinstance(rolling.get("seconds"), int) or isinstance(rolling.get("amount"), bool) or not isinstance(rolling.get("amount"), int) or int(rolling.get("seconds", 0)) <= 0 or int(rolling.get("amount", 0)) <= 0 or int(rolling.get("seconds", 0)) > 604800:
+            raise gl.vm.UserError("[EXPECTED] rolling_limit needs seconds 1..604800 and a positive amount")
         recipient_rolling = deterministic.get("recipient_rolling")
         if recipient_rolling is not None:
-            if not isinstance(recipient_rolling, dict) or isinstance(recipient_rolling.get("seconds"), bool) or not isinstance(recipient_rolling.get("seconds"), int) or isinstance(recipient_rolling.get("amount"), bool) or not isinstance(recipient_rolling.get("amount"), int) or int(recipient_rolling.get("seconds", 0)) <= 0 or int(recipient_rolling.get("amount", 0)) <= 0:
-                raise gl.vm.UserError("[EXPECTED] recipient_rolling needs positive seconds and amount")
+            if not isinstance(recipient_rolling, dict) or isinstance(recipient_rolling.get("seconds"), bool) or not isinstance(recipient_rolling.get("seconds"), int) or isinstance(recipient_rolling.get("amount"), bool) or not isinstance(recipient_rolling.get("amount"), int) or int(recipient_rolling.get("seconds", 0)) <= 0 or int(recipient_rolling.get("amount", 0)) <= 0 or int(recipient_rolling.get("seconds", 0)) > 604800:
+                raise gl.vm.UserError("[EXPECTED] recipient_rolling needs seconds 1..604800 and a positive amount")
 
         rules = m["semantic_rules"]
         if not isinstance(rules, list) or len(rules) < 1 or len(rules) > 16:

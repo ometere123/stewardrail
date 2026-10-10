@@ -232,6 +232,13 @@ def test_charter_rejects_unknown_enforcement_consequence():
     with pytest.raises(Exception, match='unsupported semantic consequence'):
         rt.call(CHARTER,'approve_mandate',json.dumps(mandate(consequence='owner_override')),sender=A)
 
+def test_charter_bounds_rolling_windows_for_indexed_accounting():
+    rt=setup_stack()
+    oversized=mandate()
+    oversized['deterministic']['rolling_limit']['seconds']=604801
+    with pytest.raises(Exception,match='seconds 1..604800'):
+        rt.call(CHARTER,'approve_mandate',json.dumps(oversized),sender=A)
+
 def test_recipient_rolling_limit_blocks_split_spend():
     rt=setup_stack()
     proposal=json.dumps(mandate(recipient_limit=500))
