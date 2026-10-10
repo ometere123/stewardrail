@@ -148,7 +148,7 @@ class StewardCourt(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may open a challenge case")
         self._validate_guard(str(guard))
         self._validate_vault(str(vault), str(guard))
-        if len(str(cause).strip()) == 0 or int(response_deadline) <= self._now():
+        if len(str(cause).strip()) == 0 or int(response_deadline) <= 0:
             raise gl.vm.UserError("[EXPECTED] challenge case deadline is invalid")
         vault_info = json.loads(str(gl.get_contract_at(Address(str(vault))).view().info()))
         if _addr(vault_info.get("bond_vault", "")) != sender:

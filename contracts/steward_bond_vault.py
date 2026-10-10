@@ -310,7 +310,7 @@ class StewardBondVault(gl.Contract):
                 raise gl.vm.UserError("[EXPECTED] vault binding is not initialized")
             self.standing = u256(int(self.standing) - recovered - bonus)
             if recovered > 0:
-                gl.get_contract_at(self.vault).emit(on="finalized").receive_reimbursement(value=u256(recovered))
+                gl.get_contract_at(self.vault).emit(value=u256(recovered), on="finalized").receive_reimbursement()
             if bond > 0:
                 _Payee(challenger).emit_transfer(value=u256(bond))
             if bonus > 0:
@@ -319,7 +319,7 @@ class StewardBondVault(gl.Contract):
             self.challenge_settlement[key] = json.dumps({"result": "upheld", "restitution": recovered, "reward": bonus, "shortfall": amount - recovered}, sort_keys=True)
             self.upheld_by_spend[u256(spend_id)] = u256(1)
         else:
-            gl.get_contract_at(self.vault).emit(on="finalized").receive_challenge_bond(int(challenge_id), value=u256(bond))
+            gl.get_contract_at(self.vault).emit(value=u256(bond), on="finalized").receive_challenge_bond(int(challenge_id))
             challenger_key = str(self.challenge_challenger[key])
             self.challenger_losses[challenger_key] = u256(int(self.challenger_losses.get(challenger_key, u256(0))) + 1)
             self.challenger_loss_at[challenger_key] = u256(int(datetime.datetime.now().timestamp()))
