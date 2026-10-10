@@ -1,7 +1,7 @@
 {
   "scenario": "browser-injected-eip1193-write-current-stack",
-  "observed_at": "2026-10-10T11:49:43.036719+01:00",
-  "source_commit": "f454407a6b7f1b239ad0161c33497e0c19f9e596",
+  "observed_at": "2026-10-10T12:10:00+01:00",
+  "source_commit": "566814df3324ce0c2d03cb4ea38b11595f2fad1d",
   "contract_source_commit": "0850dec63113d6590ce276d57cf6058c62266635",
   "production_url": "https://stewardrail.vercel.app/spends/new",
   "network": "Studionet",
@@ -107,6 +107,89 @@
     "semantic_reason": "Both authenticated evidence artifacts contain the exact ASCII token STEWARDRAIL_ACCEPT_2026, so the fired token-presence rule is satisfied.",
     "confidence": 99
   },
-  "observed_invariant": "The authorized browser agent submitted a current-stack spend through injected EIP-1193, attached two authenticated artifacts, sealed evidence, and reached a finalized semantic ALLOW. The Court child finalized and recorded the effective ALLOW while the appeal window remains open; no terminal custody authorization was emitted yet.",
+  "refusal_case": {
+    "spend_id": 1,
+    "request": {
+      "hash": "0xcc1fd48997c18a045cb044d7b7955e3664dc7e3be7ea07c5941ec99d14b42ccc",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0xcc1fd48997c18a045cb044d7b7955e3664dc7e3be7ea07c5941ec99d14b42ccc",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "amount_gen": "0.1",
+      "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+      "category": "creative"
+    },
+    "evidence": {
+      "vendor": {
+        "hash": "0x4e798b4fcd105c7f1a7587b8a5d7d8c2224ccb3fe2e0b1ae4d64fe942f31648c",
+        "explorer": "https://explorer-studio.genlayer.com/tx/0x4e798b4fcd105c7f1a7587b8a5d7d8c2224ccb3fe2e0b1ae4d64fe942f31648c",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "execution": "SUCCESS",
+        "role": "vendor",
+        "issuer": "0x951e6b75530774ff82321a5ae54e14f778f0c855"
+      },
+      "delivery": {
+        "hash": "0x7ff586b940bf3699133225d2a17ef6cad22c9ae763cedabf70609bcad2bc33d2",
+        "explorer": "https://explorer-studio.genlayer.com/tx/0x7ff586b940bf3699133225d2a17ef6cad22c9ae763cedabf70609bcad2bc33d2",
+        "status": "FINALIZED",
+        "consensus": "MAJORITY_AGREE",
+        "execution": "SUCCESS",
+        "role": "delivery",
+        "issuer": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
+      },
+      "uri": "https://raw.githubusercontent.com/ometere123/stewardrail/566814df3324ce0c2d03cb4ea38b11595f2fad1d/README.md",
+      "digest": "b136458874aff5226dbb4e4e1fe6a7bb46c73991c769d6fd0581f9aa8a1dccd6"
+    },
+    "seal": {
+      "hash": "0x179c9731262bc50e465c6baac15879d3db7fa41dc30e484a619cbc13efbb8b95",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x179c9731262bc50e465c6baac15879d3db7fa41dc30e484a619cbc13efbb8b95",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS"
+    },
+    "adjudication": {
+      "hash": "0xb70a45ad1e2e4c196156f2bdac7d0e197d5f29e5cdecd986c423dc04e2cf6b30",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0xb70a45ad1e2e4c196156f2bdac7d0e197d5f29e5cdecd986c423dc04e2cf6b30",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "semantic_result": {
+        "verdict": "refuse",
+        "confidence": 100,
+        "reason": "The exact token STEWARDRAIL_ACCEPT_2026 is absent from both evidence artifacts."
+      },
+      "triggered_children": ["0x39212d1354e138599f685f6000b03376e966d192692779a671b24bd0c2c82d22"]
+    },
+    "court_child": {
+      "hash": "0x39212d1354e138599f685f6000b03376e966d192692779a671b24bd0c2c82d22",
+      "explorer": "https://explorer-studio.genlayer.com/tx/0x39212d1354e138599f685f6000b03376e966d192692779a671b24bd0c2c82d22",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "execution": "SUCCESS",
+      "method": "record_primary",
+      "court": "0xCD60E455a52b12b9e6e93e3171f99843e2f207f8"
+    },
+    "guard_readback": {
+      "spend_id": 1,
+      "state": "refuse",
+      "enforcement": "refuse",
+      "reason": "The exact token STEWARDRAIL_ACCEPT_2026 is absent from both evidence artifacts.",
+      "confidence": 100,
+      "evidence_sealed": true,
+      "terminal_semantic": "",
+      "terminal_economic": "",
+      "terminal_state": ""
+    },
+    "court_readback": {
+      "spend_id": 1,
+      "primary": "refuse",
+      "effective": "refuse",
+      "status": "open",
+      "appeal_deadline": 1791634169,
+      "primary_evidence_roles": ["vendor", "delivery"]
+    }
+  },
+  "observed_invariant": "The authorized browser agent submitted current-stack spends through injected EIP-1193. Spend 0 reached a finalized semantic ALLOW with a finalized Court child; spend 1 reached a finalized semantic REFUSE with a finalized Court child. Both results were MAJORITY_AGREE with successful GenVM execution; neither is claimed as terminal custody while its application appeal window remains open.",
   "snap_methods_observed": []
 }
