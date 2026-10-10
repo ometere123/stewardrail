@@ -1,0 +1,28 @@
+{
+  "scenario": "browser-injected-eip1193-write",
+  "observed_at": "2026-10-10",
+  "source_commit": "ba79e18",
+  "production_url": "https://stewardrail.vercel.app/spends/new",
+  "network": "Studionet",
+  "chain_id": 61999,
+  "provider": "injected EIP-1193",
+  "snap_methods_observed": [],
+  "wallet_account": "0xfcef676044658B5402f590daBe9E04A0F640522f",
+  "configured_agent": "0x24fae7cd031ed702be63bdea8912141805b996bd",
+  "action": "request_spend",
+  "parent_transaction": {
+    "hash": "0x3f6203260e4a7db5d7e80f4933dd298a3d29f3529f33f6bda31e398f56a57792",
+    "explorer": "https://explorer-studio.genlayer.com/tx/0x3f6203260e4a7db5d7e80f4933dd298a3d29f3529f33f6bda31e398f56a57792",
+    "status": "FINALIZED",
+    "consensus": "MAJORITY_AGREE",
+    "execution": "ERROR",
+    "error": "[EXPECTED] only the charter agent may request a spend",
+    "triggered_children": []
+  },
+  "observed_invariant": "A signed browser transaction reached the Guard through the injected provider; the Guard rejected the unauthorized sender and no spend state was created.",
+  "classification": "authorization_failure_not_protocol_success",
+  "limitations": [
+    "The connected browser account was not the configured agent, so this browser run does not prove a successful spend lifecycle.",
+    "The browser environment reported unrelated extension-provider conflict warnings; no Snap method request was observed during the tested action."
+  ]
+}
