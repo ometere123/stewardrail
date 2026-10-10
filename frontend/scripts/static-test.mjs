@@ -19,5 +19,6 @@ if (!text.includes("disconnect")) throw new Error("explicit disconnect control m
 if (text.includes("wallet_getsnaps") || text.includes("wallet_requestsnaps") || text.includes("wallet_invokesnap")) throw new Error("Snap wallet methods must not be used");
 if (text.includes("client.connect(\"studionet\")") || text.includes("waitfordecision") || text.includes("waitforfinalization")) throw new Error("unsupported SDK wallet/finality helpers remain");
 if (!text.includes("resultname") || !text.includes("majority_agree") || !text.includes("undetermined")) throw new Error("consensus result handling missing");
+if (!text.includes("status_by_number") || !text.includes("execution_by_number") || !text.includes("leader?.execution_result")) throw new Error("numeric Studio receipt normalization missing");
 if (text.includes("amount (wei)") || text.includes("fund amount (wei)")) throw new Error("raw wei label remains in the primary UI");
 console.log("frontend static test: PASS");
