@@ -388,10 +388,107 @@
       "consensus": "MAJORITY_AGREE",
       "leader_execution": "ERROR",
       "reason": "historical issuer attestation did not exist at spend 0 request time"
+    },
+    {
+      "transaction": "0x9a4e3ec3e205dc4efb5a1dec02a659d5ec94ae816dd121b499d5691d7495e311",
+      "method": "attach_evidence",
+      "spend_id": 6,
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "reason": "the first browser submission used the form defaults and failed the frozen issuer/origin/attestation checks; no spend state changed"
+    },
+    {
+      "transaction": "0x108ef9e74115931951ee711bd96ab5a37b029e52cc4a2f3c5cf39356d875a0c9",
+      "method": "pay",
+      "spend_id": 0,
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "reason": "no protocol-final terminal decision has reached the vault"
     }
   ],
   "pending": [
-    "A funded standing-collateral case producing terminal economic ALLOW and GEN payout is not represented in this browser-agent packet."
+    "A deliberately disputed or ambiguous semantic case that remains unresolved on this corrected deployment has not been captured.",
+    "The recipient's pre-payout account balance was not captured before the payout transaction; the finalized value-transfer child and exact Vault treasury delta are recorded."
   ],
+  "funded_economic_allow": {
+    "spend_id": 6,
+    "request": {
+      "transaction": "0x9a5391567e86db198c129f880b59a6136d94b5d29a447cefa995bf500fc67c42",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "amount": "100000000000000000",
+      "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+      "category": "creative"
+    },
+    "evidence": {
+      "vendor_attach": "0x54eade4526758f9b7643ea3bd7d9081877f8512fc16c7e6b372008b5fbe39fb9",
+      "delivery_attach": "0x7784c3725defa9b1239ecbe7b6cab10b2b447980165ce646773fb0c960f299ba",
+      "seal": "0xe79e9febd51b0021e28f73a69b0b07ca53cfcd3e86a26f197ef62047e648e619",
+      "roles": ["vendor", "delivery"],
+      "usage": "reusable",
+      "digest": "7211b94f61a9a193dae3de166d900bfe91e967130155dd7f9084c4652efd9c98"
+    },
+    "adjudication": {
+      "transaction": "0xc1522f67cb51ffb9ba86d6a64657e8a344d11e3c2bbd758431c276cc004babcc",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "verdict": "allow",
+      "confidence": 99,
+      "triggered_children": ["0x8f1198bc41f6a8b52206549a4496fa88549105cc6176df0cb6387d2e07f2475a"]
+    },
+    "court_to_guard_to_vault": {
+      "court_primary": "0x8f1198bc41f6a8b52206549a4496fa88549105cc6176df0cb6387d2e07f2475a",
+      "close_unappealed": "0xb15f1b4a4b4193eb6c8f6de918b43850e71a78708e8bbe475bd43662588fb003",
+      "guard_terminal": "0x606cf1a731ad065c51b56cb47356380b663122b25b1a8c42caf1e5041a630d84",
+      "bond_lock": "0xfbb8dadd26cf3024954b3eed32f8a29b4164995bb0b14ac293aa97e38eaeef75",
+      "bond_lock_confirmation": "0xdf380685cf70dfa1e22a99ead8ed4ffab79c59d9c4c76ca8201133ca666cabae",
+      "vault_terminal": "0x50eb62483c0c7b9d0ac3b2a2e689b940c5e4fc75b40fc5dfe10f5b6cd7f01bf9",
+      "all_status": "FINALIZED",
+      "all_execution": "SUCCESS"
+    },
+    "readbacks": {
+      "court": {"primary": "allow", "effective": "allow", "status": "terminal"},
+      "guard": {"terminal_semantic": "allow", "terminal_economic": "allow", "terminal_state": "allow", "terminal_reason": "semantic terminal decision accepted"},
+      "vault": {"terminal_decision": "allow", "paid_before_payout": false}
+    },
+    "funding": {
+      "transaction": "0x4099fd6b0d3df943a9ed383b117ebc7609aff3420ff1c1c941b332ec69227b78",
+      "value": "1000000000000000000",
+      "status": "FINALIZED",
+      "value_credited": true,
+      "treasury_before_payout": "1000000000000000000"
+    },
+    "payout": {
+      "transaction": "0x02337f8098781cbe91ca278f4669279ab6bc5950b1224d00e7576356db3c813a",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "SUCCESS",
+      "triggered_transfer": "0xdb470615e4da7eea83ce806e394d0bf100183dfbac2c65bc00748104141ee46f",
+      "transfer_status": "FINALIZED",
+      "transfer_value": "100000000000000000",
+      "transfer_value_credited": true,
+      "treasury_after_payout": "900000000000000000",
+      "paid_total": "100000000000000000",
+      "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+      "recipient_balance_after_observed": "893870000000000000000",
+      "recipient_balance_before_observed": null
+    },
+    "duplicate_payout": {
+      "transaction": "0x451891a810c6a775b7555f7ebe8b0df2e8b5a020539bf8979e0b4a3fcebf4727",
+      "spend_id": 6,
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leader_execution": "ERROR",
+      "reason": "[EXPECTED] spend already paid"
+    },
+    "standing": {
+      "observed_after_terminal": "2000000000000000000",
+      "locked_after_terminal": "100000000000000000"
+    }
+  },
   "explorer_prefix": "https://explorer-studio.genlayer.com/tx/"
 }

@@ -1,0 +1,2 @@
+STEWARDRAIL_ACCEPT_2026
+This artifact is used for a bounded consistency experiment. The token is the only semantic fact the frozen rule considers.
