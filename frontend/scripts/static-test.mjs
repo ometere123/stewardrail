@@ -21,4 +21,6 @@ if (text.includes("client.connect(\"studionet\")") || text.includes("waitfordeci
 if (!text.includes("resultname") || !text.includes("majority_agree") || !text.includes("undetermined")) throw new Error("consensus result handling missing");
 if (!text.includes("status_by_number") || !text.includes("execution_by_number") || !text.includes("leader?.execution_result")) throw new Error("numeric Studio receipt normalization missing");
 if (text.includes("amount (wei)") || text.includes("fund amount (wei)")) throw new Error("raw wei label remains in the primary UI");
+const evidence = fs.readFileSync(path.join(root, "app", "evidence", "page.tsx"), "utf8").toLowerCase();
+if (!evidence.includes("const [issuer,setissuer]") || !evidence.includes("args={[number(spend),issuer")) throw new Error("evidence attachment must bind the explicit attested issuer");
 console.log("frontend static test: PASS");
