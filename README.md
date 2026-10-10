@@ -101,37 +101,37 @@ Vault records the recipient and amount from the frozen Guard spend record. `pay(
 
 ## Canonical Studionet deployment
 
-The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the current deployment/proof status is [`deploy/proofs/final-source-stack-2026-10-10.json`](deploy/proofs/final-source-stack-2026-10-10.json). Earlier lifecycle packets are historical records for superseded source generations.
+The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the current deployment/proof status is [`deploy/proofs/replay-safe-final-stack-2026-10-10.json`](deploy/proofs/replay-safe-final-stack-2026-10-10.json). Earlier lifecycle packets are historical records for superseded source generations.
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0x5DAF…f0c6](https://explorer-studio.genlayer.com/address/0x5DAF7d7351115a28f279e6f0610d362d40c1f0c6) |
-| EvidenceRegistry | [0x87D7…7107](https://explorer-studio.genlayer.com/address/0x87D7bD3d6038FFB69fD39b20950E392650C37107) |
-| StewardCourt | [0xb29A…2fB6](https://explorer-studio.genlayer.com/address/0xb29AD5AcAF20B2187e2B4E50A71450b6F95f2fB6) |
-| StewardBondVault | [0x26b7…5675](https://explorer-studio.genlayer.com/address/0x26b7714E00279cA83Dc78466bE25798e54d05675) |
-| StewardGuard | [0xeA83…AD8](https://explorer-studio.genlayer.com/address/0xeA838677a8C0c3A955722846be490FDc90583AD8) |
-| StewardVault | [0xFF6F…fd00](https://explorer-studio.genlayer.com/address/0xFF6FcE9432bC416130de3C26b5b0f507880aFd00) |
+| StewardCharter | [0x06F4…3Ae5](https://explorer-studio.genlayer.com/address/0x06F4e189Fd75dfccea8bA430c2ce24a49c7f3Ae5) |
+| EvidenceRegistry | [0x6540…37D0](https://explorer-studio.genlayer.com/address/0x6540F32687Be2e5578Cb5fD24A30A45c427237D0) |
+| StewardCourt | [0x2C40…BBcC](https://explorer-studio.genlayer.com/address/0x2C40977F48179D4734a6B31Ca9ccb6f5b220BBcC) |
+| StewardGuard | [0x64A5…DF99](https://explorer-studio.genlayer.com/address/0x64A5CF47f75dBe229fB2fE6Af578a899b417DF99) |
+| StewardVault | [0x29C1…8A5A](https://explorer-studio.genlayer.com/address/0x29C1b0Ff4843838f2Bc02ec281a1583994458A5A) |
+| StewardBondVault | [0x4dB5…ed70](https://explorer-studio.genlayer.com/address/0x4dB5c25F35Fe01F39A82208FD95Bb6374fCCed70) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
 ## Source integrity
 
-The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The current deployment source commit is `57fc43cd1c0438e4aaf071822b546509473d8c26`.
+The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The current deployment source commit is `e877a7b1ce32c29866655026b9bf62f95409a43d`.
 
 ```text
 contracts/steward_charter.py     d4d13884ff29ad695ebe655ad66c033d3c3006c7308ab76d0f23eb2b1a4820c1
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
 contracts/steward_court.py       c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31
 contracts/steward_guard.py       70a585ca15e64d38aaeb0b820f7c60a205bc4bdb832ab49b7fee5482e7de0378
-contracts/steward_vault.py       e4c4a442435ce81a03afecb9c9c3546c50e5ff1f80599dbebcf23d75b4b67c03
-contracts/steward_bond_vault.py  bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3c1da75fe16c342df6
+contracts/steward_vault.py       9b22e192fe84d6e3a9f6a6de81dc15997006d935cb1fa8a5b72c50ea6b933e95
+contracts/steward_bond_vault.py  c1b78a1b58ea7ac34b5ea0b313b0c631c60c14b546e9d57b4c262f1c85c12284
 ```
 
 ## Observed live proof
 
-The current packet records the fresh six-contract deployment, threshold binding, source hashes, and a funded current-source economic lifecycle. Spend `0` reached semantic `ALLOW`, then finalized through Court → Guard → BondVault lock/confirmation → Vault. A 2 GEN treasury fund and 1 GEN payout finalized successfully; the payout's native transfer child reports `value_credited: true`, and a duplicate payment finalized with the expected error. The registration-reconciliation behavior is covered by adversarial tests: an unacknowledged registration can be retried before its deadline, and a refunded registration cannot later produce Guard or Vault consequences. The network does not provide a safe control for deliberately dropping one internal child, so that lost-acknowledgment branch is not represented as a forced live observation.
+The current packet records the fresh six-contract deployment, threshold binding, source hashes, and a funded current-source economic lifecycle. Spend `1` reached semantic `ALLOW`, then finalized through Court → Guard → BondVault lock/confirmation → Vault. A 2 GEN treasury fund and 0.1 GEN payout finalized successfully; the payout's native transfer child reports `value_credited: true`. The settlement replay fix is proven by the direct adversarial suite: ordinary reconciliation cannot emit another payable child, explicit retries are guarded, and duplicate receiver credits reject before accepting value. A fresh bonded challenge settlement was not observed on this deployment because the short challenge window elapsed after payout; the packet labels that limitation explicitly rather than reusing older evidence.
 
-The current source/deployment record is linked from [`final-source-stack-2026-10-10.json`](deploy/proofs/final-source-stack-2026-10-10.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
+The current source/deployment record is linked from [`replay-safe-final-stack-2026-10-10.json`](deploy/proofs/replay-safe-final-stack-2026-10-10.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 
 ## Frontend
 

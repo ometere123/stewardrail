@@ -4,7 +4,7 @@
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
   "status": "fresh-source-matched-stack",
-  "sourceCommit": "57fc43cd1c0438e4aaf071822b546509473d8c26",
+  "sourceCommit": "e877a7b1ce32c29866655026b9bf62f95409a43d",
   "deployer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
   "actors": {
     "principalA": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
@@ -16,61 +16,75 @@
     "challenger": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
   },
   "contracts": {
-    "StewardCharter": "0x5DAF7d7351115a28f279e6f0610d362d40c1f0c6",
-    "EvidenceRegistry": "0x87D7bD3d6038FFB69fD39b20950E392650C37107",
-    "StewardCourt": "0xb29AD5AcAF20B2187e2B4E50A71450b6F95f2fB6",
-    "StewardBondVault": "0x26b7714E00279cA83Dc78466bE25798e54d05675",
-    "StewardGuard": "0xeA838677a8C0c3A955722846be490FDc90583AD8",
-    "StewardVault": "0xFF6FcE9432bC416130de3C26b5b0f507880aFd00"
+    "StewardCharter": "0x06F4e189Fd75dfccea8bA430c2ce24a49c7f3Ae5",
+    "EvidenceRegistry": "0x6540F32687Be2e5578Cb5fD24A30A45c427237D0",
+    "StewardCourt": "0x2C40977F48179D4734a6B31Ca9ccb6f5b220BBcC",
+    "StewardGuard": "0x64A5CF47f75dBe229fB2fE6Af578a899b417DF99",
+    "StewardVault": "0x29C1b0Ff4843838f2Bc02ec281a1583994458A5A",
+    "StewardBondVault": "0x4dB5c25F35Fe01F39A82208FD95Bb6374fCCed70"
   },
   "deploymentTransactions": {
-    "StewardCharter": {"hash": "0xa841f9b433d3740c473cfd8f2cd6f859cae9dd2af86b81be2f23ab97cbad46c9", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "EvidenceRegistry": {"hash": "0x5f6d385964fe955a077c2e588cc51fcd470d1e87f2a0fa26458c8bff62886bdc", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardCourt": {"hash": "0x3628c683c8ae1cad4b289f808d3b6aa62d7eda5c988be07d82f60dffb1f54aaf", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardBondVault": {"hash": "0xdae9593b54c74dec3a56af011e5e2a19dfa9983b51019da3556a7653a142a714", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardGuard": {"hash": "0x4550bcfa6914b797bce125823b69fb48780009f3d401fd0493ee5387b5da476e", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardVault": {"hash": "0x01397ac35caba7f3419886bd762f468f7f20c3b2a47a15072925cefed796cfb0", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"}
+    "StewardCharter": {"hash": "0x34d4df874e1c8945d581d482c9004c971aab92a0b5cbfcf1ac352148fa274319", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "EvidenceRegistry": {"hash": "0x5ec2a380a50a8463ca4b937ac2fb0e564a3be65214cd153a4ee49a748de0f75b", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardCourt": {"hash": "0xc617e985e47e45ac503591e7cfe8de2db454ef0cf158b5e921f6d12edbd37adb", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardBondVault": {"hash": "0x2781b0eac790f381f404c253bf5fc14ec3fbde68b97703eeb1751ffa9893d40a", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardGuard": {"hash": "0xdbc8e8dad55aa40e09fac50a338808a7078891da7e64cb706cbbd6ed7b439272", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardVault": {"hash": "0x46f2c3d8f0e3eb0d9857dd1d68e04ed364c59ceb17d130eddc5543746c1c4596", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"}
   },
   "governanceTransactions": {
-    "bondApprovalA": "0x898c132e89ccd81ce42b62136fb5374815852111f89f82f4996032802a11dbc2",
-    "bondApprovalB": "0x002509aa44cd6c69b5eadfbe34be3b6bc812949c4e893be1623c0032a6a38441",
-    "bondBind": "0x1c31ae0f3189841a8ff0b27ce3836620bf329b21588afa1ecca9029296824abb",
-    "mandateApprovalA": "0x946d7d45f248e8dc69badda23fbf03396d6236f75d76e1efc332473635381414",
-    "mandateApprovalB": "0x4be49d2b8e387f1b86c7e972e02ba1815f386885bbe3dd5094789a70276afbdc"
+    "bondApprovalA": "not-captured-in-cli-output; binding readback is true",
+    "bondApprovalB": "0x3f96a1c1b3717473b378882a75b4bcb32cf614ff85b4d77b2500cf58bba25f5f",
+    "bondBind": "0xe5cee451e1aae22e0d1ffe373bf6c626e29983c92562a5ab5497ee0faa36e2eb",
+    "mandateApprovalA": "0xdc91cae06f6cecf71eeac3a18e07cbab7ad37949d2eba7117662dc1e79160bcf",
+    "mandateApprovalB": "0x0fc6170bb65bef4490d1f897e8e52eadbfb9cc5ef95b964e96a65bbb28694d2d"
   },
   "sourceSha256": {
     "contracts/steward_charter.py": "d4d13884ff29ad695ebe655ad66c033d3c3006c7308ab76d0f23eb2b1a4820c1",
     "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
     "contracts/steward_court.py": "c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31",
     "contracts/steward_guard.py": "70a585ca15e64d38aaeb0b820f7c60a205bc4bdb832ab49b7fee5482e7de0378",
-    "contracts/steward_vault.py": "e4c4a442435ce81a03afecb9c9c3546c50e5ff1f80599dbebcf23d75b4b67c03",
-    "contracts/steward_bond_vault.py": "bc4cd665fa91c68647c5cac359fa22f93d787a960b739f3c1da75fe16c342df6"
+    "contracts/steward_vault.py": "9b22e192fe84d6e3a9f6a6de81dc15997006d935cb1fa8a5b72c50ea6b933e95",
+    "contracts/steward_bond_vault.py": "c1b78a1b58ea7ac34b5ea0b313b0c631c60c14b546e9d57b4c262f1c85c12284"
   },
   "liveFunding": {
-    "standingDeposit": {"tx": "0x9b5466fa5805cd91b86fb272f892ccb1befd5d33053ff9adf419523122d977fa", "amount": "2000000000000000000", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true},
-    "treasuryFund": {"tx": "0x475bad4b162a5ce05ec1ffb48d938c9be6f191a80b9cbdb0e95c6d02e1942926", "amount": "2000000000000000000", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true}
-  },
-  "readbacks": {
-    "charter": {"version": 1, "threshold": 2, "agent": "0xac3ac69dc0bde389256dd6748c75817ead9286d9"},
-    "bondVault": {"standing": "6000000000000000000", "locked": "1000000000000000000", "challengeCount": 0},
-    "vault": {"treasury": "1000000000000000000", "funded": "2000000000000000000", "paidTotal": "1000000000000000000"},
-    "currentStackEconomicLifecycle": "OBSERVED_FUNDED_SEMANTIC_ALLOW_AND_EXACT_PAYOUT"
+    "treasuryFund": {"tx": "0x7e7047fd45176d8b4642168e44d40dad0c79904e063de2153a26f1bbc93cd7a3", "amount": "2000000000000000000", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true},
+    "standingDeposit": {"tx": "0x364338ae9d8c985daaab52e740622ff60b2827a69c2d551fb669ebd7ffcaf44d", "amount": "1000000000000000000", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true}
   },
   "liveLifecycle": {
-    "currentStack": "OBSERVED_FUNDED_SEMANTIC_ALLOW_AND_EXACT_PAYOUT",
-    "spendId": 0,
-    "courtClose": "0xa6881811e618129ce34417d3e940c628bf4074a415ea9bd03b6ceb2fb8410bff",
-    "guardTerminal": "0x78cc7364a480b1796a967edd5613e1aa4875984c75f8cbcbdcbd3cff907be0fd",
-    "bondVaultLock": "0xda18ed1fd0ce17410aba91a49a50a97ffdd45cd18f8f472a093dc181b2c385d7",
-    "bondVaultConfirmation": "0x6b76b6fc2b9dd932bceab2cbb0338da8450df6ace6931605aaba1466b517d00e",
-    "vaultTerminal": "0x401d7c78cc93a068cb93f6d40bc12f0a6b13bbdbaf360ed96fde5121b179a790",
-    "payout": "0xdfae7661e87e25126a16952d11ac4a7e255f3f2bfdb0f48a250e8c7e4d60dd68",
-    "transferChild": "0x9c77fe074f52a675005277f9d29add4dcc077254854deb1fbd314e79c225c744",
-    "duplicatePayout": "0x14a3bf09d8523a955965b4b199683a7de0762ee64a1bf85762b537d63b0b3466"
+    "spendId": 1,
+    "request": "0x386e8fe66fabfacdf441fb5445b2366d66a93f6de42d37d7244b50c88b753bbe",
+    "vendorEvidence": "0xd957dab4f2a454f88cd6905b543f83acf030555a890d6f7be81f55345749721f",
+    "deliveryEvidence": "0xe3370c28dc6ce315fb89de91053642b1d19afc02b46ae359b2960979534c488c",
+    "seal": "0xea21dc673528934079eab2ff4efddf062ce131915f6bd513d158675a77738fd1",
+    "adjudicate": "0x71e3821140804eaa3e0c68f7cbdf8fa90937e02a4d0ae409399ec792d10dd4b8",
+    "semantic": "ALLOW",
+    "courtClose": "0x5665b6ab0eaad0e7589c3194730926e06e276c25dc8ef6317d637bdd21432213",
+    "guardChild": "0xdd2aa48f2000ae716223e1b42b42d7a6634d5cbaf35f2863b479235bf76dc174",
+    "guardLockChild": "0x212bdace0dd47e2a1b228386af903401af068327825fff65809973b8f1b24b64",
+    "bondLockChild": "0x1f24ab975724c841dcf7d6cbae11e39e3c0068a58aa60dcf3660e5f8d113d53b",
+    "bondConfirmationChild": "0x875c82383bee2d794c5637a5c9b2d967a2fe3a18a3a9d12e8882ff194dd9fc12",
+    "terminalReadback": "Guard terminal semantic/economic ALLOW; BondVault locked 0.1 GEN; Vault terminal ALLOW",
+    "payout": "0xf3dd61b246ec669d86d50a3cf3e70119361d881def4eccb78e25141c4e96cadc",
+    "treasuryBefore": "8000000000000000000",
+    "treasuryAfter": "7900000000000000000",
+    "paidTotalAfter": "100000000000000000",
+    "recipient": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
+    "recipientBalanceAfter": "47.899999999999999 GEN"
   },
-  "limitations": [
-    "The current source generation was deployed fresh and now includes a funded semantic ALLOW, finalized Court-to-Guard-to-BondVault-to-Vault authorization, value-credited payout child, and duplicate-payment rejection.",
-    "A forced live internal-child loss is not safely inducible on Studionet; retry and expiry behavior is covered by deterministic cross-contract tests.",
-    "Active rolling exposure reads use bounded indexes; docket and eligible-revocation readbacks remain historical-map scans and are tracked as a scalability limitation."
-  ]
+  "settlementReplay": {
+    "liveStatus": "NOT_DEMONSTRATED",
+    "reason": "The fresh funded ALLOW and payout were observed. The short challenge window elapsed before a fresh bonded challenge could be opened; exact replay and zero-duplicate-value behavior is covered by the direct adversarial suite.",
+    "directEvidence": "tests/direct/test_economic_lifecycle.py::test_settled_upheld_reconciliation_does_not_reimburse_twice and duplicate_payable_credits_revert_without_balance_movement"
+  },
+  "localVerification": {
+    "python": "93 passed, 7 skipped",
+    "mutation": "69/69 killed",
+    "directMode": "6 passed, 1 skipped by genlayer-test second-contract limitation",
+    "genvmLint": "all six contracts passed",
+    "sourceManifest": "PASS",
+    "preflight": "PASS",
+    "networkCheck": "PASS (61999)",
+    "frontend": "tests PASS; typecheck PASS; build PASS; BUILD_ID MgxWRsV0d2oiRgg_Asc7F"
+  },
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
 }
