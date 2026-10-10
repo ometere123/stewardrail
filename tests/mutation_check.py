@@ -79,6 +79,9 @@ MUTANTS = [
     ("court-late-registration-result-gate", "steward_court.py", 'if registration != "registered":\n            raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")', 'if False:'),
     ("guard-expired-registration-result-gate", "steward_guard.py", 'if settlement_result == "registration_expired":\n                raise gl.vm.UserError("[EXPECTED] expired challenge cannot apply a result")', 'if False:'),
     ("vault-expired-registration-result-gate", "steward_vault.py", 'if settlement_result == "registration_expired":\n                raise gl.vm.UserError("[EXPECTED] expired challenge cannot affect custody")', 'if False:'),
+    ("vault-bond-credit-replay-guard", "steward_vault.py", 'existing = int(self.challenge_bond_received.get(key, u256(0)))\n        if existing > 0:', 'existing = int(self.challenge_bond_received.get(key, u256(0)))\n        if False:'),
+    ("vault-reimbursement-replay-guard", "steward_vault.py", 'existing = int(self.reimbursement_received.get(key, u256(0)))\n        if existing > 0:', 'existing = int(self.reimbursement_received.get(key, u256(0)))\n        if False:'),
+    ("bond-settlement-redelivery", "steward_bond_vault.py", 'if result == "dismissed":\n                    gl.get_contract_at(self.vault).emit(value=u256(int(self.challenge_bond[key])), on="finalized").receive_challenge_bond(int(challenge_id))', 'if False:'),
 ]
 
 

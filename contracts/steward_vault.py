@@ -36,6 +36,8 @@ class StewardVault(gl.Contract):
     paid: TreeMap[u256, u256]
     challenge_outcome: TreeMap[u256, str]
     latest_challenge: TreeMap[u256, u256]
+    challenge_bond_received: TreeMap[u256, u256]
+    reimbursement_received: TreeMap[u256, u256]
 
     def __init__(self, charter: str, guard: str, court: str, bond_vault: str):
         self.charter = Address(str(charter))
@@ -62,12 +64,27 @@ class StewardVault(gl.Contract):
         self.funded = u256(int(self.funded) + value)
 
     @gl.public.write.payable
-    def receive_reimbursement(self) -> None:
+    def receive_reimbursement(self, challenge_id: int, amount: int) -> None:
         if gl.message.sender_address != self.bond_vault:
             raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may reimburse treasury")
         value = int(gl.message.value)
-        if value <= 0:
+        if value <= 0 or int(amount) != value:
             raise gl.vm.UserError("[EXPECTED] reimbursement must be positive")
+        challenge = json.loads(str(gl.get_contract_at(self.bond_vault).view().challenge(int(challenge_id))))
+        settlement = str(challenge.get("settlement", ""))
+        if str(challenge.get("state", "")) != "settled" or settlement == "":
+            raise gl.vm.UserError("[EXPECTED] reimbursement requires a settled challenge")
+        settled = json.loads(settlement)
+        expected = int(settled.get("restitution", 0))
+        if str(settled.get("result", "")) != "upheld" or expected != value:
+            raise gl.vm.UserError("[EXPECTED] reimbursement amount does not match settlement")
+        key = u256(int(challenge_id))
+        existing = int(self.reimbursement_received.get(key, u256(0)))
+        if existing > 0:
+            if existing != value:
+                raise gl.vm.UserError("[EXPECTED] conflicting reimbursement replay")
+            return
+        self.reimbursement_received[key] = u256(value)
         self.treasury = u256(int(self.treasury) + value)
         self.funded = u256(int(self.funded) + value)
 
@@ -176,12 +193,25 @@ class StewardVault(gl.Contract):
     def receive_challenge_bond(self, challenge_id: int) -> None:
         if gl.message.sender_address != self.bond_vault:
             raise gl.vm.UserError("[EXPECTED] only the bound collateral vault may return a dismissed bond")
-        if int(gl.message.value) <= 0:
+        value = int(gl.message.value)
+        if value <= 0:
             raise gl.vm.UserError("[EXPECTED] challenge bond must be positive")
-        if self.challenge_outcome.get(u256(int(challenge_id)), "") == "":
-            raise gl.vm.UserError("[EXPECTED] challenge outcome is not recorded")
-        self.treasury = u256(int(self.treasury) + int(gl.message.value))
-        self.funded = u256(int(self.funded) + int(gl.message.value))
+        challenge = json.loads(str(gl.get_contract_at(self.bond_vault).view().challenge(int(challenge_id))))
+        settlement = str(challenge.get("settlement", ""))
+        if str(challenge.get("state", "")) != "settled" or settlement == "":
+            raise gl.vm.UserError("[EXPECTED] challenge bond settlement is not recorded")
+        settled = json.loads(settlement)
+        if str(settled.get("result", "")) != "dismissed" or int(challenge.get("bond", 0)) != value:
+            raise gl.vm.UserError("[EXPECTED] challenge bond does not match settlement")
+        key = u256(int(challenge_id))
+        existing = int(self.challenge_bond_received.get(key, u256(0)))
+        if existing > 0:
+            if existing != value:
+                raise gl.vm.UserError("[EXPECTED] conflicting challenge bond replay")
+            return
+        self.challenge_bond_received[key] = u256(value)
+        self.treasury = u256(int(self.treasury) + value)
+        self.funded = u256(int(self.funded) + value)
 
     @gl.public.view
     def status(self) -> str:

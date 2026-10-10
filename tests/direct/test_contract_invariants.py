@@ -65,6 +65,12 @@ def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
     assert "emit_transfer" in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound guard may apply challenge outcomes")' in src
     assert 'key = u256(int(challenge_id))\n        incoming = json.dumps({"challenge_id": int(challenge_id)' in src
+    assert "challenge_bond_received" in src
+    assert "reimbursement_received" in src
+    assert "conflicting reimbursement replay" in src
+    assert "conflicting challenge bond replay" in src
+    assert 'existing = int(self.challenge_bond_received.get(key, u256(0)))\n        if existing > 0:' in src
+    assert 'existing = int(self.reimbursement_received.get(key, u256(0)))\n        if existing > 0:' in src
 
 
 def test_bond_vault_is_narrow_and_guard_bound():
@@ -104,6 +110,9 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'keep_lock_for_retry = (not bool(upheld)) and self._future_challenge_permitted(spend_id)' in src
     assert '"future_challenges_remaining": keep_lock_for_retry' in src
     assert 'if release_lock and locked_for_spend > 0:' in src
+    assert 'receive_reimbursement(int(challenge_id), recovered)' in src
+    assert 'receive_challenge_bond(int(challenge_id))' in src
+    assert 'if result == "dismissed":' in src
 
 
 def test_charter_has_no_unilateral_historical_override():

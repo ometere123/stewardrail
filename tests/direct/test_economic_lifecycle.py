@@ -383,6 +383,34 @@ def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
 
+def test_settled_dismissal_reconciliation_redelivers_lost_vault_credit_once():
+    rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[AGENT]=1000; rt.call(BOND,'deposit_standing',sender=AGENT,value=500)
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'dismissed with lost credit',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61
+    rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER)
+    # Court -> Guard -> Vault -> BondVault are each finalized children.
+    flush_one(rt); flush_one(rt); flush_one(rt)
+    # Drop the BondVault -> Vault credit child after BondVault has settled.
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    before=json.loads(rt.call(VAULT,'status',sender=A))['funded']
+    assert before == 0
+    assert rt.finalized
+    rt.finalized.pop(0)
+    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A)
+    rt.flush_finalized()
+    after=json.loads(rt.call(VAULT,'status',sender=A))['funded']
+    assert after == quote
+    # A second reconciliation is harmless and does not credit the bond twice.
+    rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A)
+    rt.flush_finalized()
+    assert json.loads(rt.call(VAULT,'status',sender=A))['funded'] == quote
+
 def test_unregistered_challenge_expires_permissionlessly_and_releases_payment_hold():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}

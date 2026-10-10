@@ -384,6 +384,15 @@ class StewardBondVault(gl.Contract):
             settlement = self.challenge_settlement.get(key, "")
             if settlement != "" and str(json.loads(settlement).get("result", "")) == "registration_expired":
                 raise gl.vm.UserError("[EXPECTED] expired challenge cannot be settled")
+            if settlement != "":
+                settled = json.loads(settlement)
+                result = str(settled.get("result", ""))
+                if result == "dismissed":
+                    gl.get_contract_at(self.vault).emit(value=u256(int(self.challenge_bond[key])), on="finalized").receive_challenge_bond(int(challenge_id))
+                elif result == "upheld":
+                    restitution = int(settled.get("restitution", 0))
+                    if restitution > 0:
+                        gl.get_contract_at(self.vault).emit(value=u256(restitution), on="finalized").receive_reimbursement(int(challenge_id), restitution)
             return
         if state != "open":
             raise gl.vm.UserError("[EXPECTED] challenge is not open")
@@ -405,7 +414,7 @@ class StewardBondVault(gl.Contract):
                 raise gl.vm.UserError("[EXPECTED] vault binding is not initialized")
             self.standing = u256(int(self.standing) - recovered - bonus)
             if recovered > 0:
-                gl.get_contract_at(self.vault).emit(value=u256(recovered), on="finalized").receive_reimbursement()
+                gl.get_contract_at(self.vault).emit(value=u256(recovered), on="finalized").receive_reimbursement(int(challenge_id), recovered)
             if bond > 0:
                 _Payee(challenger).emit_transfer(value=u256(bond))
             if bonus > 0:
