@@ -46,7 +46,7 @@
     "contracts/steward_bond_vault.py": "1cc62373f3be8d918cfa97fff6ebf61df0b02c80440a30ca9189d17d905dc0a4"
   },
   "readbacks": {
-    "charterVersion": 3,
+    "charterVersion": 4,
     "threshold": "2 of 2",
     "agent": "0x24fae7cd031ed702be63bdea8912141805b996bd",
     "bondVault": {"guard": "0x563647674d14e7e040210b22e7549e2647ab75b9", "court": "0x16fa4b83541194f989c255925ebea74243dbc50c", "vault": "0x49ac65c93c0bdabaf5af8e0dd1a6b98ea34e6e15"},

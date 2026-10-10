@@ -48,8 +48,9 @@
     "mandateVersion1": {"principalA": "0xaf9cf64689b57bb017f794ade28990640552830af2ef99e017f99e0993e4fc8c", "principalB": "0x50dcb668cca1b6e0cde88d5b52a8d4a80b8f9bf8f8b2918bfe27d8d1d390f4bd"},
     "mandateVersion2": {"principalA": "0xbe16c09995e694031523ffde4ff6db4cfe9b650f24e2158e348bad6949be77fa", "principalB": "0x34ec280014d4ca4a25d50f3531072818223c3cf977006d5c88ac75d592de84c1"},
     "mandateVersion3": {"principalA": "0xa26a2fc460b0eb4285999e2bf590f7e09172065b751edbd9fc98a38c8d77699d", "principalB": "0x1dcda95704a906628a672b96b6fee1e480419918c06e0d47ae8bdb8ec03ca0ab"},
+    "mandateVersion4": {"principalA": "0x43f5b940692a2e9195c1a4447026af7aec74f6ba0a2f92acce39ef45154d916c", "principalB": "0x5eb67ab9a73ec3448a3c40bf911568a7c590b095271ddfb3a5ae1ee953d0f63d"},
     "bondBinding": {"principalA": "0x3e9b7b34873b22ddf8aad12f6fd940e34e111ac06475e7c384befa7a2d60d816", "principalB": "0x98c261bb5e0db82718d17e430477d9e2423297cd18aa5ca215487b9db1178b81", "bind": "0x818e4cca0cd3963e84d5a05d6108a1cc5826c503433cd093415402f321b8676f"},
-    "readback": {"activeVersion": 3, "threshold": "2 of 2", "agent": "0x24fae7cd031ed702be63bdea8912141805b996bd"}
+    "readback": {"activeVersion": 4, "threshold": "2 of 2", "agent": "0x24fae7cd031ed702be63bdea8912141805b996bd"}
   },
   "scenarios": [
     {
@@ -102,10 +103,26 @@
       "status": "FINALIZED",
       "execution": "MAJORITY_DISAGREE",
       "note": "The semantic validator set disagreed twice; the held spend remains unterminalized and no economic success is claimed."
+    },
+    {
+      "id": "semantic-allow-attempt-v4",
+      "result": "not-observed",
+      "spendIds": [4, 5],
+      "transactions": {
+        "spend4Evidence": ["0xc95a6697970421861452cd32a47111071dfc9a18af2beb30c676fa9521be9479", "0xe313e96424b318199a109a6b412bac1dbaf62a5d0251abd800dcc0cd638dc039"],
+        "spend4Adjudication": "0xfdf72a241f0f1d84972f5aba99ad89194466bb69775b8b7ce2a33235e3d307b1",
+        "spend5Request": "0x5f37b213089c421b9d0b428ce8b26a4545c1cc14cf48b8783e15312efe733f9a",
+        "spend5Evidence": ["0xb48d988a079e52824fed37e1defa5ae7d0b4042e8cad6757965bc05dcbe92a6d", "0x210df3fee6807989ac4c2fe0b42dad30f86c0693b03f4d12662b0a668e6f621f", "0x09aa801af8d55b8698fd6ba76cbe9c2742274df3ed91e7ade7f5a93ef27b9812"],
+        "spend5Adjudication": "0x9ebb2d96a11487853b5642e57019d670414df348e6fed748a9726610bc6e721b"
+      },
+      "status": "FINALIZED",
+      "execution": "MAJORITY_DISAGREE",
+      "readbacks": {"spend4": "held", "spend5": "held"},
+      "note": "Both evidence-complete v4 semantic attempts finalized without validator consensus; no Court child or economic authorization was produced."
     }
   ],
   "unobserved": [
-    "A fresh semantic ALLOW was not finalized on this stack.",
+    "A fresh semantic ALLOW was not finalized on this stack; v4 evidence-complete attempts for spends 4 and 5 ended MAJORITY_DISAGREE.",
     "Fresh single-use replay, rolling reservation reversal, bonded challenge settlement and threshold recovery were not run against this source stack.",
     "The recipient balance before the payment was not captured before the payment transaction; only the post-payment CLI balance and value_credited child observation are recorded."
   ],
