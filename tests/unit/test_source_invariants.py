@@ -33,6 +33,7 @@ def test_jury_fetch_is_independent_in_leader_and_validator():
         assert 'def _leader_payload' in s
         assert 'def _same_verdict' in s
         assert 'def validator(leader_result: str)' not in s
+        assert 'return theirs[' not in s
 
 
 def test_no_principal_semantic_override():

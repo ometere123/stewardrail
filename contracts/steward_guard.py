@@ -477,7 +477,7 @@ class StewardGuard(gl.Contract):
                         raw = raw.encode("utf-8")
                     if hashlib.sha256(raw).hexdigest().lower() != item["digest"]:
                         mine = {"verdict": REFUSE, "confidence": 100, "reason": "evidence digest mismatch"}
-                        return theirs["verdict"] == mine["verdict"]
+                        return _same_verdict(leader_result, mine)
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
                     return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "evidence fetch failed"})
