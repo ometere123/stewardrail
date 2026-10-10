@@ -68,6 +68,11 @@ MUTANTS = [
     ("guard-lock-ack-gate", "steward_guard.py", 'stored_economic == ALLOW and bond_vault != "" and lock_state != "confirmed"', 'False'),
     ("guard-confidence-floor", "steward_guard.py", 'raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")', 'return result'),
     ("court-confidence-floor", "steward_court.py", 'raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")', 'return result'),
+    ("court-frozen-criteria-gate", "steward_court.py", 'if len(frozen_rules) == 0:', 'if False:'),
+    ("court-challenge-digest-fail-closed", "steward_court.py", 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence digest mismatch"})', 'return json.dumps({"verdict": ALLOW, "confidence": 100, "reason": "challenge evidence digest mismatch"})'),
+    ("court-challenge-unavailable-fail-closed", "steward_court.py", 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence unavailable"})', 'return json.dumps({"verdict": ALLOW, "confidence": 100, "reason": "challenge evidence unavailable"})'),
+    ("bond-dismissal-keeps-lock", "steward_bond_vault.py", 'keep_lock_for_retry = (not bool(upheld)) and self._future_challenge_permitted(spend_id)', 'keep_lock_for_retry = False'),
+    ("bond-dismissal-release-gate", "steward_bond_vault.py", 'if release_lock and locked_for_spend > 0:', 'if locked_for_spend > 0:'),
 ]
 
 

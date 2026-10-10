@@ -319,6 +319,16 @@ class StewardBondVault(gl.Contract):
         if bond > 0:
             _Payee(challenger).emit_transfer(value=u256(bond))
 
+    def _future_challenge_permitted(self, spend_id: int) -> bool:
+        key = u256(int(spend_id))
+        deadline = int(self.lock_deadline.get(key, u256(0)))
+        if deadline <= 0 or int(datetime.datetime.now().timestamp()) >= deadline:
+            return False
+        context = json.loads(str(gl.get_contract_at(self.guard).view().appeal_context(int(spend_id))))
+        policy = context["mandate"].get("challenge", {})
+        attempts = int(self.challenge_attempts_by_spend.get(key, u256(0)))
+        return attempts < int(policy.get("max_challenges", 2))
+
     @gl.public.write
     def settle(self, challenge_id: int, upheld: bool) -> None:
         if gl.message.sender_address != self.vault:
@@ -340,9 +350,8 @@ class StewardBondVault(gl.Contract):
         recovered = min(amount, available)
         bonus = 0
         locked_for_spend = int(self.locked_by_spend.get(u256(spend_id), u256(0)))
-        if locked_for_spend > 0:
-            self.locked = u256(int(self.locked) - locked_for_spend)
-            self.locked_by_spend[u256(spend_id)] = u256(0)
+        keep_lock_for_retry = (not bool(upheld)) and self._future_challenge_permitted(spend_id)
+        release_lock = not keep_lock_for_retry
         if bool(upheld):
             if _addr(self.vault) == _addr("0x0000000000000000000000000000000000000000"):
                 raise gl.vm.UserError("[EXPECTED] vault binding is not initialized")
@@ -354,17 +363,19 @@ class StewardBondVault(gl.Contract):
             if bonus > 0:
                 _Payee(challenger).emit_transfer(value=u256(bonus))
             self.challenger_losses[str(self.challenge_challenger[key])] = u256(0)
-            self.challenge_settlement[key] = json.dumps({"result": "upheld", "restitution": recovered, "reward": bonus, "shortfall": amount - recovered}, sort_keys=True)
+            self.challenge_settlement[key] = json.dumps({"result": "upheld", "restitution": recovered, "reward": bonus, "shortfall": amount - recovered, "lock_released": True, "future_challenges_remaining": False}, sort_keys=True)
             self.upheld_by_spend[u256(spend_id)] = u256(1)
         else:
             gl.get_contract_at(self.vault).emit(value=u256(bond), on="finalized").receive_challenge_bond(int(challenge_id))
             challenger_key = str(self.challenge_challenger[key])
             self.challenger_losses[challenger_key] = u256(int(self.challenger_losses.get(challenger_key, u256(0))) + 1)
             self.challenger_loss_at[challenger_key] = u256(int(datetime.datetime.now().timestamp()))
-            self.challenge_settlement[key] = json.dumps({"result": "dismissed", "restitution": 0, "reward": 0, "shortfall": 0}, sort_keys=True)
+            self.challenge_settlement[key] = json.dumps({"result": "dismissed", "restitution": 0, "reward": 0, "shortfall": 0, "lock_released": release_lock, "future_challenges_remaining": keep_lock_for_retry}, sort_keys=True)
             self.open_by_spend[u256(spend_id)] = u256(0)
         self.open_by_spend[u256(spend_id)] = u256(0)
-        self.locked_by_spend[u256(spend_id)] = u256(0)
+        if release_lock and locked_for_spend > 0:
+            self.locked = u256(int(self.locked) - locked_for_spend)
+            self.locked_by_spend[u256(spend_id)] = u256(0)
         self.challenge_state[key] = "settled"
 
     @gl.public.view

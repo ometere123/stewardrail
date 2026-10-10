@@ -314,8 +314,40 @@ def test_bonded_challenge_quote_open_blocks_payment_and_dismissal_settles():
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'challenge dismissed'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    assert 'FROZEN SUBSTANTIVE CRITERIA:' in rt.prompts[-1]
+    assert 'ORIGINAL DECISION EVIDENCE:' in rt.prompts[-1]
+    assert 'Does the authenticated evidence show this spend serves the shared mandate?' in rt.prompts[-1]
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     rt.call(VAULT,'pay',0,sender=A)
+
+def test_challenge_digest_mismatch_is_terminal_refuse_not_upheld():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'digest defect',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized()
+    rt.web[URI]=b'changed after challenge attestation'
+    rt.now += 61; rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'ignore the digest'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    record=json.loads(rt.call(COURT,'challenge',GUARD,0,sender=A))
+    assert record['upheld'] is False
+    assert 'digest mismatch' in record['reason']
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+
+def test_challenge_unavailable_evidence_is_terminal_refuse_not_upheld():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=100; quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'unavailable record',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized()
+    del rt.web[URI]
+    rt.now += 61; rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'invent evidence'}
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    record=json.loads(rt.call(COURT,'challenge',GUARD,0,sender=A))
+    assert record['upheld'] is False
+    assert 'unavailable' in record['reason']
 
 def test_bonded_challenge_replay_and_unauthorized_settlement_fail():
     rt=setup_stack(standing=200); digest=attest(rt); create_semantic(rt,digest)
@@ -400,6 +432,12 @@ def test_standing_lock_is_obligation_specific_and_blocks_withdrawal_until_settle
     rt.call(BOND,'open_challenge',0,200,'dismissed',challenge_evidence(digest),sender=CHALLENGER,value=quote); rt.flush_finalized(); rt.now += 61
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'dismissed'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
+    with pytest.raises(Exception,match='locked or insufficient'):
+        rt.call(BOND,'withdraw_standing',AGENT,400,sender=AGENT)
+    quote2=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'second dismissed',challenge_evidence(digest),sender=CHALLENGER,value=quote2); rt.flush_finalized(); rt.now += 61
+    rt.call(COURT,'resolve_challenge',GUARD,1,BOND,sender=CHALLENGER); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'status',sender=A))['locked']==0
 
 def test_unchallenged_lock_expires_permissionlessly_and_can_be_withdrawn():
@@ -426,6 +464,7 @@ def test_sequential_challenges_keep_independent_outcomes_and_settle_once_each():
     rt.model=lambda p:{'verdict':'refuse','confidence':95,'reason':'first dismissed'}
     rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
     assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    assert json.loads(rt.call(BOND,'status',sender=A))['locked']==200
     quote2=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
     rt.call(BOND,'open_challenge',0,200,'second challenge',challenge_evidence(digest),sender=CHALLENGER,value=quote2); rt.flush_finalized(); rt.now += 61
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'second upheld'}

@@ -100,6 +100,10 @@ def test_bond_vault_is_narrow_and_guard_bound():
     assert 'standing exposure challenge window is still open' in src
     assert 'if deadline <= 0 or int(datetime.datetime.now().timestamp()) < deadline:' in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound court may apply challenge results")' in text("steward_guard.py")
+    assert 'def _future_challenge_permitted' in src
+    assert 'keep_lock_for_retry = (not bool(upheld)) and self._future_challenge_permitted(spend_id)' in src
+    assert '"future_challenges_remaining": keep_lock_for_retry' in src
+    assert 'if release_lock and locked_for_spend > 0:' in src
 
 
 def test_charter_has_no_unilateral_historical_override():
@@ -169,6 +173,13 @@ def test_consequential_guards_remain_present():
     assert "revoked" in guard and "is_revoked" in guard
     assert 'if bool(gl.get_contract_at(self.guard).view().is_revoked(int(spend_id))):' in vault
     assert "terminal authorization has been revoked" in vault
+    assert 'if len(frozen_rules) == 0:' in court
+    assert 'FROZEN SUBSTANTIVE CRITERIA:' in court
+    assert 'ORIGINAL DECISION EVIDENCE:' in court
+    assert 'challenge evidence digest mismatch' in court
+    assert 'challenge evidence unavailable' in court
+    assert 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence digest mismatch"})' in court
+    assert 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence unavailable"})' in court
     assert "evidence submission window is still open" in guard
     assert "only the charter agent may attach initial evidence" in guard
     assert "duplicate evidence identity" in guard
