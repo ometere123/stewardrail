@@ -102,6 +102,19 @@ function successfulReceipt(receipt: any, expectedStatus: "ACCEPTED" | "FINALIZED
     && consensusAccepted(receipt);
 }
 
+/**
+ * Native GEN transfers are emitted as ordinary child transactions. They do not
+ * run a validator committee, so NO_MAJORITY is expected for that child. The
+ * network's value_credited flag is the authoritative delivery signal; it must
+ * never be used to bless a contract call with missing consensus.
+ */
+function valueTransferCredited(receipt: any): boolean {
+  return receipt?.value_credited === true
+    || receipt?.valueCredited === true
+    || receipt?.transfer?.value_credited === true
+    || receipt?.transfer?.valueCredited === true;
+}
+
 function failurePhase(receipt: any): "undetermined" | "failed" {
   return consensusUndetermined(receipt) ? "undetermined" : "failed";
 }
@@ -131,17 +144,36 @@ async function settleTriggered(client: any, parentHash: string, base: TxRecord, 
       children.push({ hash, phase: "failed", error: String(error?.message ?? error) });
       return false;
     }
-    const child = { hash, phase: consensusAccepted(decided) ? "decided" as const : failurePhase(decided), status: statusName(decided), consensus: consensusName(decided), execution: executionName(decided), error: consensusAccepted(decided) ? undefined : receiptFailure(decided, "ACCEPTED") };
+    const child = {
+      hash,
+      phase: consensusAccepted(decided) || valueTransferCredited(decided) ? "decided" as const : failurePhase(decided),
+      status: statusName(decided),
+      consensus: consensusName(decided),
+      execution: executionName(decided),
+      delivery: valueTransferCredited(decided) ? "value_credited" as const : undefined,
+      error: consensusAccepted(decided) || valueTransferCredited(decided) ? undefined : receiptFailure(decided, "ACCEPTED"),
+    };
     const index = children.findIndex((item) => item.hash === hash);
     if (index >= 0) children[index] = child; else children.push(child);
     onProgress({ ...base, phase: child.phase === "undetermined" ? "undetermined" : "decided", children });
     const final = await client.waitForTransactionReceipt({ hash, status: "FINALIZED", fullTransaction: true });
-    const ok = successfulReceipt(final, "FINALIZED");
-    const finalChild = { hash, phase: ok ? "finalized" as const : failurePhase(final), status: statusName(final), consensus: consensusName(final), execution: executionName(final), error: ok ? undefined : receiptFailure(final, "FINALIZED") };
+    const credited = valueTransferCredited(final);
+    const ok = successfulReceipt(final, "FINALIZED") || credited;
+    const finalChild = {
+      hash,
+      phase: ok ? "finalized" as const : failurePhase(final),
+      status: statusName(final),
+      consensus: consensusName(final),
+      execution: executionName(final),
+      delivery: credited ? "value_credited" as const : undefined,
+      error: ok ? undefined : receiptFailure(final, "FINALIZED"),
+    };
     const finalIndex = children.findIndex((item) => item.hash === hash);
     if (finalIndex >= 0) children[finalIndex] = finalChild; else children.push(finalChild);
     onProgress({ ...base, phase: ok ? "finalized" : finalChild.phase, children, error: ok ? base.error : finalChild.error });
-    if (!ok || !consensusAccepted(decided) || !executionSucceeded(decided)) return false;
+    const acceptedContractChild = consensusAccepted(decided) && executionSucceeded(decided);
+    const creditedNativeChild = credited || valueTransferCredited(decided);
+    if (!ok || (!acceptedContractChild && !creditedNativeChild)) return false;
     let nested: string[] = [];
     try { nested = await client.getTriggeredTransactionIds({ hash }); } catch { nested = []; }
     let all = true;

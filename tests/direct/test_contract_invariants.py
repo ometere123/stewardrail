@@ -39,6 +39,14 @@ def test_guard_nondeterminism_is_only_for_semantic_adjudication():
     assert 'emit(on="finalized").record_primary' in src
 
 
+def test_low_confidence_allow_is_rejected_without_verdict_rewrite():
+    for name in ["steward_guard.py", "steward_court.py"]:
+        src = text(name)
+        assert "def _enforce_confidence_floor" in src
+        assert 'raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")' in src
+        assert "if verdict == ALLOW and confidence <" not in src
+
+
 def test_court_has_real_reversal_and_finalized_terminal_delivery():
     src = text("steward_court.py")
     assert "record[\"effective\"] = str(result[\"verdict\"])" in src

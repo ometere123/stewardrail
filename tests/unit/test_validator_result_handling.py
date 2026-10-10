@@ -66,3 +66,12 @@ def test_valid_allow_is_not_normalized_to_refuse(path):
     parsed = verdict(Return({"verdict": "allow", "confidence": 95, "reason": "accepted"}).calldata)
     assert parsed["verdict"] == "allow"
     assert same(Return({"verdict": "allow", "confidence": 95}), {"verdict": "allow", "confidence": 95})
+
+
+@pytest.mark.parametrize("path", ["steward_guard.py", "steward_court.py"])
+def test_low_confidence_allow_keeps_its_semantic_verdict(path):
+    """Confidence policy must reject unsafe ALLOW explicitly, never rewrite it to REFUSE."""
+    _, _, verdict = _helpers(path)
+    parsed = verdict({"verdict": "allow", "confidence": 40, "reason": "uncertain"})
+    assert parsed["verdict"] == "allow"
+    assert parsed["confidence"] == 40

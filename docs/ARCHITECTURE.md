@@ -53,7 +53,7 @@ For the actual semantic question, leader and validators independently:
 - answer the same narrow rule question;
 - compare the resulting `allow|refuse` verdict.
 
-An `allow` below the confidence floor is hardened to `refuse`.
+An `allow` below the confidence floor is rejected explicitly as an unsafe semantic result. It is never silently rewritten to `refuse`; the transaction fails closed and the spend remains without a new semantic decision.
 
 ## 6. Appeal reversal
 

@@ -54,9 +54,14 @@ def _verdict(value) -> dict:
     except Exception as exc:
         raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer") from exc
     confidence = max(0, min(100, confidence))
-    if verdict == ALLOW and confidence < 70:
-        verdict = REFUSE
     return {"verdict": verdict, "confidence": confidence, "reason": str(parsed.get("reason", ""))[:240]}
+
+
+def _enforce_confidence_floor(result: dict, floor: int) -> dict:
+    """Reject an unsafe low-confidence ALLOW without rewriting its meaning."""
+    if str(result.get("verdict")) == ALLOW and int(result.get("confidence", 0)) < int(floor):
+        raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")
+    return result
 
 
 def _leader_payload(result):
@@ -292,7 +297,7 @@ class StewardCourt(gl.Contract):
             except Exception:
                 return False
             return _same_verdict(leader_result, independent)
-        result = _verdict(gl.vm.run_nondet_unsafe(leader, validator))
+        result = _enforce_confidence_floor(_verdict(gl.vm.run_nondet_unsafe(leader, validator)), 70)
         record["status"] = TERMINAL
         record["upheld"] = str(result["verdict"]) == ALLOW
         record["reason"] = str(result["reason"])
@@ -477,7 +482,7 @@ class StewardCourt(gl.Contract):
                 return False
             return _same_verdict(leader_result, independent)
 
-        result = _verdict(gl.vm.run_nondet_unsafe(leader, validator))
+        result = _enforce_confidence_floor(_verdict(gl.vm.run_nondet_unsafe(leader, validator)), 70)
         record["effective"] = str(result["verdict"])
         record["appeal_by"] = caller
         record["appeal_statement"] = str(statement)

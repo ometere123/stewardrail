@@ -66,6 +66,8 @@ MUTANTS = [
     ("bond-registration-ack-binding", "steward_bond_vault.py", 'if gl.message.sender_address != self.court:', 'if False:'),
     ("bond-registration-expiry-gate", "steward_bond_vault.py", 'if deadline <= 0 or int(datetime.datetime.now().timestamp()) < deadline:\n            raise gl.vm.UserError("[EXPECTED] challenge registration window is still open")', 'if False:'),
     ("guard-lock-ack-gate", "steward_guard.py", 'stored_economic == ALLOW and bond_vault != "" and lock_state != "confirmed"', 'False'),
+    ("guard-confidence-floor", "steward_guard.py", 'raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")', 'return result'),
+    ("court-confidence-floor", "steward_court.py", 'raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")', 'return result'),
 ]
 
 

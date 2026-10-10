@@ -55,10 +55,15 @@ def _verdict(value) -> dict:
     except Exception as exc:
         raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer") from exc
     confidence = max(0, min(100, confidence))
-    if verdict == ALLOW and confidence < 65:
-        verdict = REFUSE
     reason = str(parsed.get("reason", ""))[:240]
     return {"verdict": verdict, "reason": reason, "confidence": confidence}
+
+
+def _enforce_confidence_floor(result: dict, floor: int) -> dict:
+    """Reject an unsafe low-confidence ALLOW without rewriting its meaning."""
+    if str(result.get("verdict")) == ALLOW and int(result.get("confidence", 0)) < int(floor):
+        raise gl.vm.UserError("[LLM_ERROR] semantic ALLOW confidence is below the mandate floor")
+    return result
 
 
 def _leader_payload(result):
@@ -487,7 +492,7 @@ class StewardGuard(gl.Contract):
                 return False
             return _same_verdict(leader_result, independent)
 
-        agreed = _verdict(gl.vm.run_nondet_unsafe(leader, validator))
+        agreed = _enforce_confidence_floor(_verdict(gl.vm.run_nondet_unsafe(leader, validator)), 65)
         observe_only = True
         for rule in mandate.get("semantic_rules", []):
             if str(rule.get("id", "")) in fired and str(rule.get("consequence", "refuse")).strip().lower() != "observe":
