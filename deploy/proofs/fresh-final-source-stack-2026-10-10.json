@@ -1,0 +1,46 @@
+{
+  "scenario": "fresh-final-source-stack",
+  "observed_at": "2026-10-10",
+  "network": "Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "source_commit": "0850dec63113d6590ce276d57cf6058c62266635",
+  "source_sha256": {
+    "contracts/steward_charter.py": "726f5a19f5cd66987ed3d568be1c8b6e593801f8e9252b1e78a5f49fa2a37f2d",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "7a910177bd663ebafdcb6ea6468715fe7bf591f8da791e5f4a04af3cea943cd1",
+    "contracts/steward_guard.py": "18294b400a0b8a4294a3d0d85737fc0038e239f2439ed723df4993d02af7d60f",
+    "contracts/steward_vault.py": "2e3f65a9d6ad543aa3ba518376e74c505a90f77ffb8f1bb7638296b6d1d2b088",
+    "contracts/steward_bond_vault.py": "1cc62373f3be8d918cfa97fff6ebf61df0b02c80440a30ca9189d17d905dc0a4"
+  },
+  "contracts": {
+    "StewardCharter": {"address": "0x3328380853E2a8e5B59d1aD2563B636d1081FFEA", "deployment_tx": "0xa076acebdb243dff91a7db0990a538a97041ba60241ba56c8e1a7f6dc49cc1e7"},
+    "EvidenceRegistry": {"address": "0x36D72f04c46e30F125F9fdf859E2DB1B227D8119", "deployment_tx": "0x809a1fc8db89ff0436381bb4b29bdf1981aa36f2635c3f8c6c082b264bd6de44"},
+    "StewardCourt": {"address": "0xCD60E455a52b12b9e6e93e3171f99843e2f207f8", "deployment_tx": "0xdb70bf7a28088f142e324366843bcf96f92a870cf836438ebb14cb246479ab4b"},
+    "StewardBondVault": {"address": "0x5A62cDaebA51A9e7e4FEE90BB4120A2451beFB8D", "deployment_tx": "0xc7db29cc469126c17c7966b2bdf6566ecdef8c28dd492e4a6f7c53cced05c1f0"},
+    "StewardGuard": {"address": "0x90539546a6F954E2D5B91c7FE2a5eF21BAAf7809", "deployment_tx": "0x5b849b24b822e07b38e4db32cbe7a33b4551b4e7402d30338641c092bcaec80e"},
+    "StewardVault": {"address": "0x9C4f1105644e345D12a8921a2D8c04e044b86cEe", "deployment_tx": "0x583fb7b113ac1d0a070997793225255fe866588a91eea9772d712e8f91abe54e"}
+  },
+  "governance": {
+    "mandate_version": 1,
+    "threshold": "2 of 2",
+    "mandate_approval_transactions": [
+      "0x491d058981a03092fe41f3938cb2c336e3bd4b43acfb6f086fc69667a7fe25ac",
+      "0xd2629e695d43bfa8e616c79369ec679cb49925e9f0ea7e0bb2ac7ee2850c0b0b"
+    ],
+    "bond_binding_approval_transactions": [
+      "0x8e870ae7dccbf3b91f654e13494cc244697427c746c781bca00aff0f0f7d5773",
+      "0xaeaaa4f3ada1bd334d415faf764f47e05029dc95240ecbbe94d6e8e21987b2d4"
+    ],
+    "bond_binding_transaction": "0x32d627b1d1d93cf644e1374259b1c049c40df96596f0991cab73447c1bed2f1a"
+  },
+  "readbacks": {
+    "charter_current": {"version": 1, "threshold": 2, "agent": "0xfcef676044658b5402f590dabe9e04a0f640522f"},
+    "bond_vault": {"guard": "0x90539546a6f954e2d5b91c7fe2a5ef21baaf7809", "court": "0xcd60e455a52b12b9e6e93e3171f99843e2f207f8", "vault": "0x9c4f1105644e345d12a8921a2d8c04e044b86cee"},
+    "vault": {"charter": "0x3328380853e2a8e5b59d1ad2563b636d1081ffea", "guard": "0x90539546a6f954e2d5b91c7fe2a5ef21baaf7809", "court": "0xcd60e455a52b12b9e6e93e3171f99843e2f207f8", "bond_vault": "0x5a62cdaeba51a9e7e4fee90bb4120a2451befb8d"}
+  },
+  "status": "deployment_and_threshold_binding_observed",
+  "limitations": [
+    "This packet proves deployment, finalization, successful leader execution, threshold activation and binding readbacks only. It does not claim a semantic spend or funded economic lifecycle on this fresh stack."
+  ]
+}
