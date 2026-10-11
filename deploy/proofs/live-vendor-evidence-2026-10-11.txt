@@ -1,0 +1,4 @@
+StewardRail vendor attestation
+
+The vendor deliverable satisfies the jointly approved requirement.
+STEWARDRAIL_ACCEPT_2026

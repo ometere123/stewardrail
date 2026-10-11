@@ -1,0 +1,4 @@
+StewardRail delivery attestation
+
+The delivery record satisfies the jointly approved requirement.
+STEWARDRAIL_ACCEPT_2026
