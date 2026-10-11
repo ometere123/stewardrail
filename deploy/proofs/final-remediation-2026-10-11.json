@@ -1,12 +1,13 @@
 {
   "packet": "final-remediation-2026-10-11",
-  "status": "current-source-matched-deployment",
+  "status": "historical-superseded-source-generation",
   "observed_at": "2026-10-11",
   "network": "Studionet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
   "source_commit": "2f4959506a0d609c432d86e287c220caec8322b4",
+  "superseded_by": "deploy/proofs/canonical-2026-10-11-appeal-safety.json",
   "source_sha256": {
     "contracts/steward_charter.py": "5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab",
     "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",

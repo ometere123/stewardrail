@@ -1,0 +1,87 @@
+{
+  "packet": "canonical-2026-10-11-appeal-safety",
+  "status": "fresh-deployment-source-verified",
+  "network": "Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "source_commit": "c75f53f",
+  "source_hashes_verified_via": "gen_getContractCode (base64 decoded) compared with contracts/SOURCE_MANIFEST.json",
+  "source_sha256": {
+    "contracts/steward_charter.py": "5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "0d79981e546e62bf62cce5a2280657afebd2c06d2bc8c7513ecc5e573383881c",
+    "contracts/steward_guard.py": "0279c30f0b42da7c0528d67349c8ec2de93ee8692304fbaebc6ba3d5052ff1aa",
+    "contracts/steward_vault.py": "5fd342442aa7b745b60f9d5197bad6447e357223a3397ba15d6eef6d37de431a",
+    "contracts/steward_bond_vault.py": "add2daa5d4012819831d8a60450715dbf17fa7d662df63bb073541525471c039"
+  },
+  "contracts": {
+    "StewardCharter": {
+      "address": "0x5AB29aAa8234Ec84F6c3B043eF6B9297229423e8",
+      "deployment_tx": "0x067cc9924f3a362998312b292a0d64a136caf4235ad8186e1902463d560d40bd",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "EvidenceRegistry": {
+      "address": "0x5f906442Ccb82EeCF57ABB7bBc6242F422c8AaF4",
+      "deployment_tx": "0x86546de234ed00f1936d2ef55198067ce2dceb26c34f79d8dacf0a3ff68d96e6",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "StewardCourt": {
+      "address": "0xBA6db1eCAA688b2b3a8B36C088E85baf0dC7c81b",
+      "deployment_tx": "0xcc6e3edd6fd08b0a3bd69087c94b0e54769fca85b5feb7ab855ffc2815a0a76d",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "StewardBondVault": {
+      "address": "0xdE991a2Ea7447f7d705CC62289Ded64c63467D8B",
+      "deployment_tx": "0x00d984a896302fd3099ff7c02b0cab5a3d4d57fc93678a3d5bfd93315bac331b",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "StewardGuard": {
+      "address": "0xa4c0081760240aF0FfDFAA268568A51e9afd7279",
+      "deployment_tx": "0xebf6a48fc00722f6d70e06db354f68140e2a5c64aeb42550d0325e0a231ca5cc",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "StewardVault": {
+      "address": "0x268bB419a5143B7a017E0be7FcfC48A4830C9fBe",
+      "deployment_tx": null,
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "transaction_note": "The CLI transcript did not preserve the Vault deployment hash. The address is live and its base64-decoded gen_getContractCode hash matches the manifest; no hash is invented here."
+    }
+  },
+  "binding": {
+    "charter_bond_approval_principal_a": "0x0ca3e5506f66f6e00ffe8ab0e3e843503d39eeaecb23e3972ed37ef9db0ddaca",
+    "charter_bond_approval_principal_b": "0x890f9f1768a3fd2286843f2f252b525bd72abc2149a0a8d1747b8b46d72d22c2",
+    "bondvault_bind": "0x435a5a93038f41e469d16474b0e4710c75c49c74971081a512d83d782407d71e",
+    "binding_readback": "BondVault guard=a4c0081760240aF0FfDFAA268568A51e9afd7279; vault=268bB419a5143B7a017E0be7FcfC48A4830C9fBe; court read from Guard binding"
+  },
+  "verification": {
+    "python": "98 passed, 7 skipped before high-volume test addition",
+    "high_volume_reference": "3 passed (100, 1,000 and 5,000 records; boundary and recipient isolation)",
+    "mutation": "70/70 killed",
+    "direct_mode": "6 passed, 1 skipped (official runner second-contract limitation)",
+    "genvm_lint": "six contracts passed",
+    "source_manifest": "PASS",
+    "preflight": "PASS",
+    "cli": "0.39.1",
+    "network": "61999"
+  },
+  "live_observations": {
+    "deployment_and_binding": "Observed FINALIZED/SUCCESS receipts for all deployment and binding calls except the Vault deployment hash was not retained by the CLI transcript.",
+    "semantic_and_payment_lifecycle": "NOT OBSERVED on this corrected stack; earlier lifecycle packets are historical/superseded.",
+    "technical_appeal_closure": "NOT OBSERVED on public network; covered by direct adversarial test test_appeal_digest_failure_closes_neutral_without_calling_primary_technical_close.",
+    "bonded_challenge_settlement": "NOT OBSERVED on this corrected stack; covered by direct/runtime adversarial suites.",
+    "repeated_reconciliation": "NOT OBSERVED on this corrected stack; receiver-side and settlement idempotence tests remain local evidence."
+  },
+  "explorer_prefix": "https://explorer-studio.genlayer.com/tx/",
+  "limitations": [
+    "A safe public-network forced child failure was not created; unresolved payable delivery remains conservatively unresolved in source and is covered by adversarial tests.",
+    "The missing Vault deployment hash is a recordkeeping limitation, not a source-hash mismatch; the deployed address and decoded source were independently verified.",
+    "The full corrected-stack funded economic lifecycle must be rerun before its live evidence can be called current."
+  ]
+}

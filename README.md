@@ -97,41 +97,41 @@ Terminal payloads are fingerprinted and idempotent. Court reconciliation can re-
 
 ## Treasury safety
 
-Vault records the recipient and amount from the frozen Guard spend record. `pay(spend_id)` requires a terminal economic `ALLOW`, sufficient treasury, and no prior payment; callers cannot substitute a recipient or amount. The current source-matched packet records a one-GEN funded payout with a finalized payable child and an observed recipient balance increase, plus a duplicate-payment rejection with unchanged balances. Threshold recovery remains governed by the Charter rather than an individual owner.
+Vault records the recipient and amount from the frozen Guard spend record. `pay(spend_id)` requires a terminal economic `ALLOW`, sufficient treasury, and no prior payment; callers cannot substitute a recipient or amount. Historical packets contain funded payout observations, but the corrected stack's funded lifecycle is not claimed until rerun. Threshold recovery remains governed by the Charter rather than an individual owner.
 
 ## Canonical Studionet deployment
 
-The current source-matched stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and the current deployment/proof status is [`deploy/proofs/final-remediation-2026-10-11.json`](deploy/proofs/final-remediation-2026-10-11.json). Earlier lifecycle packets are historical records for superseded source generations.
+The fresh corrected source stack is recorded in [`deploy/deployments.json`](deploy/deployments.json) and [`deploy/proofs/canonical-2026-10-11-appeal-safety.json`](deploy/proofs/canonical-2026-10-11-appeal-safety.json). Earlier lifecycle packets are historical records for superseded source generations.
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0xf8c4…1313](https://explorer-studio.genlayer.com/address/0xf8c4321eDBfd5b7e1460b62900d5e32Bb2131313) |
-| EvidenceRegistry | [0x25Ce…B931](https://explorer-studio.genlayer.com/address/0x25Ce184DC0057498330f54aF2C9ff4568020B931) |
-| StewardCourt | [0xb253…3DC3](https://explorer-studio.genlayer.com/address/0xb253BF8e6026E1fA91982c64cDa2aed231143DC3) |
-| StewardGuard | [0x4704…b8f3](https://explorer-studio.genlayer.com/address/0x4704ca0aF7E376D94448B021C33A724c6DDEb8f3) |
-| StewardVault | [0x3D39…0Eee](https://explorer-studio.genlayer.com/address/0x3D393aEE5170091B9ebadCf57B9B37ba2C1b0Eee) |
-| StewardBondVault | [0x783B…dFC7](https://explorer-studio.genlayer.com/address/0x783B33c4D220ca80520468af4baF39e025D3dFC7) |
+| StewardCharter | [0x5AB2…423e8](https://explorer-studio.genlayer.com/address/0x5AB29aAa8234Ec84F6c3B043eF6B9297229423e8) |
+| EvidenceRegistry | [0x5f90…8AaF4](https://explorer-studio.genlayer.com/address/0x5f906442Ccb82EeCF57ABB7bBc6242F422c8AaF4) |
+| StewardCourt | [0xBA6d…7c81b](https://explorer-studio.genlayer.com/address/0xBA6db1eCAA688b2b3a8B36C088E85baf0dC7c81b) |
+| StewardGuard | [0xa4c0…7279](https://explorer-studio.genlayer.com/address/0xa4c0081760240aF0FfDFAA268568A51e9afd7279) |
+| StewardVault | [0x268b…9fBe](https://explorer-studio.genlayer.com/address/0x268bB419a5143B7a017E0be7FcfC48A4830C9fBe) |
+| StewardBondVault | [0xdE99…7D8B](https://explorer-studio.genlayer.com/address/0xdE991a2Ea7447f7d705CC62289Ded64c63467D8B) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
 ## Source integrity
 
-The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The current deployment source commit is `2f4959506a0d609c432d86e287c220caec8322b4`.
+The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The corrected deployment source commit is `c75f53f` (documentation and test commits after deployment do not change contract bytes).
 
 ```text
 contracts/steward_charter.py     5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-contracts/steward_court.py       f0f0e1f3b61479945054f1358f34bd9154547f9a2b33124c0cda1d9a93fe8aa9
-contracts/steward_guard.py       d34bd43364d2912aa944d0703faa01c7cc79a10887305dba8909dc77e09e6832
+contracts/steward_court.py       0d79981e546e62bf62cce5a2280657afebd2c06d2bc8c7513ecc5e573383881c
+contracts/steward_guard.py       0279c30f0b42da7c0528d67349c8ec2de93ee8692304fbaebc6ba3d5052ff1aa
 contracts/steward_vault.py       5fd342442aa7b745b60f9d5197bad6447e357223a3397ba15d6eef6d37de431a
 contracts/steward_bond_vault.py  add2daa5d4012819831d8a60450715dbf17fa7d662df63bb073541525471c039
 ```
 
 ## Observed live proof
 
-The current packet records the fresh six-contract deployment, threshold binding, source hashes, issuer attestations, a semantic `ALLOW` that was economically refused when standing coverage was absent, and a funded semantic `ALLOW` through Court → Guard → BondVault → Vault. It includes the finalized payout child, recipient/Vault balance deltas, and duplicate-payment rejection. Substantive `REFUSE`, application reversal, bonded challenge settlement, and technical-unresolved retry/closure were not rerun on this source generation; earlier lifecycle packets are historical and superseded.
+The canonical packet records the fresh six-contract deployment, threshold binding, and decoded on-chain source hashes. The corrected-stack funded semantic lifecycle, substantive refusal, application reversal, bonded challenge settlement, and technical-unresolved retry/closure are not yet claimed as current live observations; earlier lifecycle packets are historical and superseded.
 
-The current source/deployment record is linked from [`final-remediation-2026-10-11.json`](deploy/proofs/final-remediation-2026-10-11.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
+The current source/deployment record is linked from [`canonical-2026-10-11-appeal-safety.json`](deploy/proofs/canonical-2026-10-11-appeal-safety.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 
 ## Frontend
 
