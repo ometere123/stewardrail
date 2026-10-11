@@ -54,6 +54,8 @@ def test_court_has_real_reversal_and_finalized_terminal_delivery():
     assert "close_unappealed" in src
     assert "only a principal, agent, or spend recipient may appeal" in src
     assert "record_terminal" not in src
+    assert 'return json.dumps({"classification": challenge_error, "confidence": 0' in src
+    assert "EVIDENCE_INTEGRITY_ERROR" in src and "EVIDENCE_UNAVAILABLE" in src
 
 
 def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
@@ -64,7 +66,9 @@ def test_vault_has_no_agent_payout_bypass_and_is_idempotent():
     assert "recovery_is_approved" in src
     assert "emit_transfer" in src
     assert 'raise gl.vm.UserError("[EXPECTED] only the bound guard may apply challenge outcomes")' in src
-    assert 'key = u256(int(challenge_id))\n        incoming = json.dumps({"challenge_id": int(challenge_id)' in src
+    assert 'key = u256(int(challenge_id))' in src
+    assert 'key = u256(int(challenge_id))\n        court_case = json.loads(str(gl.get_contract_at(self.court).view().challenge(_addr(self.guard), int(challenge_id))))\n        neutral = str(court_case.get("terminal_kind", "")) == "technical_unresolved_closed"' in src
+    assert 'incoming = json.dumps({"challenge_id": int(challenge_id)' in src
     assert "challenge_bond_received" in src
     assert "reimbursement_received" in src
     assert "conflicting reimbursement replay" in src
@@ -196,10 +200,9 @@ def test_consequential_guards_remain_present():
     assert 'if len(frozen_rules) == 0:' in court
     assert 'FROZEN SUBSTANTIVE CRITERIA:' in court
     assert 'ORIGINAL DECISION EVIDENCE:' in court
-    assert 'challenge evidence digest mismatch' in court
-    assert 'challenge evidence unavailable' in court
-    assert 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence digest mismatch"})' in court
-    assert 'return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence unavailable"})' in court
+    assert 'EVIDENCE_INTEGRITY_ERROR' in court
+    assert 'EVIDENCE_UNAVAILABLE' in court
+    assert 'technical_unresolved' in court
     assert "evidence submission window is still open" in guard
     assert "only the charter agent may attach initial evidence" in guard
     assert "duplicate evidence identity" in guard

@@ -7,6 +7,12 @@ from urllib.parse import urlparse
 
 ALLOW = "allow"
 REFUSE = "refuse"
+TECHNICAL_UNRESOLVED = "technical_unresolved"
+TECHNICAL_CLOSED = "technical_unresolved_closed"
+EVIDENCE_UNAVAILABLE = "evidence_unavailable"
+EVIDENCE_INTEGRITY_ERROR = "evidence_integrity_error"
+INVALID_MODEL_OUTPUT = "invalid_model_output"
+CONSENSUS_FAILURE = "consensus_failure"
 OPEN = "open"
 APPEALED = "appealed"
 TERMINAL = "terminal"
@@ -49,12 +55,31 @@ def _verdict(value) -> dict:
     verdict = str(parsed.get("verdict", "")).lower().strip()
     if verdict not in (ALLOW, REFUSE):
         raise gl.vm.UserError("[LLM_ERROR] validator verdict must be allow or refuse")
-    try:
-        confidence = int(parsed.get("confidence", 0))
-    except Exception as exc:
-        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer") from exc
-    confidence = max(0, min(100, confidence))
+    confidence_value = parsed.get("confidence", None)
+    if isinstance(confidence_value, bool) or not isinstance(confidence_value, int):
+        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer")
+    confidence = int(confidence_value)
+    if confidence < 0 or confidence > 100:
+        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer in 0..100")
     return {"verdict": verdict, "confidence": confidence, "reason": str(parsed.get("reason", ""))[:240]}
+
+
+def _outcome(value) -> dict:
+    parsed = _as_dict(value)
+    classification = str(parsed.get("classification", "")).lower().strip()
+    if classification in (EVIDENCE_UNAVAILABLE, EVIDENCE_INTEGRITY_ERROR, INVALID_MODEL_OUTPUT, CONSENSUS_FAILURE):
+        return {"verdict": TECHNICAL_UNRESOLVED, "classification": classification, "confidence": 0, "reason": str(parsed.get("reason", ""))[:240]}
+    result = _verdict(parsed)
+    result["classification"] = "substantive"
+    return result
+
+
+def _technical_reason(prefix: str, classification: str) -> str:
+    if str(classification) == EVIDENCE_INTEGRITY_ERROR:
+        return str(prefix) + " digest mismatch; substantive challenge outcome unavailable"
+    if str(classification) == EVIDENCE_UNAVAILABLE:
+        return str(prefix) + " evidence unavailable; substantive challenge outcome unavailable"
+    return str(prefix) + " semantic consensus unavailable"
 
 
 def _enforce_confidence_floor(result: dict, floor: int) -> dict:
@@ -73,12 +98,22 @@ def _leader_payload(result):
     return None
 
 
-def _same_verdict(leader_result, independent_result) -> bool:
+def _same_verdict(leader_result, independent_result, floor: int = 70) -> bool:
     payload = _leader_payload(leader_result)
     if payload is None:
         return False
     try:
-        return _verdict(payload)["verdict"] == _verdict(independent_result)["verdict"]
+        leader = _outcome(payload)
+        independent = _outcome(independent_result)
+        if leader["classification"] != independent["classification"]:
+            return False
+        if leader["classification"] != "substantive":
+            return True
+        if leader["verdict"] != independent["verdict"]:
+            return False
+        if leader["verdict"] == ALLOW:
+            return (int(leader["confidence"]) >= int(floor)) == (int(independent["confidence"]) >= int(floor))
+        return True
     except Exception:
         return False
 
@@ -232,9 +267,6 @@ class StewardCourt(gl.Contract):
 
     def _fetch_evidence_blocks(self, items):
         """Fetch and digest-check frozen evidence inside each nondeterministic branch."""
-        # The branch below is the deterministic equivalent of returning:
-        # return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence digest mismatch"})
-        # return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence unavailable"})
         blocks = []
         for item in items:
             try:
@@ -243,7 +275,7 @@ class StewardCourt(gl.Contract):
                 if isinstance(raw, str):
                     raw = raw.encode("utf-8")
                 if hashlib.sha256(raw).hexdigest().lower() != str(item["digest"]).lower():
-                    return None, "digest mismatch (challenge evidence digest mismatch)"
+                    return None, EVIDENCE_INTEGRITY_ERROR
                 blocks.append(
                     "ROLE=" + str(item["role"]) + " ISSUER=" + str(item["issuer"])
                     + " URI=" + str(item["uri"])
@@ -251,7 +283,7 @@ class StewardCourt(gl.Contract):
                     + "\n" + raw.decode("utf-8", "replace")[:2400]
                 )
             except Exception:
-                return None, "unavailable (challenge evidence unavailable)"
+                return None, EVIDENCE_UNAVAILABLE
         return blocks, ""
 
     def _terminal_emit(self, vault: str, guard: str, spend_id: int, record: dict) -> None:
@@ -403,26 +435,29 @@ class StewardCourt(gl.Contract):
         def leader() -> str:
             original_blocks, original_error = self._fetch_evidence_blocks(original_evidence)
             if original_error:
-                return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "original decision evidence " + original_error})
+                return json.dumps({"classification": original_error, "confidence": 0, "reason": _technical_reason("original decision evidence", original_error)})
             challenge_blocks, challenge_error = self._fetch_evidence_blocks(challenge_evidence)
             if challenge_error:
-                return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence " + challenge_error})
+                return json.dumps({"classification": challenge_error, "confidence": 0, "reason": _technical_reason("challenge evidence", challenge_error)})
             full_prompt = (
                 prompt
                 + "\\nFROZEN ORIGINAL EVIDENCE CONTENT:\\n" + "\\n---\\n".join(original_blocks or [])
                 + "\\nUNTRUSTED CHALLENGE EVIDENCE:\\n" + "\\n---\\n".join(challenge_blocks or [])
             )
-            return json.dumps(_verdict(gl.nondet.exec_prompt(full_prompt, response_format="json")))
+            try:
+                return json.dumps(_outcome(gl.nondet.exec_prompt(full_prompt, response_format="json")))
+            except Exception:
+                return json.dumps({"classification": INVALID_MODEL_OUTPUT, "confidence": 0, "reason": "challenge validator output was not valid JSON"})
         def validator(leader_result) -> bool:
             payload = _leader_payload(leader_result)
             if payload is None:
                 return False
             original_blocks, original_error = self._fetch_evidence_blocks(original_evidence)
             if original_error:
-                return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "original decision evidence " + original_error})
+                return _same_verdict(leader_result, {"classification": original_error, "confidence": 0, "reason": _technical_reason("original decision evidence", original_error)}, 70)
             challenge_blocks, challenge_error = self._fetch_evidence_blocks(challenge_evidence)
             if challenge_error:
-                return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "challenge evidence " + challenge_error})
+                return _same_verdict(leader_result, {"classification": challenge_error, "confidence": 0, "reason": _technical_reason("challenge evidence", challenge_error)}, 70)
             try:
                 independent = gl.nondet.exec_prompt(
                     prompt
@@ -432,9 +467,23 @@ class StewardCourt(gl.Contract):
                 )
             except Exception:
                 return False
-            return _same_verdict(leader_result, independent)
-        result = _enforce_confidence_floor(_verdict(gl.vm.run_nondet_unsafe(leader, validator)), 70)
+            return _same_verdict(leader_result, independent, 70)
+        try:
+            result = _outcome(gl.vm.run_nondet_unsafe(leader, validator))
+        except Exception:
+            result = {"verdict": TECHNICAL_UNRESOLVED, "classification": CONSENSUS_FAILURE, "confidence": 0, "reason": "challenge validators did not produce an agreed result"}
+        if result["classification"] != "substantive":
+            record["status"] = OPEN
+            record["terminal_kind"] = TECHNICAL_UNRESOLVED
+            record["technical_classification"] = str(result["classification"])
+            record["reason"] = str(result["reason"])
+            record["confidence"] = 0
+            self.challenge_records[key] = json.dumps(record)
+            return
+        result = _enforce_confidence_floor(result, 70)
         record["status"] = TERMINAL
+        record["terminal_kind"] = "substantive"
+        record.pop("technical_classification", None)
         record["upheld"] = str(result["verdict"]) == ALLOW
         record["reason"] = str(result["reason"])
         record["confidence"] = int(result["confidence"])
@@ -464,8 +513,13 @@ class StewardCourt(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] challenge cannot yet expire")
         record["status"] = TERMINAL
         record["upheld"] = False
-        record["reason"] = "challenge adjudication deadline expired"
-        record["confidence"] = 100
+        if str(record.get("terminal_kind", "")) == TECHNICAL_UNRESOLVED:
+            record["terminal_kind"] = TECHNICAL_CLOSED
+            record["reason"] = "technical unresolved challenge closed after adjudication deadline"
+            record["confidence"] = 0
+        else:
+            record["reason"] = "challenge adjudication deadline expired"
+            record["confidence"] = 100
         self.challenge_records[key] = json.dumps(record)
         gl.get_contract_at(_address(guard)).emit(on="finalized").apply_challenge_result(
             int(record["challenge_id"]), int(record["spend_id"]), False, str(bond_vault), str(record["vault"])
@@ -524,13 +578,26 @@ class StewardCourt(gl.Contract):
     def record_primary(self, spend_id: int, decision: str, reason: str, confidence: int, amount: int, recipient: str, version: int, evidence_json: str) -> None:
         guard = _addr(gl.message.sender_address)
         self._validate_guard(guard)
-        if str(decision) not in (ALLOW, REFUSE):
+        if str(decision) not in (ALLOW, REFUSE, TECHNICAL_UNRESOLVED):
             raise gl.vm.UserError("[EXPECTED] invalid primary decision")
         key = _record_key(guard, int(spend_id))
         if self.records.get(key, "") != "":
             # Finalized messages are designed to be idempotent across retries.
             existing = json.loads(self.records[key])
             if str(existing["primary"]) == str(decision) and int(existing["amount"]) == int(amount) and _addr(str(existing["recipient"])) == _addr(str(recipient)):
+                if str(decision) == TECHNICAL_UNRESOLVED:
+                    existing["technical_classification"] = "retry_pending"
+                    existing["primary_reason"] = str(reason)[:240]
+                    self.records[key] = json.dumps(existing)
+                return
+            if str(existing["primary"]) == TECHNICAL_UNRESOLVED and str(decision) in (ALLOW, REFUSE):
+                existing["primary"] = str(decision)
+                existing["effective"] = str(decision)
+                existing["primary_reason"] = str(reason)[:240]
+                existing["primary_confidence"] = int(confidence)
+                existing["status"] = OPEN
+                existing["technical_classification"] = "recovered"
+                self.records[key] = json.dumps(existing)
                 return
             raise gl.vm.UserError("[EXPECTED] conflicting primary decision")
         mandate = json.loads(str(gl.get_contract_at(self.charter).view().mandate_at(int(version))))
@@ -653,7 +720,22 @@ class StewardCourt(gl.Contract):
                 return False
             return _same_verdict(leader_result, independent)
 
-        result = _enforce_confidence_floor(_verdict(gl.vm.run_nondet_unsafe(leader, validator)), 70)
+        try:
+            result = _outcome(gl.vm.run_nondet_unsafe(leader, validator))
+        except Exception:
+            result = {"verdict": TECHNICAL_UNRESOLVED, "classification": CONSENSUS_FAILURE, "confidence": 0, "reason": "appeal validators did not produce an agreed result"}
+        if result["classification"] != "substantive":
+            record["effective"] = TECHNICAL_UNRESOLVED
+            record["appeal_by"] = caller
+            record["appeal_statement"] = str(statement)
+            record["appeal_reason"] = str(result["reason"])
+            record["appeal_confidence"] = 0
+            record["appeal_evidence"] = frozen
+            record["technical_classification"] = str(result["classification"])
+            record["status"] = OPEN
+            self._save(str(guard), int(spend_id), record)
+            return
+        result = _enforce_confidence_floor(result, 70)
         record["effective"] = str(result["verdict"])
         record["appeal_by"] = caller
         record["appeal_statement"] = str(statement)
@@ -675,6 +757,9 @@ class StewardCourt(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] appeal window has not elapsed")
         record["status"] = TERMINAL
         self._save(guard, int(spend_id), record)
+        if str(record.get("effective", "")) == TECHNICAL_UNRESOLVED:
+            gl.get_contract_at(_address(guard)).emit(on="finalized").close_technical(int(spend_id))
+            return
         self._terminal_emit(vault, guard, int(spend_id), record)
 
     @gl.public.write
@@ -688,6 +773,9 @@ class StewardCourt(gl.Contract):
         record = self._load(guard, int(spend_id))
         if str(record["status"]) not in (APPEALED, TERMINAL):
             raise gl.vm.UserError("[EXPECTED] only terminal court records can be reconciled")
+        if str(record.get("effective", "")) == TECHNICAL_UNRESOLVED:
+            gl.get_contract_at(_address(guard)).emit(on="finalized").close_technical(int(spend_id))
+            return
         self._terminal_emit(vault, guard, int(spend_id), record)
 
     @gl.public.view

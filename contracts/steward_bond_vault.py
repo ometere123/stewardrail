@@ -377,6 +377,32 @@ class StewardBondVault(gl.Contract):
         return attempts < max_attempts
 
     @gl.public.write
+    def settle_neutral(self, challenge_id: int) -> None:
+        """Refund a challenge whose evidence could not be substantively assessed."""
+        if gl.message.sender_address != self.vault:
+            raise gl.vm.UserError("[EXPECTED] only the bound vault may settle neutral challenges")
+        key = u256(int(challenge_id))
+        if str(self.challenge_state.get(key, "")) == "settled":
+            settlement = self.challenge_settlement.get(key, "")
+            if settlement != "" and str(json.loads(settlement).get("result", "")) == "neutral":
+                return
+            raise gl.vm.UserError("[EXPECTED] challenge has a conflicting settlement")
+        if str(self.challenge_state.get(key, "")) != "open" or int(self.challenge_registered.get(key, u256(0))) != 1:
+            raise gl.vm.UserError("[EXPECTED] challenge is not eligible for neutral settlement")
+        spend_id = int(self.challenge_spend[key])
+        locked_for_spend = int(self.locked_by_spend.get(u256(spend_id), u256(0)))
+        keep_lock_for_retry = self._future_challenge_permitted(spend_id)
+        if not keep_lock_for_retry and locked_for_spend > 0:
+            self.locked = u256(int(self.locked) - locked_for_spend)
+            self.locked_by_spend[u256(spend_id)] = u256(0)
+        self.open_by_spend[u256(spend_id)] = u256(0)
+        self.challenge_settlement[key] = json.dumps({"result": "neutral", "restitution": 0, "reward": 0, "shortfall": 0, "future_challenges_remaining": keep_lock_for_retry}, sort_keys=True)
+        self.challenge_state[key] = "settled"
+        bond = int(self.challenge_bond[key])
+        if bond > 0:
+            _Payee(Address(str(self.challenge_challenger[key]))).emit_transfer(value=u256(bond))
+
+    @gl.public.write
     def settle(self, challenge_id: int, upheld: bool) -> None:
         if gl.message.sender_address != self.vault:
             raise gl.vm.UserError("[EXPECTED] only the bound vault may settle challenges")

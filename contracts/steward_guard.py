@@ -8,6 +8,12 @@ from urllib.parse import urlparse
 ALLOW = "allow"
 REFUSE = "refuse"
 HELD = "held"
+TECHNICAL_UNRESOLVED = "technical_unresolved"
+TECHNICAL_CLOSED = "technical_unresolved_closed"
+EVIDENCE_UNAVAILABLE = "evidence_unavailable"
+EVIDENCE_INTEGRITY_ERROR = "evidence_integrity_error"
+INVALID_MODEL_OUTPUT = "invalid_model_output"
+CONSENSUS_FAILURE = "consensus_failure"
 MAX_ROLLING_SECONDS = 604800
 
 
@@ -51,13 +57,36 @@ def _verdict(value) -> dict:
     verdict = str(parsed.get("verdict", "")).lower().strip()
     if verdict not in (ALLOW, REFUSE):
         raise gl.vm.UserError("[LLM_ERROR] validator verdict must be allow or refuse")
-    try:
-        confidence = int(parsed.get("confidence", 0))
-    except Exception as exc:
-        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer") from exc
-    confidence = max(0, min(100, confidence))
+    confidence_value = parsed.get("confidence", None)
+    if isinstance(confidence_value, bool) or not isinstance(confidence_value, int):
+        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer")
+    confidence = int(confidence_value)
+    if confidence < 0 or confidence > 100:
+        raise gl.vm.UserError("[LLM_ERROR] validator confidence must be an integer in 0..100")
     reason = str(parsed.get("reason", ""))[:240]
     return {"verdict": verdict, "reason": reason, "confidence": confidence}
+
+
+def _outcome(value) -> dict:
+    """Parse either a substantive verdict or a neutral technical outcome."""
+    parsed = _as_dict(value)
+    classification = str(parsed.get("classification", "")).lower().strip()
+    if classification in (EVIDENCE_UNAVAILABLE, EVIDENCE_INTEGRITY_ERROR, INVALID_MODEL_OUTPUT, CONSENSUS_FAILURE):
+        reason = str(parsed.get("reason", ""))[:240]
+        return {"verdict": TECHNICAL_UNRESOLVED, "classification": classification, "reason": reason, "confidence": 0}
+    result = _verdict(parsed)
+    result["classification"] = "substantive"
+    return result
+
+
+def _technical_reason(classification: str) -> str:
+    if str(classification) == EVIDENCE_INTEGRITY_ERROR:
+        return "evidence digest mismatch; substantive decision unavailable"
+    if str(classification) == EVIDENCE_UNAVAILABLE:
+        return "evidence fetch unavailable; substantive decision unavailable"
+    if str(classification) == INVALID_MODEL_OUTPUT:
+        return "validator output invalid; substantive decision unavailable"
+    return "semantic consensus unavailable; substantive decision unavailable"
 
 
 def _enforce_confidence_floor(result: dict, floor: int) -> dict:
@@ -76,12 +105,22 @@ def _leader_payload(result):
     return None
 
 
-def _same_verdict(leader_result, independent_result) -> bool:
+def _same_verdict(leader_result, independent_result, floor: int = 65) -> bool:
     payload = _leader_payload(leader_result)
     if payload is None:
         return False
     try:
-        return _verdict(payload)["verdict"] == _verdict(independent_result)["verdict"]
+        leader = _outcome(payload)
+        independent = _outcome(independent_result)
+        if leader["classification"] != independent["classification"]:
+            return False
+        if leader["classification"] != "substantive":
+            return True
+        if leader["verdict"] != independent["verdict"]:
+            return False
+        if leader["verdict"] == ALLOW:
+            return (int(leader["confidence"]) >= int(floor)) == (int(independent["confidence"]) >= int(floor))
+        return True
     except Exception:
         return False
 
@@ -99,6 +138,10 @@ class StewardGuard(gl.Contract):
     category: TreeMap[u256, str]
     requested_at: TreeMap[u256, u256]
     evidence_deadline: TreeMap[u256, u256]
+    semantic_deadline: TreeMap[u256, u256]
+    adjudication_attempts: TreeMap[u256, u256]
+    adjudication_max_attempts: TreeMap[u256, u256]
+    evidence_status: TreeMap[u256, str]
     evidence_sealed: TreeMap[u256, u256]
     version: TreeMap[u256, u256]
     state: TreeMap[u256, str]
@@ -426,6 +469,13 @@ class StewardGuard(gl.Contract):
         self.category[key] = str(category)
         self.requested_at[key] = u256(now)
         self.evidence_deadline[key] = u256(now + int(mandate["evidence_window_seconds"]))
+        recovery = mandate.get("semantic_recovery", {})
+        retry_limit = int(recovery.get("max_attempts", 3)) if isinstance(recovery, dict) else 3
+        retry_window = int(recovery.get("deadline_seconds", 86400)) if isinstance(recovery, dict) else 86400
+        self.semantic_deadline[key] = u256(now + max(1, min(604800, retry_window)))
+        self.adjudication_attempts[key] = u256(0)
+        self.adjudication_max_attempts[key] = u256(max(1, min(8, retry_limit)))
+        self.evidence_status[key] = "pending"
         self.evidence_sealed[key] = u256(0)
         self.version[key] = u256(version)
         self.state[key] = str(decision["state"])
@@ -479,11 +529,26 @@ class StewardGuard(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] evidence submission window has elapsed")
         self.evidence_sealed[key] = u256(1)
 
+    def _record_technical(self, key, spend_id: int, classification: str, reason: str) -> None:
+        attempts = int(self.adjudication_attempts.get(key, u256(0))) + 1
+        self.adjudication_attempts[key] = u256(attempts)
+        self.evidence_status[key] = str(classification)
+        self.state[key] = TECHNICAL_UNRESOLVED
+        self.enforcement[key] = "technical"
+        self.reason[key] = str(reason)[:240]
+        self.confidence[key] = u256(0)
+        self._send_primary(int(spend_id), TECHNICAL_UNRESOLVED, self.reason[key], 0)
+
     @gl.public.write
     def adjudicate(self, spend_id: int) -> None:
         key = self._require_spend(spend_id)
-        if self.state[key] != HELD:
-            raise gl.vm.UserError("[EXPECTED] spend is not held")
+        if self.state[key] not in (HELD, TECHNICAL_UNRESOLVED):
+            raise gl.vm.UserError("[EXPECTED] spend is not awaiting semantic adjudication")
+        if self.state[key] == TECHNICAL_UNRESOLVED:
+            if int(self.adjudication_attempts.get(key, u256(0))) >= int(self.adjudication_max_attempts.get(key, u256(3))):
+                raise gl.vm.UserError("[EXPECTED] semantic recovery attempt limit has elapsed")
+            if self._now() > int(self.semantic_deadline.get(key, u256(0))):
+                raise gl.vm.UserError("[EXPECTED] semantic recovery deadline has elapsed")
         if int(self.evidence_sealed.get(key, u256(0))) != 1 and self._now() <= int(self.evidence_deadline[key]):
             raise gl.vm.UserError("[EXPECTED] evidence submission window is still open")
         mandate = self._mandate(int(self.version[key]))
@@ -496,6 +561,7 @@ class StewardGuard(gl.Contract):
                 present.append(str(item["role"]))
         missing = [role for role in required if role not in present]
         if missing:
+            self.evidence_status[key] = "missing_required_role"
             self.state[key] = REFUSE
             self.reason[key] = "missing authenticated evidence roles: " + ",".join(missing)
             self.confidence[key] = u256(100)
@@ -524,12 +590,14 @@ class StewardGuard(gl.Contract):
                     if isinstance(raw, str):
                         raw = raw.encode("utf-8")
                     if hashlib.sha256(raw).hexdigest().lower() != item["digest"]:
-                        return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "evidence digest mismatch"})
+                        return json.dumps({"classification": EVIDENCE_INTEGRITY_ERROR, "confidence": 0, "reason": _technical_reason(EVIDENCE_INTEGRITY_ERROR)})
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
-                    return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "evidence fetch failed"})
-            result = gl.nondet.exec_prompt(base + "\nUNTRUSTED EVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")
-            return json.dumps(_verdict(result))
+                    return json.dumps({"classification": EVIDENCE_UNAVAILABLE, "confidence": 0, "reason": _technical_reason(EVIDENCE_UNAVAILABLE)})
+            try:
+                return json.dumps(_outcome(gl.nondet.exec_prompt(base + "\nUNTRUSTED EVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")))
+            except Exception:
+                return json.dumps({"classification": INVALID_MODEL_OUTPUT, "confidence": 0, "reason": "validator output was not valid JSON"})
 
         def validator(leader_result) -> bool:
             payload = _leader_payload(leader_result)
@@ -543,18 +611,25 @@ class StewardGuard(gl.Contract):
                     if isinstance(raw, str):
                         raw = raw.encode("utf-8")
                     if hashlib.sha256(raw).hexdigest().lower() != item["digest"]:
-                        mine = {"verdict": REFUSE, "confidence": 100, "reason": "evidence digest mismatch"}
-                        return _same_verdict(leader_result, mine)
+                        return _same_verdict(leader_result, {"classification": EVIDENCE_INTEGRITY_ERROR, "confidence": 0, "reason": _technical_reason(EVIDENCE_INTEGRITY_ERROR)}, 65)
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
-                    return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "evidence fetch failed"})
+                    return _same_verdict(leader_result, {"classification": EVIDENCE_UNAVAILABLE, "confidence": 0, "reason": _technical_reason(EVIDENCE_UNAVAILABLE)}, 65)
             try:
                 independent = gl.nondet.exec_prompt(base + "\nUNTRUSTED EVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")
             except Exception:
                 return False
-            return _same_verdict(leader_result, independent)
+            return _same_verdict(leader_result, independent, 65)
 
-        agreed = _enforce_confidence_floor(_verdict(gl.vm.run_nondet_unsafe(leader, validator)), 65)
+        try:
+            agreed = _outcome(gl.vm.run_nondet_unsafe(leader, validator))
+        except Exception:
+            self._record_technical(key, int(spend_id), CONSENSUS_FAILURE, "semantic validators did not produce an agreed result")
+            return
+        if agreed["classification"] != "substantive":
+            self._record_technical(key, int(spend_id), str(agreed["classification"]), str(agreed["reason"]))
+            return
+        agreed = _enforce_confidence_floor(agreed, 65)
         observe_only = True
         for rule in mandate.get("semantic_rules", []):
             if str(rule.get("id", "")) in fired and str(rule.get("consequence", "refuse")).strip().lower() != "observe":
@@ -567,10 +642,28 @@ class StewardGuard(gl.Contract):
             self.enforcement[key] = "refuse"
         else:
             self.enforcement[key] = "allow"
+        self.evidence_status[key] = "verified"
         self.state[key] = str(agreed["verdict"])
         self.reason[key] = str(agreed["reason"])
         self.confidence[key] = u256(int(agreed["confidence"]))
         self._send_primary(int(spend_id), str(agreed["verdict"]), str(agreed["reason"]), int(agreed["confidence"]))
+
+    @gl.public.write
+    def close_technical(self, spend_id: int) -> None:
+        """Permissionless economic closure after bounded semantic recovery."""
+        if gl.message.sender_address != self.court:
+            raise gl.vm.UserError("[EXPECTED] only the bound court may close technical semantic cases")
+        key = self._require_spend(spend_id)
+        if self.state[key] != TECHNICAL_UNRESOLVED:
+            raise gl.vm.UserError("[EXPECTED] spend is not technically unresolved")
+        attempts = int(self.adjudication_attempts.get(key, u256(0)))
+        deadline = int(self.semantic_deadline.get(key, u256(0)))
+        if attempts < int(self.adjudication_max_attempts.get(key, u256(3))) and self._now() <= deadline:
+            raise gl.vm.UserError("[EXPECTED] semantic recovery remains available")
+        self.state[key] = TECHNICAL_CLOSED
+        self.enforcement[key] = "technical"
+        self.reason[key] = "technical unresolved outcome closed without economic authorization"
+        self._release_exposure(int(spend_id))
 
     @gl.public.write
     def apply_terminal_decision(self, spend_id: int, semantic_decision: str, evidence_json: str, vault: str) -> None:
@@ -793,6 +886,10 @@ class StewardGuard(gl.Contract):
             "id": int(spend_id), "amount": int(self.amount[key]), "recipient": str(self.recipient[key]),
             "category": str(self.category[key]), "requested_at": int(self.requested_at[key]),
             "evidence_deadline": int(self.evidence_deadline[key]),
+            "semantic_deadline": int(self.semantic_deadline.get(key, u256(0))),
+            "adjudication_attempts": int(self.adjudication_attempts.get(key, u256(0))),
+            "adjudication_max_attempts": int(self.adjudication_max_attempts.get(key, u256(3))),
+            "evidence_status": str(self.evidence_status.get(key, "")),
             "evidence_sealed": int(self.evidence_sealed.get(key, u256(0))) == 1,
             "version": int(self.version[key]), "state": str(self.state[key]),
             "terminal_semantic": str(self.terminal_semantic.get(key, "")),

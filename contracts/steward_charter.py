@@ -192,6 +192,14 @@ class StewardCharter(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] v1 participant-gated appeals do not accept a monetary bond")
         if isinstance(m["evidence_window_seconds"], bool) or not isinstance(m["evidence_window_seconds"], int) or int(m["evidence_window_seconds"]) <= 0 or int(m["evidence_window_seconds"]) > 604800:
             raise gl.vm.UserError("[EXPECTED] evidence_window_seconds must be 1..604800")
+        recovery = m.get("semantic_recovery", {"max_attempts": 3, "deadline_seconds": 86400})
+        if not isinstance(recovery, dict):
+            raise gl.vm.UserError("[EXPECTED] semantic_recovery must be an object")
+        if isinstance(recovery.get("max_attempts", 3), bool) or not isinstance(recovery.get("max_attempts", 3), int) or int(recovery.get("max_attempts", 3)) < 1 or int(recovery.get("max_attempts", 3)) > 8:
+            raise gl.vm.UserError("[EXPECTED] semantic_recovery.max_attempts must be 1..8")
+        if isinstance(recovery.get("deadline_seconds", 86400), bool) or not isinstance(recovery.get("deadline_seconds", 86400), int) or int(recovery.get("deadline_seconds", 86400)) < 1 or int(recovery.get("deadline_seconds", 86400)) > 604800:
+            raise gl.vm.UserError("[EXPECTED] semantic_recovery.deadline_seconds must be 1..604800")
+        m["semantic_recovery"] = {"max_attempts": int(recovery.get("max_attempts", 3)), "deadline_seconds": int(recovery.get("deadline_seconds", 86400))}
         challenge = m["challenge"]
         if not isinstance(challenge, dict):
             raise gl.vm.UserError("[EXPECTED] challenge policy must be an object")

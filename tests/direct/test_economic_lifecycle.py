@@ -129,9 +129,33 @@ def test_zero_collateral_lock_replay_cannot_change_required_amount():
     with pytest.raises(Exception, match='conflicting standing exposure lock'):
         rt.call(BOND,'lock_exposure',7,300,123,sender=GUARD)
 
-def test_digest_mismatch_fails_closed_at_jury():
+def test_digest_mismatch_is_technical_unresolved_not_semantic_refuse():
     rt=setup_stack();digest=attest(rt);create_semantic(rt,digest);rt.web[URI]=b'changed after attestation';rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'ignore hash'}
-    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));assert case['primary']=='refuse'
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));spend=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert case['primary']=='technical_unresolved'
+    assert spend['state']=='technical_unresolved' and spend['evidence_status']=='evidence_integrity_error'
+    assert spend['confidence']==0
+
+def test_allow_confidence_floor_compares_threshold_not_exact_number():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
+    calls={'n':0}
+    def model(prompt):
+        calls['n'] += 1
+        return {'verdict':'allow','confidence':85 if calls['n']==1 else 73,'reason':'independent agreement'}
+    rt.model=model
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    assert case['primary']=='allow' and case['primary_confidence']==85
+
+def test_allow_confidence_floor_disagreement_is_technical_not_refuse():
+    rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
+    calls={'n':0}
+    def model(prompt):
+        calls['n'] += 1
+        return {'verdict':'allow','confidence':71 if calls['n']==1 else 64,'reason':'boundary disagreement'}
+    rt.model=model
+    rt.call(GUARD,'adjudicate',0,sender=A);rt.flush_finalized();case=json.loads(rt.call(COURT,'case',GUARD,0,sender=A));spend=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert case['primary']=='technical_unresolved'
+    assert spend['evidence_status']=='consensus_failure' and spend['confidence']==0
 
 def test_terminal_refusal_is_removed_from_guard_exposure():
     rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
@@ -327,7 +351,7 @@ def test_bonded_challenge_quote_open_blocks_payment_and_dismissal_settles():
     rt.call(COURT,'reconcile_challenge',GUARD,0,BOND,sender=A); rt.flush_finalized()
     rt.call(VAULT,'pay',0,sender=A)
 
-def test_challenge_digest_mismatch_is_terminal_refuse_not_upheld():
+def test_challenge_digest_mismatch_is_technical_and_neutral_after_expiry():
     rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
     rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
@@ -342,9 +366,14 @@ def test_challenge_digest_mismatch_is_terminal_refuse_not_upheld():
     assert record['upheld'] is False
     assert 'digest mismatch' in record['reason']
     assert len(rt.prompts) == prompt_count
-    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='settled'
+    assert json.loads(rt.call(BOND,'challenge',0,sender=A))['state']=='open'
+    rt.now += 61
+    rt.call(COURT,'expire_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    challenge=json.loads(rt.call(BOND,'challenge',0,sender=A))
+    assert challenge['state']=='settled'
+    assert json.loads(challenge['settlement'])['result']=='neutral'
 
-def test_challenge_unavailable_evidence_is_terminal_refuse_not_upheld():
+def test_challenge_unavailable_evidence_remains_neutral_until_bounded_expiry():
     rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
     rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'ok'}
     rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
@@ -359,6 +388,7 @@ def test_challenge_unavailable_evidence_is_terminal_refuse_not_upheld():
     assert record['upheld'] is False
     assert 'unavailable' in record['reason']
     assert len(rt.prompts) == prompt_count
+    assert record['status']=='open'
 
 def test_challenge_prompt_uses_frozen_original_evidence_content():
     rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)

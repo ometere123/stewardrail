@@ -126,13 +126,18 @@ class StewardVault(gl.Contract):
         if str(challenge.get("state", "")) == "open" and not bool(challenge.get("registered", False)):
             raise gl.vm.UserError("[EXPECTED] challenge registration has not been acknowledged")
         key = u256(int(challenge_id))
+        court_case = json.loads(str(gl.get_contract_at(self.court).view().challenge(_addr(self.guard), int(challenge_id))))
+        neutral = str(court_case.get("terminal_kind", "")) == "technical_unresolved_closed"
         incoming = json.dumps({"challenge_id": int(challenge_id), "upheld": bool(upheld)}, sort_keys=True)
         existing = self.challenge_outcome.get(key, "")
         if existing != "" and existing != incoming:
             raise gl.vm.UserError("[EXPECTED] conflicting challenge outcome")
         self.challenge_outcome[key] = incoming
         self.latest_challenge[u256(int(spend_id))] = u256(int(challenge_id))
-        gl.get_contract_at(self.bond_vault).emit(on="finalized").settle(int(challenge_id), bool(upheld))
+        if neutral:
+            gl.get_contract_at(self.bond_vault).emit(on="finalized").settle_neutral(int(challenge_id))
+        else:
+            gl.get_contract_at(self.bond_vault).emit(on="finalized").settle(int(challenge_id), bool(upheld))
 
     @gl.public.write
     def pay(self, spend_id: int) -> None:
