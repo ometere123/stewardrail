@@ -129,8 +129,8 @@
   "explorerPrefix": "https://explorer-studio.genlayer.com/tx/",
   "productionFrontend": {
     "url": "https://stewardrail.vercel.app",
-    "deploymentId": "dpl_GKwYpxXWGXQPT8K1cazc7XwsgoeA",
-    "deploymentUrl": "https://stewardrail-7q7a9mzfo-delealufejoel-4184s-projects.vercel.app",
+    "deploymentId": "dpl_GWgFBGmfCBfEFxvSsrwR7SSD8Kim",
+    "deploymentUrl": "https://stewardrail-5cesngyu5-delealufejoel-4184s-projects.vercel.app",
     "status": "READY",
     "buildId": "WzaOcPFYlC10oDbON_5-4",
     "projectRoot": "frontend",
