@@ -1,6 +1,6 @@
 # Studionet 61999 live proof plan
 
-The canonical deployment record should not claim completion until this packet exists from a fresh deployment.
+The canonical deployment record is updated only from a fresh source-matched deployment and records observed versus unobserved scenarios explicitly in [`deploy/proofs/final-remediation-2026-10-11.json`](../deploy/proofs/final-remediation-2026-10-11.json).
 
 ## Network gate
 

@@ -4,101 +4,135 @@
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
   "status": "canonical-source-matched-stack",
-  "sourceCommit": "c74a5792721121abf33f749d970182f87481e056",
+  "sourceCommit": "2f4959506a0d609c432d86e287c220caec8322b4",
   "deployer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
   "actors": {
     "principalA": "0xac3ac69dc0bde389256dd6748c75817ead9286d9",
     "principalB": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
     "agent": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
-    "evidenceVendor": "0xa7eeae0e93793e3146cb14b0700251b8b0ebadfb",
-    "evidenceDelivery": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+    "evidenceVendor": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "evidenceDelivery": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0",
     "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
     "challenger": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
   },
   "contracts": {
-    "StewardCharter": "0x3c7aA092b9Db5869423aEEfAD11B5e1DCa0aC9B3",
-    "EvidenceRegistry": "0xe62A4f3586F2a14553104Ffd09f37683DDb16A38",
-    "StewardCourt": "0x1DCFCAe371ed2664632728356e8FD3247315D8f9",
-    "StewardBondVault": "0x5efAf65ebcAC0512daE2659c2180F70288986C05",
-    "StewardGuard": "0x9ac1fD1E160cDA8A0933eE1F82e5AF0aEC3fFf98",
-    "StewardVault": "0x1243c24242541E90D5db9A3da95D4E3e60aA9526"
+    "StewardCharter": "0xf8c4321eDBfd5b7e1460b62900d5e32Bb2131313",
+    "EvidenceRegistry": "0x25Ce184DC0057498330f54aF2C9ff4568020B931",
+    "StewardCourt": "0xb253BF8e6026E1fA91982c64cDa2aed231143DC3",
+    "StewardBondVault": "0x783B33c4D220ca80520468af4baF39e025D3dFC7",
+    "StewardGuard": "0x4704ca0aF7E376D94448B021C33A724c6DDEb8f3",
+    "StewardVault": "0x3D393aEE5170091B9ebadCf57B9B37ba2C1b0Eee"
   },
   "deploymentTransactions": {
-    "StewardCharter": {"hash": "0xbe83b7dade0e5805d35b24fa9eae0a6f4a945f7624c3013d6840688c67de81c4", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "EvidenceRegistry": {"hash": "0xdba3387917264ee7d2d0237f772223b965ead06d80e5e6d9717c6238bd067685", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardCourt": {"hash": "0xdd621b58a00596c035324e4423881d359f10cd8d5790a07ea3fe856319a7344e", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardBondVault": {"hash": "0xe6bd33a859ed9860a27999e2b434e3cb2d3b15fe18eae2fb9d050fd2be5a98e2", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardGuard": {"hash": "0x5fa26129f65d0739551b2bd444c8729af6b8902802550489028d235099490cd4", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardVault": {"hash": "0xadd7ff7975ed3e4190b1e8017c6d1bc8939931691e2dea6e76775c613ce27e8b", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"}
+    "StewardCharter": {"hash": "0x1476cb1105ee363302c9999292d357c6c55ee3a2e3a129cfd6dd10440ddd4cf7", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "EvidenceRegistry": {"hash": "0x888d948ea9cfc30cf8ebfa0a6051637bc71425db31d80e5f218ca02e19489ab3", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardCourt": {"hash": "0x532c360a8fbf8b50c3a56086f9d1bc13e413447107107c88fadc8aac5f52445c", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardBondVault": {"hash": "0x3caec1c5ba253cebc0ff7a72f7c740330ca98e600f5d60b2f57a483618481dbc", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardGuard": {"hash": "0x6dd10fb503f32bae5f03890bf0c544614d5a5fe54cede5cd3f95142f90090ad0", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardVault": {"hash": "0x24c4d9573568e86ed9f8d29e5f7228bfe8e034c4f7a787ce8ffd36f650d46700", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"}
   },
   "governanceTransactions": {
-    "mandateV1ApprovalA": "0xf98077de45c021facff4e17e196ad5d4edb33c6cc87cce9d2a6516b184dd2461",
-    "mandateV1ApprovalB": "0x2e8e0451d2f0e03c9eb77c2307cbdf872a009220fad3332c19110ecc60b04bb9",
-    "bondApprovalA": "0x39abb8baebf5d8251dc0625ee282f8a4bd94889e17339dfc3b8486cde73b03b9",
-    "bondApprovalB": "0x95db52d911e4f2649297e5951b214ebfe570a51c618bb06f94acbd76bb9bd1af",
-    "bondBind": "0x2727143f523c6eddac553e4c734b2c8aec9317a5f38df4cea659ce8037f45497",
-    "mandateV2ApprovalA": "0xa22d58a6ef9f4da8e2e0e24f33ee22da9c1aaa29fb7f9fe4b7fe84a32d5c3ff2",
-    "mandateV2ApprovalB": "0x0269baa4d4b5f12281c40a8b125853de8048f234888f134e9e2b9e19f1f8d614",
-    "mandateV3ApprovalA": "0xb0564deef7aa745716f3847442d56b40a0b8ba5f558fe771fee036ce82c32825",
-    "mandateV3ApprovalB": "0xdaa6b214f33c4787aeaf673d39d870444bb9eca12b8063e9f0676dd91ab34fb9"
+    "mandateV1ApprovalA": "0x6c8d87d6fb7ae3762dfb46f079cd033a9e9f3a29fc8fb18c7e0eb4d2977ae003",
+    "mandateV1ApprovalB": "0x64f26954cd6d4cd9755c5e0287039e7467abf24103da0a20b8a50879bd4a3e35",
+    "bondApprovalA": "0x6df423eaf061d51d3c83e72b37f7ad92683bdc51f3e135a8fc523b961fcb3b6a",
+    "bondApprovalB": "0xaf542b08955b494ba38daa8fada28347fa01ecac99fa809d67a37f6a6143d74e",
+    "bondBind": "0xe74caf5bcebb569d82aeb55e941031bc24bca00defed25c086f9dec6fb075a26"
   },
   "sourceSha256": {
-    "contracts/steward_charter.py": "d4d13884ff29ad695ebe655ad66c033d3c3006c7308ab76d0f23eb2b1a4820c1",
+    "contracts/steward_charter.py": "5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab",
     "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
-    "contracts/steward_court.py": "c98b659f2a6dca82fd8af38596df078ff259ab9a06e6e8bf5f6ee0518776be31",
-    "contracts/steward_guard.py": "70a585ca15e64d38aaeb0b820f7c60a205bc4bdb832ab49b7fee5482e7de0378",
-    "contracts/steward_vault.py": "9b22e192fe84d6e3a9f6a6de81dc15997006d935cb1fa8a5b72c50ea6b933e95",
-    "contracts/steward_bond_vault.py": "4e4e2acb19b30e71fcc506d47928788fb0b233ce2ed5fb42a43992c8e1adc798"
-  },
-  "liveFunding": {
-    "standingDeposit": {"tx": "0xd14cd1515a79d1b7d803af5908672f0ea8ec39a232fb518584b9c1763fc47279", "amountGen": "10", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true},
-    "treasuryFund": {"tx": "0xa1fe4662e417dbb87453b2f0baf7495297b58a00bd50ebb720aa87d2d55128f9", "amountGen": "20", "status": "FINALIZED", "execution": "SUCCESS", "valueCredited": true}
+    "contracts/steward_court.py": "f0f0e1f3b61479945054f1358f34bd9154547f9a2b33124c0cda1d9a93fe8aa9",
+    "contracts/steward_guard.py": "d34bd43364d2912aa944d0703faa01c7cc79a10887305dba8909dc77e09e6832",
+    "contracts/steward_vault.py": "5fd342442aa7b745b60f9d5197bad6447e357223a3397ba15d6eef6d37de431a",
+    "contracts/steward_bond_vault.py": "add2daa5d4012819831d8a60450715dbf17fa7d662df63bb073541525471c039"
   },
   "liveLifecycle": {
-    "semanticRefuse": {"spendId": 0, "request": "0xec95dd853d5c63fd8db617dc21dcf18084fee8d624f668488a375bc56f9549b1", "result": "REFUSE", "status": "FINALIZED", "execution": "SUCCESS"},
+    "issuerAttestations": {
+      "vendor": "0x72c9825d06c8cead370a6f78a29962c3bce633bdcefc9eed7a8d0f9d8d1a6c20",
+      "delivery": "0xaba87e86b310a0620d066584db3425a9a5f0b56ae2ed2221975738888cc60287",
+      "status": "FINALIZED",
+      "execution": "SUCCESS"
+    },
+    "standingDeposit": {
+      "tx": "0xab01c7f12ac1a2aa8107c9e8b74a9a6f1abb5eac752828cd8ad7f708641d9a69",
+      "agent": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+      "amountGen": "1",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "valueCredited": true
+    },
+    "semanticAllowWithoutStanding": {
+      "spendId": 0,
+      "request": "0x4a11d239114d2696e631df424c9bf7c88ed24117b794365d3b27ea1de8cb656b",
+      "courtClose": "0x628d859ff79fbc01b79a520f1a4d27b0086d16626f070e4b2831c53ea254fad9",
+      "semantic": "ALLOW",
+      "economic": "REFUSE",
+      "reason": "standing collateral coverage unavailable"
+    },
     "semanticAllowAndPayout": {
       "spendId": 1,
-      "request": "0xc9072262f0860726627e3cd60fc853bf879e747cb3a4054f31ea0ad9d6939011",
-      "vendorEvidence": "0x961b912a1b96c4b8444b9439271c5c52a6d0c9fccb4a8765b16e56a1ae536d08",
-      "deliveryEvidence": "0xf76d17f0b046f8c6e140a395e5ad2a3a2e6393f693cf75bac81aac39bbd4f2af",
-      "seal": "0x3ddf063dc0878821521edb06172e45a8e4aa75cb38f7b2f9be13f39c48df4fd8",
-      "adjudicate": "0x9232c1a4b9e05e4da29c794c3d6e5a510ca9d2fb290b11cb25aebbf645c81557",
-      "courtClose": "0xb039a6c60152c8b88c25bc8b73e4d8faf6b1cf23d2234ae82fa52d5a3d868e74",
-      "guardChild": "0x54f35ed0e6daff97e914597113f1a67ab2ab4d6b4d40554933ba018687c7860e",
-      "bondLockChild": "0x0cd25c34bd948ae4157276356a26d1bc7f492f75e1e3eae8b506c17f6c2895d2",
-      "bondConfirmationChild": "0xa61f4080d664edfc87066f4bba4f1813960cd9c731cc1ae95c5c61468e2abc9d",
-      "guardVaultChild": "0xc21a8a112d0bcb32fd93c80e43a2c0c9addbe961044856ee5c46613d627acd32",
-      "payment": "0x731359a768e52b83c937233fee4e7d2c23bbcb70f27e01be9e170cce7a33fbf8",
-      "paymentDelivery": {"tx": "0xfa8e8a09d694f4a438bcaee9b320c5b645b8ce953654f64d7bd57ddf217e5f24", "status": "FINALIZED", "valueCredited": true, "valueGen": "1"},
-      "terminal": {"semantic": "allow", "economic": "allow", "paid": true, "treasuryBeforeGen": "20", "treasuryAfterGen": "19"}
+      "request": "0xe269dda384bc6011a2f4f28cf1ce57b235dc83d26cd753aa6c038c778958ad80",
+      "attachVendor": "0xaab024afc071a16acd488d8dab1a51c3be6112a2f46276b8ba8474db8a6d14ec",
+      "attachDelivery": "0xc130e97ef5f6cd1e87d4c4827cef64b8610b942d9ce796f8917875dcca0fb24e",
+      "seal": "0x4d1aabe391997c0e6b5b1542b29ad03cc5d19792af7838cfd030ea2e2ff2b7d4",
+      "adjudicate": "0xbb8a68afc3f71b1f7afe6dd8bc39176d6c92f7dbe169ff466eb9bfb074f2b12d",
+      "courtClose": "0xc62710363918fb36f057f4c54447e94a767b0ae6bddbb0f3e6a4bc654d67a82d",
+      "courtGuardChild": "0x1e3d96bf8cfe3ed5ddeeee094a40382b46a4cd773fa5d6f781d29bd534936195",
+      "guardBondChild": "0xe4df14c9c0d738de50ba813c3e78e1755415b83fc69e273f91d97ad8e8fe82fa",
+      "bondGuardChild": "0xc29b872b2e26cbef910a8a37097c4bf1783290a2e763134318277799fc7bf5d5",
+      "guardVaultChild": "0x7a4c4b3b9ee2b3f5fd7803dc88139203bbb582c767f2ab0dc413340e5eed162e",
+      "semantic": "ALLOW",
+      "economic": "ALLOW",
+      "standingLockedWei": "1000000000000000000"
     },
-    "registrationExpiry": {
-      "challengeId": 0,
-      "open": "0x72bdb768c81670e6b84603ed9b700c102395b22f457ffd28764cba9b1d839493",
-      "refund": "0x3eb4e705d02b061de2b2167edd1169a934908662f00c6f5171994e9457d64b47",
-      "courtReconcile": "0x31cd11bd45ac0e014d27bd6e6628d697c9c62a7daaa46eb5b2ff9599dcc1f1df",
-      "result": "registration_expired_and_refunded"
+    "payout": {
+      "tx": "0x5eedae2e855b383704b6ac9bf30e4e014fc8fe24b74f507f6473011353ef27e2",
+      "paymentChild": "0x223ddde2b29ec368ebc55252c3432c861e4af5130ed7416531065eafa4235027",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "paymentChildValueCredited": true,
+      "amountGen": "1",
+      "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+      "recipientBalanceBeforeWei": "894970000000000000000",
+      "recipientBalanceAfterWei": "895970000000000000000",
+      "vaultBalanceBeforeWei": "1000000000000000000",
+      "vaultBalanceAfterWei": "0"
     },
-    "bondedChallenge": {
-      "spendId": 3,
-      "challengeId": 1,
-      "open": "0xe604087ca59b1ebd92669a2a253e4c0c94a5b94c71ebf07046f5788b9a598692",
-      "courtRegistration": "0x893b4eb74e15e9f894b0fd3851b9fd88d2d9cc7c37dfa2d10078ec8597fbc0cb",
-      "bondAcknowledgment": "0xb5ee8b4e52ed37cc36cfe8beeb46fa5ba094b908e2877f2ebde284051f099fef",
-      "courtResolve": "0x53722d47ecf88e48a4dbfa3235ce964d8babcbfeabace79dfcfdb81e75d72945",
-      "guardResult": "0x8e5ec13db10e909c9f784e20122228305a767181565efbfe8f7db866547ff409",
-      "vaultResult": "0xdd7691024abae228e658cc3c77849248f9acb1f398bd365600d0fda530f5cc4c",
-      "bondSettlement": "0x5dcddab9f1a2e39ef428bf96523bc62309f14048f7040badda971ae0ede1720b",
-      "bondRefundDelivery": "0xc93ae6d0e1c9d1faddd49616b10e1ebd5f069a10ae1b5e6457372f60658f9989",
-      "reconcile1": "0x28715ec101a13ab761fa026d0867fe00c2f2cdf299f9f6b094339f82ec206312",
-      "reconcile2": "0x1ffef63255cb57479c57d209a3339117c9499029557f00422c36bd921fe407e3",
-      "outcome": "upheld_before_payout",
-      "authorization": "revoked",
-      "bondGen": "0.05",
-      "settlementDelivery": "delivered",
-      "repeatedReconciliation": {"payableChildren": 0, "bondVaultBalanceBeforeWei": "10050000000000000000", "bondVaultBalanceAfterWei": "10050000000000000000", "vaultBalanceBeforeWei": "19000000000000000000", "vaultBalanceAfterWei": "19000000000000000000"}
+    "duplicatePayout": {
+      "tx": "0x4042cf9f39893fddb50bda225635322e43cdbea75469d6a4a1842a6018764dd4",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "reason": "[EXPECTED] spend already paid",
+      "recipientBalanceUnchanged": true,
+      "vaultBalanceUnchanged": true
+    },
+    "treasuryFunding": {
+      "tx": "0xb163b5e02f10f851493aee002050ce03bc4f0e5a6f7a69c1ba9b7e044eb55eef",
+      "amountGen": "1",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "vaultBalanceAfterWei": "1000000000000000000"
     }
   },
-  "verification": {"python": "95 passed, 7 skipped", "directMode": "6 passed, 1 skipped (official runner second-contract limitation)", "mutation": "70/70 killed", "genvmLint": "all six passed", "sourceManifest": "PASS", "preflight": "PASS", "cli": "0.39.1", "network": "PASS (61999)"},
-  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/"
+  "verification": {
+    "python": "97 passed, 7 skipped",
+    "directMode": "6 passed, 1 skipped (official runner second-contract limitation)",
+    "mutation": "70/70 killed",
+    "genvmLint": "all six passed",
+    "sourceManifest": "PASS",
+    "preflight": "PASS",
+    "cli": "0.39.1",
+    "network": "PASS (61999)",
+    "onChainSourceHashes": "all six match SOURCE_MANIFEST.json"
+  },
+  "explorerPrefix": "https://explorer-studio.genlayer.com/tx/",
+  "productionFrontend": {
+    "url": "https://stewardrail.vercel.app",
+    "deploymentId": "dpl_9WzDhuq39sY2oHCqfnuGBFyJZ5kC",
+    "status": "READY",
+    "buildId": "gs4U6FVF3T5Xb-5f2js6I",
+    "projectRoot": "frontend",
+    "bindingsVerified": ["/verify rendered fresh six-contract addresses"]
+  },
+  "historicalRecords": "Earlier deployment/proof packets are retained as historical and superseded records."
 }

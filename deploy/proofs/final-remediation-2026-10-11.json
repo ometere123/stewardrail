@@ -1,0 +1,141 @@
+{
+  "packet": "final-remediation-2026-10-11",
+  "status": "current-source-matched-deployment",
+  "observed_at": "2026-10-11",
+  "network": "Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "source_commit": "2f4959506a0d609c432d86e287c220caec8322b4",
+  "source_sha256": {
+    "contracts/steward_charter.py": "5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab",
+    "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
+    "contracts/steward_court.py": "f0f0e1f3b61479945054f1358f34bd9154547f9a2b33124c0cda1d9a93fe8aa9",
+    "contracts/steward_guard.py": "d34bd43364d2912aa944d0703faa01c7cc79a10887305dba8909dc77e09e6832",
+    "contracts/steward_vault.py": "5fd342442aa7b745b60f9d5197bad6447e357223a3397ba15d6eef6d37de431a",
+    "contracts/steward_bond_vault.py": "add2daa5d4012819831d8a60450715dbf17fa7d662df63bb073541525471c039"
+  },
+  "contracts": {
+    "StewardCharter": {"address": "0xf8c4321eDBfd5b7e1460b62900d5e32Bb2131313", "deployment_tx": "0x1476cb1105ee363302c9999292d357c6c55ee3a2e3a129cfd6dd10440ddd4cf7", "status": "FINALIZED", "execution": "SUCCESS"},
+    "EvidenceRegistry": {"address": "0x25Ce184DC0057498330f54aF2C9ff4568020B931", "deployment_tx": "0x888d948ea9cfc30cf8ebfa0a6051637bc71425db31d80e5f218ca02e19489ab3", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardCourt": {"address": "0xb253BF8e6026E1fA91982c64cDa2aed231143DC3", "deployment_tx": "0x532c360a8fbf8b50c3a56086f9d1bc13e413447107107c88fadc8aac5f52445c", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardBondVault": {"address": "0x783B33c4D220ca80520468af4baF39e025D3dFC7", "deployment_tx": "0x3caec1c5ba253cebc0ff7a72f7c740330ca98e600f5d60b2f57a483618481dbc", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardGuard": {"address": "0x4704ca0aF7E376D94448B021C33A724c6DDEb8f3", "deployment_tx": "0x6dd10fb503f32bae5f03890bf0c544614d5a5fe54cede5cd3f95142f90090ad0", "status": "FINALIZED", "execution": "SUCCESS"},
+    "StewardVault": {"address": "0x3D393aEE5170091B9ebadCf57B9B37ba2C1b0Eee", "deployment_tx": "0x24c4d9573568e86ed9f8d29e5f7228bfe8e034c4f7a787ce8ffd36f650d46700", "status": "FINALIZED", "execution": "SUCCESS"}
+  },
+  "binding": {
+    "approval_a": "0x6df423eaf061d51d3c83e72b37f7ad92683bdc51f3e135a8fc523b961fcb3b6a",
+    "approval_b": "0xaf542b08955b494ba38daa8fada28347fa01ecac99fa809d67a37f6a6143d74e",
+    "bind": "0xe74caf5bcebb569d82aeb55e941031bc24bca00defed25c086f9dec6fb075a26",
+    "readback": "BondVault.guard=0x4704ca0aF7E376D94448B021C33A724c6DDEb8f3; BondVault.court=0xb253BF8e6026E1fA91982c64cDa2aed231143DC3; BondVault.vault=0x3D393aEE5170091B9ebadCf57B9B37ba2C1b0Eee"
+  },
+  "governance": {
+    "mandate_version": 1,
+    "threshold": "2 of 2",
+    "approval_a": "0x6c8d87d6fb7ae3762dfb46f079cd033a9e9f3a29fc8fb18c7e0eb4d2977ae003",
+    "approval_b": "0x64f26954cd6d4cd9755c5e0287039e7467abf24103da0a20b8a50879bd4a3e35",
+    "current_readback": {"version": 1, "threshold": 2, "digest": "f100a45cdeffed90da8eb6dc895083d7a1de0fc57c9fae321f4ad998c4c3f034", "agent": "0x951e6b75530774ff82321a5ae54e14f778f0c855"}
+  },
+  "evidence": {
+    "uri": "https://raw.githubusercontent.com/ometere123/stewardrail/main/reference/live-semantic-allow.txt",
+    "sha256": "7211b94f61a9a193dae3de166d900bfe91e967130155dd7f9084c4652efd9c98",
+    "vendor_attestation": "0x72c9825d06c8cead370a6f78a29962c3bce633bdcefc9eed7a8d0f9d8d1a6c20",
+    "delivery_attestation": "0xaba87e86b310a0620d066584db3425a9a5f0b56ae2ed2221975738888cc60287",
+    "attestation_status": "FINALIZED / SUCCESS",
+    "historical_rule": "attestation existed no later than request time"
+  },
+  "semantic_allow_chain": {
+    "spend_id": 0,
+    "request": "0x4a11d239114d2696e631df424c9bf7c88ed24117b794365d3b27ea1de8cb656b",
+    "attach_vendor": "0xa8670a08f6a970e4e57bfd41fdb44c8b041a832a034ba8ea28a0890cfa99b901",
+    "attach_delivery": "0x9795978a1ec34c7dd606f7d0c6c6171c98518ce47bf29bc67703885bc35117b0",
+    "seal": "0x5b1be9841261f5d8d88ebb0a4a2ea9bccf84e0042ee038b4855754e527fd8b46",
+    "adjudicate": "0xb84f8694ee47681290d0cd52f5dbb5bb0a25b49202fc9ea68dd1f0204ef2175c",
+    "adjudication": {"status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS", "semantic": "ALLOW", "confidence": 100},
+    "court_close": "0x628d859ff79fbc01b79a520f1a4d27b0086d16626f070e4b2831c53ea254fad9",
+    "court_to_guard": "0x3e3d3bbce7f072163decacacc9be658a78e3da281193a9c033c898d48a7182e6",
+    "guard_to_bondvault": "0x36b66575485b0628584a6494fa127b6a8c2bd687f0bd46ee8020ee886c015b5f",
+    "bondvault_to_guard": "0x8e7adc42e6185ddb69ceb338a3c0ba6ccbb9533efdc213c908672841cd90024c",
+    "guard_to_vault": "0x0759de6e93ea0b75014b1b2ee9a86a5016e89579fa4515bf26a209f0172cdf84",
+    "readback": "Guard state=allow; Court effective=allow; Guard terminal_economic=refuse because standing collateral coverage was unavailable; Vault terminal decision=refuse; payment correctly blocked."
+  },
+  "treasury_funding": {
+    "tx": "0xb163b5e02f10f851493aee002050ce03bc4f0e5a6f7a69c1ba9b7e044eb55eef",
+    "amount_gen": "1",
+    "status": "FINALIZED",
+    "execution": "SUCCESS",
+    "vault_balance_after_wei": "1000000000000000000",
+    "recipient_delivery": "not applicable"
+  },
+  "standing_deposit": {
+    "tx": "0xab01c7f12ac1a2aa8107c9e8b74a9a6f1abb5eac752828cd8ad7f708641d9a69",
+    "agent": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
+    "amount_gen": "1",
+    "status": "FINALIZED",
+    "execution": "SUCCESS",
+    "value_credited": true
+  },
+  "semantic_allow_and_payout": {
+    "spend_id": 1,
+    "request": "0xe269dda384bc6011a2f4f28cf1ce57b235dc83d26cd753aa6c038c778958ad80",
+    "attach_vendor": "0xaab024afc071a16acd488d8dab1a51c3be6112a2f46276b8ba8474db8a6d14ec",
+    "attach_delivery": "0xc130e97ef5f6cd1e87d4c4827cef64b8610b942d9ce796f8917875dcca0fb24e",
+    "seal": "0x4d1aabe391997c0e6b5b1542b29ad03cc5d19792af7838cfd030ea2e2ff2b7d4",
+    "adjudicate": "0xbb8a68afc3f71b1f7afe6dd8bc39176d6c92f7dbe169ff466eb9bfb074f2b12d",
+    "court_close": "0xc62710363918fb36f057f4c54447e94a767b0ae6bddbb0f3e6a4bc654d67a82d",
+    "court_to_guard": "0x1e3d96bf8cfe3ed5ddeeee094a40382b46a4cd773fa5d6f781d29bd534936195",
+    "guard_to_bondvault": "0xe4df14c9c0d738de50ba813c3e78e1755415b83fc69e273f91d97ad8e8fe82fa",
+    "bondvault_to_guard": "0xc29b872b2e26cbef910a8a37097c4bf1783290a2e763134318277799fc7bf5d5",
+    "guard_to_vault": "0x7a4c4b3b9ee2b3f5fd7803dc88139203bbb582c767f2ab0dc413340e5eed162e",
+    "all_children": "FINALIZED / SUCCESS",
+    "semantic": "ALLOW",
+    "economic": "ALLOW",
+    "standing_locked_wei": "1000000000000000000"
+  },
+  "payout": {
+    "tx": "0x5eedae2e855b383704b6ac9bf30e4e014fc8fe24b74f507f6473011353ef27e2",
+    "payment_child": "0x223ddde2b29ec368ebc55252c3432c861e4af5130ed7416531065eafa4235027",
+    "status": "FINALIZED",
+    "execution": "SUCCESS",
+    "payment_child_value_credited": true,
+    "amount_gen": "1",
+    "recipient": "0x9dce0dc7005d6b92e03c27640081096cd36dd468",
+    "recipient_balance_before_wei": "894970000000000000000",
+    "recipient_balance_after_wei": "895970000000000000000",
+    "vault_balance_before_wei": "1000000000000000000",
+    "vault_balance_after_wei": "0"
+  },
+  "duplicate_payout": {
+    "tx": "0x4042cf9f39893fddb50bda225635322e43cdbea75469d6a4a1842a6018764dd4",
+    "status": "FINALIZED",
+    "execution": "ERROR",
+    "reason": "[EXPECTED] spend already paid",
+    "recipient_balance_unchanged": true,
+    "vault_balance_unchanged": true
+  },
+  "unobserved_on_current_stack": [
+    "semantic substantive REFUSE",
+    "application reversal and bonded challenge settlement",
+    "technical-unresolved retry/closure on the public network"
+  ],
+  "test_evidence": {
+    "python": "97 passed, 7 skipped",
+    "mutation": "70/70 killed",
+    "direct_mode": "6 passed, 1 skipped",
+    "genvm_lint": "six contracts passed",
+    "manifest": "PASS",
+    "preflight": "PASS"
+  },
+  "production_frontend": {
+    "url": "https://stewardrail.vercel.app",
+    "deployment_id": "dpl_9WzDhuq39sY2oHCqfnuGBFyJZ5kC",
+    "status": "READY",
+    "build_id": "gs4U6FVF3T5Xb-5f2js6I",
+    "project_root": "frontend",
+    "verify_route": "fresh six-contract addresses rendered; wallet connected on Studionet 61999"
+  },
+  "limitations": [
+    "The public network does not provide a safe forced child-failure control; failure and retry invariants are covered by adversarial direct-mode/runtime tests.",
+    "Substantive REFUSE, application reversal, bonded challenge settlement and technical-unresolved retry/closure were not rerun on this fresh public stack; those paths remain covered by the adversarial suite."
+  ]
+}

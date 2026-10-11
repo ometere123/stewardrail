@@ -1,20 +1,20 @@
 # Studionet live evidence
 
 The canonical current record is
-[`deploy/proofs/final-release-2026-10-10.json`](../deploy/proofs/final-release-2026-10-10.json).
+[`deploy/proofs/final-remediation-2026-10-11.json`](../deploy/proofs/final-remediation-2026-10-11.json).
 It points to the addresses in
 [`deploy/deployments.json`](../deploy/deployments.json) and the six exact source
 hashes in `contracts/SOURCE_MANIFEST.json`.
 
 The packet contains finalized deployment and threshold-binding receipts, the
-active two-principal mandate, exact source hashes, and a funded current-source
-lifecycle. Spend `1` reached semantic `ALLOW`, finalized through Court → Guard
-→ BondVault lock/confirmation → Vault, and paid 1 GEN from a 20 GEN treasury
-fund. The payout finalized with `value_credited: true`. Spend `0` produced a
-finalized semantic `REFUSE`. Spend `3` completed a bonded challenge through
-Court, Guard, Vault and BondVault; the 0.05 GEN bond was refunded once. Two
-later finalized reconciliation calls emitted no payable child and left the
-BondVault and Vault balances unchanged.
+active two-principal mandate, exact source hashes, issuer attestations, and a
+semantic `ALLOW` lifecycle through Court → Guard → BondVault → Vault. It records
+a finalized 1 GEN treasury funding, a 1 GEN standing deposit, and a funded
+1 GEN payout with a finalized payable child and an independently observed
+recipient balance increase. The duplicate payment attempt finalized with the
+expected error and no balance movement. Substantive refusal, application
+reversal, bonded challenge settlement, and technical recovery are not claimed
+on this source generation.
 
 The validator network does not expose a safe control for deliberately dropping
 one internal child, so the lost-acknowledgment branch is not represented as a
