@@ -6,11 +6,13 @@ It points to the addresses in
 [`deploy/deployments.json`](../deploy/deployments.json) and the six exact source
 hashes in `contracts/SOURCE_MANIFEST.json`.
 
-The packet contains finalized deployment and threshold-binding receipts and
-exact decoded source hashes for the fresh stack. The corrected-stack semantic
-and payment lifecycle, substantive refusal, application reversal, bonded
-challenge settlement, and technical recovery are not claimed on this source
-generation; older lifecycle packets are superseded.
+The packet contains finalized deployment receipts, threshold-approved mandate
+v2, exact decoded source hashes, a semantic ALLOW through Court → Guard → Vault,
+an upheld bonded challenge with settlement and repeated reconciliation, a
+funded 1 GEN payout with an independently credited child transfer, and a
+technical-unresolved case closed after its bounded retry limit. A substantive
+semantic REFUSE and fresh application reversal are not claimed unless their
+transactions are present in the packet.
 
 The validator network does not expose a safe control for deliberately dropping
 one internal child, so the lost-acknowledgment branch is not represented as a

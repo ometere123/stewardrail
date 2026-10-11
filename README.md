@@ -79,7 +79,7 @@ Single-use evidence is consumed only when Guard records a terminal economic `ALL
 
 Each semantic case has a bounded application appeal window. The appeal uses the same frozen mandate and must satisfy all required authenticated evidence roles; a persuasive statement cannot substitute for a missing role. Court can therefore preserve or reverse the effective semantic result without becoming a custody authority.
 
-The deployed BondVault also supports a separate bonded challenge path. A challenge quotes its bond from the spend's frozen policy, is registered through Court, and reaches Guard before any custody consequence. Historical lifecycle packets contain post-payment restitution observations for an earlier source generation; the current packet does not relabel those transactions as evidence for this corrected deployment.
+The deployed BondVault also supports a separate bonded challenge path. A challenge quotes its bond from the spend's frozen policy, is registered through Court, and reaches Guard before any custody consequence. The current fresh-stack packet records an upheld challenge, Guard revocation, BondVault settlement, challenger refund, and repeated idempotent reconciliation.
 
 ## Finalized internal authority and reconciliation
 
@@ -97,7 +97,7 @@ Terminal payloads are fingerprinted and idempotent. Court reconciliation can re-
 
 ## Treasury safety
 
-Vault records the recipient and amount from the frozen Guard spend record. `pay(spend_id)` requires a terminal economic `ALLOW`, sufficient treasury, and no prior payment; callers cannot substitute a recipient or amount. Historical packets contain funded payout observations, but the corrected stack's funded lifecycle is not claimed until rerun. Threshold recovery remains governed by the Charter rather than an individual owner.
+Vault records the recipient and amount from the frozen Guard spend record. `pay(spend_id)` requires a terminal economic `ALLOW`, sufficient treasury, and no prior payment; callers cannot substitute a recipient or amount. The fresh stack paid 1 GEN to the configured recipient and rejected a duplicate payment without creating a child transfer. Threshold recovery remains governed by the Charter rather than an individual owner.
 
 ## Canonical Studionet deployment
 
@@ -105,23 +105,23 @@ The fresh corrected source stack is recorded in [`deploy/deployments.json`](depl
 
 | Contract | Studionet address |
 | --- | --- |
-| StewardCharter | [0x5AB2…423e8](https://explorer-studio.genlayer.com/address/0x5AB29aAa8234Ec84F6c3B043eF6B9297229423e8) |
-| EvidenceRegistry | [0x5f90…8AaF4](https://explorer-studio.genlayer.com/address/0x5f906442Ccb82EeCF57ABB7bBc6242F422c8AaF4) |
-| StewardCourt | [0xBA6d…7c81b](https://explorer-studio.genlayer.com/address/0xBA6db1eCAA688b2b3a8B36C088E85baf0dC7c81b) |
-| StewardGuard | [0xa4c0…7279](https://explorer-studio.genlayer.com/address/0xa4c0081760240aF0FfDFAA268568A51e9afd7279) |
-| StewardVault | [0x268b…9fBe](https://explorer-studio.genlayer.com/address/0x268bB419a5143B7a017E0be7FcfC48A4830C9fBe) |
-| StewardBondVault | [0xdE99…7D8B](https://explorer-studio.genlayer.com/address/0xdE991a2Ea7447f7d705CC62289Ded64c63467D8B) |
+| StewardCharter | [0x1538…22F2](https://explorer-studio.genlayer.com/address/0x15389f6824CAD32cAAa16B4fb1f2b825B52122F2) |
+| EvidenceRegistry | [0xA6b3…b3BE3](https://explorer-studio.genlayer.com/address/0xA6b358C025C49Af95D516f3AC46305be728b3BE3) |
+| StewardCourt | [0x6B65…ffF4](https://explorer-studio.genlayer.com/address/0x6B65f13f64fAdE3825d6517691a6cE20d709ffF4) |
+| StewardGuard | [0x7a96…CED7](https://explorer-studio.genlayer.com/address/0x7a96536464BA39D445C56594bE02F0897eaFCED7) |
+| StewardVault | [0x3F13…fFe2](https://explorer-studio.genlayer.com/address/0x3F13f96B251485ba65601Df0B97A05a223bafFe2) |
+| StewardBondVault | [0x737E…5AfE](https://explorer-studio.genlayer.com/address/0x737EFC982EAf837EeEeFF5a13bC18e8Eb4db5AfE) |
 
 Network: **Studionet**, chain ID `61999`, RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`, repository-local CLI `genlayer@0.39.1`.
 
 ## Source integrity
 
-The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The corrected deployment source commit is `c75f53f` (documentation and test commits after deployment do not change contract bytes).
+The readable contract files are the exact files used for tests, mutation checks, lint, and deployment. There are no generated or minified deployment copies. The fresh deployment source commit is `8904b225ef65aa46a0212fcb2469bc892ae1b061`; later documentation/proof commits do not change contract bytes.
 
 ```text
 contracts/steward_charter.py     5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab
 contracts/evidence_registry.py   f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd
-contracts/steward_court.py       0d79981e546e62bf62cce5a2280657afebd2c06d2bc8c7513ecc5e573383881c
+contracts/steward_court.py       71e7495f624f3c3db86644d80557bbcb2ff9b7b97eaac6c1cc166673f4054e9c
 contracts/steward_guard.py       0279c30f0b42da7c0528d67349c8ec2de93ee8692304fbaebc6ba3d5052ff1aa
 contracts/steward_vault.py       5fd342442aa7b745b60f9d5197bad6447e357223a3397ba15d6eef6d37de431a
 contracts/steward_bond_vault.py  add2daa5d4012819831d8a60450715dbf17fa7d662df63bb073541525471c039
@@ -129,7 +129,7 @@ contracts/steward_bond_vault.py  add2daa5d4012819831d8a60450715dbf17fa7d662df63b
 
 ## Observed live proof
 
-The canonical packet records the fresh six-contract deployment, threshold binding, and decoded on-chain source hashes. The corrected-stack funded semantic lifecycle, substantive refusal, application reversal, bonded challenge settlement, and technical-unresolved retry/closure are not yet claimed as current live observations; earlier lifecycle packets are historical and superseded.
+The canonical packet records the fresh six-contract deployment, threshold-approved mandate v2, source hashes, a semantic ALLOW through Court→Guard→Vault, a technical-unresolved case that exhausted bounded retries and closed without authority, an upheld bonded challenge with settlement and repeated reconciliation, and a funded 1 GEN payout with an independently credited payment child. A fresh application appeal reversal and a substantive semantic REFUSE are not claimed unless their transactions are present in the packet.
 
 The current source/deployment record is linked from [`canonical-2026-10-11-appeal-safety.json`](deploy/proofs/canonical-2026-10-11-appeal-safety.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 

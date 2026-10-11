@@ -4,7 +4,7 @@
   "rpc": "https://studio.genlayer.com/api",
   "explorer": "https://explorer-studio.genlayer.com",
   "status": "fresh-source-matched-stack",
-  "sourceCommit": "c75f53f",
+  "sourceCommit": "8904b225ef65aa46a0212fcb2469bc892ae1b061",
   "deployer": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
   "actors": {
     "principalA": "0x951e6b75530774ff82321a5ae54e14f778f0c855",
@@ -16,24 +16,24 @@
     "challenger": "0xb845a69860ba4cdf19cfdc5afbaf2e20b6be86b0"
   },
   "contracts": {
-    "StewardCharter": "0x5AB29aAa8234Ec84F6c3B043eF6B9297229423e8",
-    "EvidenceRegistry": "0x5f906442Ccb82EeCF57ABB7bBc6242F422c8AaF4",
-    "StewardCourt": "0xBA6db1eCAA688b2b3a8B36C088E85baf0dC7c81b",
-    "StewardBondVault": "0xdE991a2Ea7447f7d705CC62289Ded64c63467D8B",
-    "StewardGuard": "0xa4c0081760240aF0FfDFAA268568A51e9afd7279",
-    "StewardVault": "0x268bB419a5143B7a017E0be7FcfC48A4830C9fBe"
+    "StewardCharter": "0x15389f6824CAD32cAAa16B4fb1f2b825B52122F2",
+    "EvidenceRegistry": "0xA6b358C025C49Af95D516f3AC46305be728b3BE3",
+    "StewardCourt": "0x6B65f13f64fAdE3825d6517691a6cE20d709ffF4",
+    "StewardBondVault": "0x737EFC982EAf837EeEeFF5a13bC18e8Eb4db5AfE",
+    "StewardGuard": "0x7a96536464BA39D445C56594bE02F0897eaFCED7",
+    "StewardVault": "0x3F13f96B251485ba65601Df0B97A05a223bafFe2"
   },
   "deploymentTransactions": {
-    "StewardCharter": {"hash": "0x067cc9924f3a362998312b292a0d64a136caf4235ad8186e1902463d560d40bd", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "EvidenceRegistry": {"hash": "0x86546de234ed00f1936d2ef55198067ce2dceb26c34f79d8dacf0a3ff68d96e6", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardCourt": {"hash": "0xcc6e3edd6fd08b0a3bd69087c94b0e54769fca85b5feb7ab855ffc2815a0a76d", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardBondVault": {"hash": "0x00d984a896302fd3099ff7c02b0cab5a3d4d57fc93678a3d5bfd93315bac331b", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardGuard": {"hash": "0xebf6a48fc00722f6d70e06db354f68140e2a5c64aeb42550d0325e0a231ca5cc", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
-    "StewardVault": {"hash": null, "status": "FINALIZED", "execution": "SUCCESS", "note": "Hash not recovered from the CLI transcript; contract source and address are independently verified via gen_getContractCode."}
+    "StewardCharter": {"hash": "0xdede21bd9c098f852643ec96ad5eec229239299ee975f1713482fe1aaedaf39c", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "EvidenceRegistry": {"hash": "0x0fb84d44515372ddd4de0318fedac9330d8b41075d60e9a1cc41ddc60633ef61", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardCourt": {"hash": "0xdbd3f03647896021f6ac4847dd5585b77db25b64d95ea993ae098442684c6d52", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardBondVault": {"hash": "0xd094376da7eb880429122061d7fd3ab5adb7cf3e4e748bc4d41f1b7c3e9cf77d", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardGuard": {"hash": "0xfc89ea6ceb820c77baf96ca8ce307eee084bebdc5ac66070739aaf0b1af1b367", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"},
+    "StewardVault": {"hash": "0xc7c7a1481d1fe9fd3bb535e78f5e6ee8b86048af8469555b42c938f59210875a", "status": "FINALIZED", "consensus": "MAJORITY_AGREE", "execution": "SUCCESS"}
   },
   "governanceTransactions": {
-    "mandateV1ApprovalA": "0x6c8d87d6fb7ae3762dfb46f079cd033a9e9f3a29fc8fb18c7e0eb4d2977ae003",
-    "mandateV1ApprovalB": "0x64f26954cd6d4cd9755c5e0287039e7467abf24103da0a20b8a50879bd4a3e35",
+    "mandateV2ApprovalA": "0xc84b9003c5901cd585d9ef5b8c78c53c63eb22b765111c741b51988bd793f1a1",
+    "mandateV2ApprovalB": "0xeb9ea02b622c71460753c1688b455c4942c6fe38a1d56c39bd157edb410f4566",
     "bondApprovalA": "0x0ca3e5506f66f6e00ffe8ab0e3e843503d39eeaecb23e3972ed37ef9db0ddaca",
     "bondApprovalB": "0x890f9f1768a3fd2286843f2f252b525bd72abc2149a0a8d1747b8b46d72d22c2",
     "bondBind": "0x435a5a93038f41e469d16474b0e4710c75c49c74971081a512d83d782407d71e"
@@ -41,7 +41,7 @@
   "sourceSha256": {
     "contracts/steward_charter.py": "5f406115787047b62fe2a4f98fa9d5114c4305616a5c918a52477089712105ab",
     "contracts/evidence_registry.py": "f7bf6547440f954c18acb191fd211307d6cdecf953d3faceaa7946d8f5d831dd",
-    "contracts/steward_court.py": "0d79981e546e62bf62cce5a2280657afebd2c06d2bc8c7513ecc5e573383881c",
+    "contracts/steward_court.py": "71e7495f624f3c3db86644d80557bbcb2ff9b7b97eaac6c1cc166673f4054e9c",
     "contracts/steward_guard.py": "0279c30f0b42da7c0528d67349c8ec2de93ee8692304fbaebc6ba3d5052ff1aa",
     "contracts/steward_vault.py": "5fd342442aa7b745b60f9d5197bad6447e357223a3397ba15d6eef6d37de431a",
     "contracts/steward_bond_vault.py": "add2daa5d4012819831d8a60450715dbf17fa7d662df63bb073541525471c039"
