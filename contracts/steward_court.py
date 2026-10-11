@@ -623,6 +623,8 @@ class StewardCourt(gl.Contract):
         record = self._load(str(guard), int(spend_id))
         if str(record["status"]) != OPEN or self._now() > int(record["appeal_deadline"]):
             raise gl.vm.UserError("[EXPECTED] appeal window is closed")
+        if str(record.get("primary", "")) == TECHNICAL_UNRESOLVED:
+            raise gl.vm.UserError("[EXPECTED] technical primary outcome must be recovered before appeal")
         caller = _addr(gl.message.sender_address)
         charter = gl.get_contract_at(self.charter).view()
         guard_info = self._validate_guard(str(guard))
@@ -692,10 +694,10 @@ class StewardCourt(gl.Contract):
                     if isinstance(raw, str):
                         raw = raw.encode("utf-8")
                     if hashlib.sha256(raw).hexdigest().lower() != item["digest"]:
-                        return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence digest mismatch"})
+                        return json.dumps({"classification": EVIDENCE_INTEGRITY_ERROR, "confidence": 0, "reason": "appeal evidence digest mismatch"})
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
-                    return json.dumps({"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence fetch failed"})
+                    return json.dumps({"classification": EVIDENCE_UNAVAILABLE, "confidence": 0, "reason": "appeal evidence fetch failed"})
             return json.dumps(_verdict(gl.nondet.exec_prompt(prompt + "\nEVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")))
 
         def validator(leader_result) -> bool:
@@ -710,10 +712,10 @@ class StewardCourt(gl.Contract):
                     if isinstance(raw, str):
                         raw = raw.encode("utf-8")
                     if hashlib.sha256(raw).hexdigest().lower() != item["digest"]:
-                        return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence digest mismatch"})
+                        return _same_verdict(leader_result, {"classification": EVIDENCE_INTEGRITY_ERROR, "confidence": 0, "reason": "appeal evidence digest mismatch"})
                     blocks.append("ROLE=" + item["role"] + " ISSUER=" + item["issuer"] + "\n" + raw.decode("utf-8", "replace")[:2400])
                 except Exception:
-                    return _same_verdict(leader_result, {"verdict": REFUSE, "confidence": 100, "reason": "appeal evidence fetch failed"})
+                    return _same_verdict(leader_result, {"classification": EVIDENCE_UNAVAILABLE, "confidence": 0, "reason": "appeal evidence fetch failed"})
             try:
                 independent = gl.nondet.exec_prompt(prompt + "\nEVIDENCE:\n" + "\n---\n".join(blocks), response_format="json")
             except Exception:
@@ -743,6 +745,8 @@ class StewardCourt(gl.Contract):
         record["appeal_confidence"] = int(result["confidence"])
         record["appeal_evidence"] = frozen
         record["reversed"] = str(record["primary"]) != str(result["verdict"])
+        record["terminal_kind"] = "substantive"
+        record.pop("technical_classification", None)
         record["status"] = APPEALED
         self._save(str(guard), int(spend_id), record)
         self._terminal_emit(str(vault), str(guard), int(spend_id), record)
@@ -756,10 +760,16 @@ class StewardCourt(gl.Contract):
         if self._now() <= int(record["appeal_deadline"]):
             raise gl.vm.UserError("[EXPECTED] appeal window has not elapsed")
         record["status"] = TERMINAL
-        self._save(guard, int(spend_id), record)
         if str(record.get("effective", "")) == TECHNICAL_UNRESOLVED:
-            gl.get_contract_at(_address(guard)).emit(on="finalized").close_technical(int(spend_id))
+            record["terminal_kind"] = TECHNICAL_CLOSED
+            record["reason"] = "appeal technical outcome closed without economic authorization"
+            self._save(guard, int(spend_id), record)
+            if str(record.get("primary", "")) == TECHNICAL_UNRESOLVED:
+                gl.get_contract_at(_address(guard)).emit(on="finalized").close_technical(int(spend_id))
+            else:
+                gl.get_contract_at(_address(guard)).emit(on="finalized").close_appeal_technical(int(spend_id), str(vault))
             return
+        self._save(guard, int(spend_id), record)
         self._terminal_emit(vault, guard, int(spend_id), record)
 
     @gl.public.write
@@ -774,7 +784,10 @@ class StewardCourt(gl.Contract):
         if str(record["status"]) not in (APPEALED, TERMINAL):
             raise gl.vm.UserError("[EXPECTED] only terminal court records can be reconciled")
         if str(record.get("effective", "")) == TECHNICAL_UNRESOLVED:
-            gl.get_contract_at(_address(guard)).emit(on="finalized").close_technical(int(spend_id))
+            if str(record.get("primary", "")) == TECHNICAL_UNRESOLVED:
+                gl.get_contract_at(_address(guard)).emit(on="finalized").close_technical(int(spend_id))
+            else:
+                gl.get_contract_at(_address(guard)).emit(on="finalized").close_appeal_technical(int(spend_id), str(vault))
             return
         self._terminal_emit(vault, guard, int(spend_id), record)
 

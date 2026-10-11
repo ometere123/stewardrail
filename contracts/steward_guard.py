@@ -666,6 +666,44 @@ class StewardGuard(gl.Contract):
         self._release_exposure(int(spend_id))
 
     @gl.public.write
+    def close_appeal_technical(self, spend_id: int, vault: str) -> None:
+        """Close an unresolved appeal without treating it as a semantic verdict.
+
+        A primary ALLOW/REFUSE may already be recorded when an appeal becomes
+        technically unresolved.  That primary state is not safe to deliver as
+        custody authority after an unresolved appeal, so this path releases
+        the reservation and delivers an explicit economic REFUSE.  It never
+        applies severe semantic consequences or consumes evidence.
+        """
+        if gl.message.sender_address != self.court:
+            raise gl.vm.UserError("[EXPECTED] only the bound court may close unresolved appeals")
+        key = self._require_spend(spend_id)
+        if self.state[key] not in (ALLOW, REFUSE):
+            raise gl.vm.UserError("[EXPECTED] appeal technical closure requires a substantive primary state")
+        self._vault_info(str(vault))
+        identities = []
+        for item in self._evidence_items(key):
+            identities.append("|".join([str(item["issuer"]), str(item["role"]), str(item["uri"]), str(item["digest"]).lower()]))
+        expected = self._terminal_fingerprint(int(spend_id), TECHNICAL_UNRESOLVED, REFUSE, str(vault), key, identities)
+        existing = str(self.terminal_fingerprint.get(key, ""))
+        if existing != "":
+            if existing != expected:
+                raise gl.vm.UserError("[EXPECTED] conflicting unresolved appeal closure")
+            self._emit_vault_terminal(str(vault), int(spend_id), REFUSE)
+            return
+        self._release_exposure(int(spend_id))
+        self.enforcement[key] = "technical"
+        self.reason[key] = "appeal technical outcome closed without economic authorization"
+        self.terminal_semantic[key] = TECHNICAL_UNRESOLVED
+        self.terminal_state[key] = REFUSE
+        self.terminal_reason[key] = self.reason[key]
+        self.terminal_at[key] = u256(self._now())
+        self.terminal_evidence[str(int(spend_id))] = json.dumps(identities)
+        self.collateral_lock_state[key] = "not_required"
+        self.terminal_fingerprint[key] = expected
+        self._emit_vault_terminal(str(vault), int(spend_id), REFUSE)
+
+    @gl.public.write
     def apply_terminal_decision(self, spend_id: int, semantic_decision: str, evidence_json: str, vault: str) -> None:
         if gl.message.sender_address != self.court:
             raise gl.vm.UserError("[EXPECTED] only the bound court may apply terminal decisions")

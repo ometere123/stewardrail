@@ -136,6 +136,35 @@ def test_digest_mismatch_is_technical_unresolved_not_semantic_refuse():
     assert spend['state']=='technical_unresolved' and spend['evidence_status']=='evidence_integrity_error'
     assert spend['confidence']==0
 
+def test_appeal_digest_failure_closes_neutral_without_calling_primary_technical_close():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'primary evidence satisfies rule'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
+    # The appeal record already has a substantive primary ALLOW.  Corrupting
+    # the authenticated bytes must produce a technical appeal, not REFUSE at
+    # confidence 100 and not a call to Guard.close_technical().
+    rt.web[URI]=b'changed after primary decision'
+    rt.model=lambda p:{'verdict':'refuse','confidence':100,'reason':'must not override integrity failure'}
+    rt.balances[PAYEE]=100
+    rt.call(COURT,'appeal',GUARD,0,VAULT,'recheck the authenticated record','[]',sender=PAYEE); rt.flush_finalized()
+    record=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    assert record['effective']=='technical_unresolved'
+    assert record['technical_classification']=='evidence_integrity_error'
+    assert record['status']=='open'
+    rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    record=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    spend=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert record['status']=='terminal' and record['terminal_kind']=='technical_unresolved_closed'
+    assert spend['terminal_semantic']=='technical_unresolved'
+    assert spend['terminal_economic']=='refuse'
+    assert 'appeal technical outcome' in spend['terminal_reason']
+    assert json.loads(rt.call(VAULT,'payment',0,sender=A))['terminal']['decision']=='refuse'
+    # Reconciliation remains idempotent and must not change the economic state.
+    rt.call(COURT,'reconcile_terminal',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    after=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
+    assert after['terminal_economic']=='refuse' and after['terminal_semantic']=='technical_unresolved'
+
 def test_allow_confidence_floor_compares_threshold_not_exact_number():
     rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)
     calls={'n':0}
