@@ -115,14 +115,17 @@
   },
   "production_frontend": {
     "url": "https://stewardrail.vercel.app",
-    "status": "pending fresh deployment after address configuration",
-    "required_bindings": "the six addresses above; current public deployment still serves the superseded stack"
+    "deployment_id": "dpl_GKwYpxXWGXQPT8K1cazc7XwsgoeA",
+    "deployment_url": "https://stewardrail-7q7a9mzfo-delealufejoel-4184s-projects.vercel.app",
+    "status": "READY",
+    "local_build_id": "WzaOcPFYlC10oDbON_5-4",
+    "bindings_verified": "production /verify returned READ OK for Court, Guard, Vault and BondVault on Studionet 61999 and rendered all six fresh addresses"
   },
   "limitations": [
     "Native EOA transfer children report NO_MAJORITY because an EOA transfer has no validator execution result; value_credited=true and independent balance deltas are the delivery evidence.",
     "No public forced child-failure scenario was created; source refuses speculative payable retries and local adversarial tests cover pending, delayed and unresolved delivery.",
     "Fresh-stack application appeal reversal in both directions was not rerun in this session; prior packets are historical and are not counted as current evidence.",
-    "Production must be redeployed once with the six fresh public environment bindings; this packet is updated with its deployment id and build id after verification."
+    "The Vercel build is verified against the fresh public bindings; browser wallet writes still require an injected EIP-1193 wallet on Studionet."
   ],
   "historical_records": "Earlier packets remain available but are explicitly historical/superseded and are not evidence for this source generation."
 }
