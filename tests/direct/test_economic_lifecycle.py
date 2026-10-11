@@ -1,4 +1,4 @@
-import hashlib,json
+import hashlib,json,time
 from pathlib import Path
 import pytest
 from tests.direct.genvm_stub import Runtime,load,deploy
@@ -164,6 +164,100 @@ def test_appeal_digest_failure_closes_neutral_without_calling_primary_technical_
     rt.call(COURT,'reconcile_terminal',GUARD,0,VAULT,sender=A); rt.flush_finalized()
     after=json.loads(rt.call(GUARD,'get_spend',0,sender=A))
     assert after['terminal_economic']=='refuse' and after['terminal_semantic']=='technical_unresolved'
+
+def test_primary_technical_recovery_resets_appeal_window_and_cannot_reopen_terminal_case():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    rt.web[URI]=b'bytes no longer match the attested digest'
+    rt.model=lambda p:{'verdict':'allow','confidence':100,'reason':'must remain technical'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
+    initial=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    assert initial['primary']=='technical_unresolved' and initial['status']=='open'
+    initial_deadline=int(initial['appeal_deadline'])
+    rt.web[URI]=b'valid invoice'
+    rt.model=lambda p:{'verdict':'allow','confidence':95,'reason':'recovered evidence'}
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized()
+    recovered=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    assert recovered['primary']=='allow' and recovered['status']=='open'
+    assert int(recovered['appeal_deadline']) == rt.now + 100
+    assert int(recovered['appeal_deadline']) >= initial_deadline
+    rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    terminal=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    assert terminal['status']=='terminal'
+
+    rt2=setup_stack(); digest2=attest(rt2); create_semantic(rt2,digest2)
+    rt2.web[URI]=b'bytes no longer match the attested digest'
+    rt2.call(GUARD,'adjudicate',0,sender=A); rt2.flush_finalized()
+    rt2.now += 86_401
+    rt2.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt2.flush_finalized()
+    terminal_technical=json.loads(rt2.call(COURT,'case',GUARD,0,sender=A))
+    assert terminal_technical['status']=='terminal' and terminal_technical['primary']=='technical_unresolved'
+    with pytest.raises(Exception,match='terminal technical case cannot be reopened'):
+        rt2.call(COURT,'record_primary',0,'allow','late recovery',95,200,PAYEE,1,json.dumps([]),sender=GUARD)
+
+def test_appeal_confidence_boundary_uses_actual_validator_callbacks():
+    rt=setup_stack(); digest=attest(rt); create_semantic(rt,digest)
+    calls={'n':0}
+    def model(prompt):
+        calls['n'] += 1
+        if calls['n'] <= 2:
+            return {'verdict':'allow','confidence':95,'reason':'primary'}
+        return {'verdict':'allow','confidence':71 if calls['n']==3 else 69,'reason':'appeal boundary'}
+    rt.model=model
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.balances[PAYEE]=100
+    rt.call(COURT,'appeal',GUARD,0,VAULT,'recheck at the confidence boundary','[]',sender=PAYEE); rt.flush_finalized()
+    record=json.loads(rt.call(COURT,'case',GUARD,0,sender=A))
+    assert calls['n']==4
+    assert record['effective']=='technical_unresolved'
+    assert record['technical_classification']=='consensus_failure'
+    assert record['status']=='open'
+
+def test_challenge_confidence_boundary_uses_actual_validator_callbacks():
+    rt=setup_stack(standing=500); digest=attest(rt); create_semantic(rt,digest)
+    calls={'n':0}
+    def model(prompt):
+        calls['n'] += 1
+        if calls['n'] <= 2:
+            return {'verdict':'allow','confidence':95,'reason':'primary'}
+        return {'verdict':'allow','confidence':71 if calls['n']==3 else 69,'reason':'challenge boundary'}
+    rt.model=model
+    rt.call(GUARD,'adjudicate',0,sender=A); rt.flush_finalized(); rt.now += 101
+    rt.call(COURT,'close_unappealed',GUARD,0,VAULT,sender=A); rt.flush_finalized()
+    rt.balances[CHALLENGER]=100
+    quote=rt.call(BOND,'quote_bond',200,sender=CHALLENGER)
+    rt.call(BOND,'open_challenge',0,200,'confidence boundary',challenge_evidence(digest),sender=CHALLENGER,value=quote)
+    rt.flush_finalized(); rt.now += 61
+    rt.call(COURT,'resolve_challenge',GUARD,0,BOND,sender=CHALLENGER); rt.flush_finalized()
+    record=json.loads(rt.call(COURT,'challenge',GUARD,0,sender=A))
+    assert calls['n']==4
+    assert record['status']=='open'
+    assert record['terminal_kind']=='technical_unresolved'
+    assert record['technical_classification']=='consensus_failure'
+
+def test_guard_indexed_exposure_matches_reference_at_100_1000_and_5000():
+    now=10_000_000
+    window=86_400
+    recipient=PAYEE
+    timings=[]
+    for count in (100, 1_000, 5_000):
+        rt=setup_stack()
+        guard=rt.contracts[GUARD]
+        expected=[]
+        for spend_id in range(count):
+            at=now-count+spend_id+1
+            amount=(spend_id % 17)+1
+            guard._index_exposure(spend_id,at,recipient,amount)
+            expected.append((amount,at))
+        started=time.perf_counter()
+        actual=guard._rolling_total(now,window)
+        elapsed=time.perf_counter()-started
+        reference=sum(amount for amount,at in expected if now-window < at <= now)
+        assert actual==reference
+        assert guard._recipient_total(now,window,recipient)==reference
+        timings.append(elapsed)
+    # This is a bounded active-index query, not a lifetime-history scan.  Keep
+    # the timing assertion intentionally broad so slower CI hosts remain valid.
+    assert timings[-1] < 1.0
 
 def test_allow_confidence_floor_compares_threshold_not_exact_number():
     rt=setup_stack();digest=attest(rt);create_semantic(rt,digest)

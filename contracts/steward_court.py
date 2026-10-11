@@ -580,6 +580,14 @@ class StewardCourt(gl.Contract):
         self._validate_guard(guard)
         if str(decision) not in (ALLOW, REFUSE, TECHNICAL_UNRESOLVED):
             raise gl.vm.UserError("[EXPECTED] invalid primary decision")
+        mandate = json.loads(str(gl.get_contract_at(self.charter).view().mandate_at(int(version))))
+        window = int(mandate["appeal"]["window_seconds"])
+        try:
+            primary_evidence = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
+        except Exception as exc:
+            raise gl.vm.UserError("[EXPECTED] primary evidence must be valid JSON") from exc
+        if not isinstance(primary_evidence, list) or len(primary_evidence) > 12:
+            raise gl.vm.UserError("[EXPECTED] primary evidence list is invalid")
         key = _record_key(guard, int(spend_id))
         if self.records.get(key, "") != "":
             # Finalized messages are designed to be idempotent across retries.
@@ -591,24 +599,23 @@ class StewardCourt(gl.Contract):
                     self.records[key] = json.dumps(existing)
                 return
             if str(existing["primary"]) == TECHNICAL_UNRESOLVED and str(decision) in (ALLOW, REFUSE):
+                if int(existing.get("version", -1)) != int(version):
+                    raise gl.vm.UserError("[EXPECTED] recovered primary mandate version conflicts")
+                if str(existing.get("status", "")) != OPEN:
+                    raise gl.vm.UserError("[EXPECTED] terminal technical case cannot be reopened")
+                now = self._now()
                 existing["primary"] = str(decision)
                 existing["effective"] = str(decision)
                 existing["primary_reason"] = str(reason)[:240]
                 existing["primary_confidence"] = int(confidence)
+                existing["primary_evidence"] = primary_evidence
+                existing["appeal_deadline"] = now + window
                 existing["status"] = OPEN
                 existing["technical_classification"] = "recovered"
                 self.records[key] = json.dumps(existing)
                 return
             raise gl.vm.UserError("[EXPECTED] conflicting primary decision")
-        mandate = json.loads(str(gl.get_contract_at(self.charter).view().mandate_at(int(version))))
-        window = int(mandate["appeal"]["window_seconds"])
         now = self._now()
-        try:
-            primary_evidence = evidence_json if isinstance(evidence_json, list) else json.loads(str(evidence_json))
-        except Exception as exc:
-            raise gl.vm.UserError("[EXPECTED] primary evidence must be valid JSON") from exc
-        if not isinstance(primary_evidence, list) or len(primary_evidence) > 12:
-            raise gl.vm.UserError("[EXPECTED] primary evidence list is invalid")
         self.records[key] = json.dumps({
             "guard": _addr(guard), "spend_id": int(spend_id), "version": int(version),
             "primary": str(decision), "primary_reason": str(reason)[:240], "primary_confidence": int(confidence),
