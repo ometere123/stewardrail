@@ -61,7 +61,7 @@
     "binding_readback": "BondVault guard=a4c0081760240aF0FfDFAA268568A51e9afd7279; vault=268bB419a5143B7a017E0be7FcfC48A4830C9fBe; court read from Guard binding"
   },
   "verification": {
-    "python": "98 passed, 7 skipped before high-volume test addition",
+    "python": "101 passed, 7 skipped",
     "high_volume_reference": "3 passed (100, 1,000 and 5,000 records; boundary and recipient isolation)",
     "mutation": "70/70 killed",
     "direct_mode": "6 passed, 1 skipped (official runner second-contract limitation)",
@@ -79,6 +79,14 @@
     "repeated_reconciliation": "NOT OBSERVED on this corrected stack; receiver-side and settlement idempotence tests remain local evidence."
   },
   "explorer_prefix": "https://explorer-studio.genlayer.com/tx/",
+  "production_frontend": {
+    "url": "https://stewardrail.vercel.app",
+    "deployment_id": "dpl_ELbGTBUY6oFqfebMik81iPH6unLJ",
+    "deployment_state": "READY",
+    "project_root": "frontend",
+    "local_build_id": "HGzBBOPxIoof0f8NOgmqe",
+    "verify_route": "live binding reads returned READ OK for Court, Guard, Vault and BondVault on chain 61999"
+  },
   "limitations": [
     "A safe public-network forced child failure was not created; unresolved payable delivery remains conservatively unresolved in source and is covered by adversarial tests.",
     "The missing Vault deployment hash is a recordkeeping limitation, not a source-hash mismatch; the deployed address and decoded source were independently verified.",

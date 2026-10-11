@@ -129,11 +129,11 @@
   "explorerPrefix": "https://explorer-studio.genlayer.com/tx/",
   "productionFrontend": {
     "url": "https://stewardrail.vercel.app",
-    "deploymentId": "dpl_9WzDhuq39sY2oHCqfnuGBFyJZ5kC",
+    "deploymentId": "dpl_ELbGTBUY6oFqfebMik81iPH6unLJ",
     "status": "READY",
-    "buildId": "gs4U6FVF3T5Xb-5f2js6I",
+    "buildId": "HGzBBOPxIoof0f8NOgmqe",
     "projectRoot": "frontend",
-    "bindingsVerified": ["/verify rendered fresh six-contract addresses"]
+    "bindingsVerified": ["/verify live READ OK for Court, Guard, Vault and BondVault on Studionet 61999"]
   },
   "historicalRecords": "Earlier deployment/proof packets are retained as historical and superseded records."
 }
