@@ -99,6 +99,44 @@
       "court_reconcile_child": "0x5628d1a6b34ccee5c6d87fd4d5c57b3f9f85fd7a47396a9b1149c503d948a928",
       "release_exposure": "0xf813132ebb03996e90de35331d75b079ccbe097858e53817f96f2dd2303d3303",
       "readback": {"bond_refund_value_credited": true, "locked_amount": "0", "exposure_locked": false, "late_economic_result": "not permitted"}
+    },
+    "semantic_refuse_and_allow_to_refuse": {
+      "spend_id": 4,
+      "request": "0x7cf67c2f52ef12076b6c17964e99cfa34a7f5cee55e4b4d8f9ede7d37f67072a",
+      "appeal": "0x611506f84b30a7ca4e364d8eaf56ea33f2aaad8b687e36e145747376a3478ea1",
+      "court_child": "0x76c4d5b11928a3beaf43b81206738a15eee4460191cce14d786da4ce9055d4cf",
+      "vault_child": "0xec45cbf27247d1a0fff26158bff7767db3b1fd3dd3b08b9c90d3feb43679e863",
+      "readback": {
+        "primary": "allow",
+        "effective": "refuse",
+        "court_status": "appealed",
+        "guard_terminal_semantic": "refuse",
+        "guard_terminal_economic": "refuse",
+        "vault_decision": "refuse",
+        "vault_paid": false,
+        "classification": "substantive_refuse",
+        "execution": "appeal, Court child, Guard child and Vault child FINALIZED with successful execution"
+      }
+    },
+    "refuse_to_allow_application_reversal": {
+      "spend_id": 3,
+      "request": "0x875559b847390ea08545ad58eca5fa1c61aaf5f2a8e73cdc27b1663878a70397",
+      "appeal": "0x95f0a1bf47eac83ebe53c29b83484f25cdb3f15f840e400df3d95e0696a13b35",
+      "court_child": "0x800fcc9495c76cc4c206f101f673b2787a62431a5946d2b9f4e41232d196a780",
+      "bond_lock_child": "0x8d72341d9890dba1db2b2263d48edbb983bf3767e590534dfed3ef068a508b6a",
+      "bond_lock_confirm_child": "0x953ddcf5f490ff384ba539226c065647755f304c9832ed4628175f16610af82f",
+      "vault_child": "0x84ff802c96be839f8d787c5bdc8d217feec51e23278c4c435e1045a087ba327d",
+      "readback": {
+        "primary": "refuse",
+        "effective": "allow",
+        "court_status": "appealed",
+        "guard_terminal_semantic": "allow",
+        "guard_terminal_economic": "allow",
+        "vault_decision": "allow",
+        "vault_paid": false,
+        "classification": "application_reversal",
+        "execution": "appeal, Court child, BondVault lock/confirmation children and Vault child FINALIZED with successful execution"
+      }
     }
   },
   "verification": {
@@ -115,8 +153,8 @@
   },
   "production_frontend": {
     "url": "https://stewardrail.vercel.app",
-    "deployment_id": "dpl_GWgFBGmfCBfEFxvSsrwR7SSD8Kim",
-    "deployment_url": "https://stewardrail-5cesngyu5-delealufejoel-4184s-projects.vercel.app",
+    "deployment_id": "dpl_h5oBunS1HQinGnYngGvhq55dw7g2",
+    "deployment_url": "https://stewardrail-mmbc0hboq-delealufejoel-4184s-projects.vercel.app",
     "status": "READY",
     "local_build_id": "WzaOcPFYlC10oDbON_5-4",
     "bindings_verified": "production /verify returned READ OK for Court, Guard, Vault and BondVault on Studionet 61999 and rendered all six fresh addresses"
@@ -124,7 +162,7 @@
   "limitations": [
     "Native EOA transfer children report NO_MAJORITY because an EOA transfer has no validator execution result; value_credited=true and independent balance deltas are the delivery evidence.",
     "No public forced child-failure scenario was created; source refuses speculative payable retries and local adversarial tests cover pending, delayed and unresolved delivery.",
-    "Fresh-stack application appeal reversal in both directions was not rerun in this session; prior packets are historical and are not counted as current evidence.",
+    "The current packet includes fresh substantive ALLOW-to-REFUSE and REFUSE-to-ALLOW application reversals with finalized Court, Guard, BondVault and Vault descendants.",
     "The Vercel build is verified against the fresh public bindings; browser wallet writes still require an injected EIP-1193 wallet on Studionet."
   ],
   "historical_records": "Earlier packets remain available but are explicitly historical/superseded and are not evidence for this source generation."

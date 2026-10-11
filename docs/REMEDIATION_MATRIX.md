@@ -16,7 +16,7 @@ success.
 | Independent authenticated issuer roles | Charter issuer policies and Registry historical attestation checks | OBSERVED for spend 6/7: vendor and delivery roles are distinct wallets |
 | Source parity | base64-decoded `gen_getContractCode` SHA-256 equals `SOURCE_MANIFEST.json` for all six addresses | PASS |
 | Exact source and runtime gates | pytest, mutation, Direct Mode, six-contract lint, manifest, preflight, frontend checks | PASS locally |
-| Production bindings | `frontend/.env.local` and Vercel Production public variables | Pending one fresh production deployment |
+| Production bindings | `frontend/.env.local` and Vercel Production public variables | PASS: `dpl_h5oBunS1HQinGnYngGvhq55dw7g2`; `/verify` reads all six current addresses and bindings on Studionet 61999 |
 | Funded payout and balance conservation | packet spend 7 payout readback and payment child | OBSERVED: recipient +1 GEN, Vault treasury −1 GEN; duplicate rejected |
 
 Historical lifecycle packets remain in `deploy/proofs/` for audit context only and

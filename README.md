@@ -129,7 +129,7 @@ contracts/steward_bond_vault.py  add2daa5d4012819831d8a60450715dbf17fa7d662df63b
 
 ## Observed live proof
 
-The canonical packet records the fresh six-contract deployment, threshold-approved mandate v2, source hashes, a semantic ALLOW through Court→Guard→Vault, a technical-unresolved case that exhausted bounded retries and closed without authority, an upheld bonded challenge with settlement and repeated reconciliation, and a funded 1 GEN payout with an independently credited payment child. A fresh application appeal reversal and a substantive semantic REFUSE are not claimed unless their transactions are present in the packet.
+The canonical packet records the fresh six-contract deployment, threshold-approved mandate v2, source hashes, a semantic ALLOW through Court→Guard→Vault, a substantive ALLOW→REFUSE application reversal, a substantive REFUSE→ALLOW application reversal, a technical-unresolved case that exhausted bounded retries and closed without authority, an upheld bonded challenge with settlement and repeated reconciliation, and a funded 1 GEN payout with an independently credited payment child.
 
 The current source/deployment record is linked from [`canonical-2026-10-11-appeal-safety.json`](deploy/proofs/canonical-2026-10-11-appeal-safety.json). Historical packets remain in `deploy/proofs/` with explicit superseded status and are not presented as current deployment evidence.
 

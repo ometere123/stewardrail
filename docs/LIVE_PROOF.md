@@ -9,6 +9,6 @@ bonded challenge and two idempotent reconciliations, a 1 GEN payout with exact
 recipient and treasury deltas, and bounded technical-unresolved recovery.
 Native EOA transfer children are evidenced by `value_credited` and independent
 balance deltas; their consensus label is not treated as execution success.
-Fresh application reversals and substantive semantic REFUSE remain explicitly
-unclaimed until separately recorded.
+Fresh application reversals in both directions and substantive semantic REFUSE
+are recorded with finalized descendants in the current packet.
 Historical packets remain in `deploy/proofs/` with explicit superseded status.
