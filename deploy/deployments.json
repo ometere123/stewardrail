@@ -129,10 +129,10 @@
   "explorerPrefix": "https://explorer-studio.genlayer.com/tx/",
   "productionFrontend": {
     "url": "https://stewardrail.vercel.app",
-    "deploymentId": "dpl_h5oBunS1HQinGnYngGvhq55dw7g2",
-    "deploymentUrl": "https://stewardrail-mmbc0hboq-delealufejoel-4184s-projects.vercel.app",
+    "deploymentId": "dpl_GNEtBKMLhnuhsoh8MA27oTEKoS9d",
+    "deploymentUrl": "https://stewardrail-f9zy32kzk-delealufejoel-4184s-projects.vercel.app",
     "status": "READY",
-    "buildId": "WzaOcPFYlC10oDbON_5-4",
+    "buildId": "hR4BDjZ3aoJ7bHj3NJ5zC",
     "projectRoot": "frontend",
     "bindingsVerified": ["/verify live READ OK for all six fresh addresses on Studionet 61999"]
   },

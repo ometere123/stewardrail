@@ -153,10 +153,10 @@
   },
   "production_frontend": {
     "url": "https://stewardrail.vercel.app",
-    "deployment_id": "dpl_h5oBunS1HQinGnYngGvhq55dw7g2",
-    "deployment_url": "https://stewardrail-mmbc0hboq-delealufejoel-4184s-projects.vercel.app",
+    "deployment_id": "dpl_GNEtBKMLhnuhsoh8MA27oTEKoS9d",
+    "deployment_url": "https://stewardrail-f9zy32kzk-delealufejoel-4184s-projects.vercel.app",
     "status": "READY",
-    "local_build_id": "WzaOcPFYlC10oDbON_5-4",
+    "local_build_id": "hR4BDjZ3aoJ7bHj3NJ5zC",
     "bindings_verified": "production /verify returned READ OK for Court, Guard, Vault and BondVault on Studionet 61999 and rendered all six fresh addresses"
   },
   "limitations": [
