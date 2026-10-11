@@ -224,7 +224,7 @@ class StewardCourt(gl.Contract):
             raise gl.vm.UserError("[EXPECTED] appeal evidence URI origin is not authorized")
         registry = gl.get_contract_at(self.registry).view()
         if not bool(registry.status_at(_addr(self.charter), issuer, role, uri, digest, int(at))):
-            raise gl.vm.UserError("[EXPECTED] appeal evidence lacks issuer attestation at appeal time")
+            raise gl.vm.UserError("[EXPECTED] appeal evidence lacks issuer attestation at spend request time")
         usage = "reusable" if str(policy.get("usage", "single_use")) == "reusable" else "single_use"
         return {"issuer": issuer, "role": role, "uri": uri, "digest": digest, "usage": usage}
 
